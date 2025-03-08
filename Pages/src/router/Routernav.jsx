@@ -4,7 +4,7 @@ import Login from "../pages/Login/Login"; // Ensure this file exists
 import SurveyCreation from "../pages/Problemraisordashboard/surveycreation"; // Ensure this file exists
 import ProblemRaisorDashboard from "../pages/Problemraisordashboard/problemraisordashboard"; // Ensure this file exists
 import SupervisorDashboard from "../pages/Superviserdashboard/superviserdashboard"; // Ensure this file exists
-import Problemsolver from "../pages/Problemsolverdashboard/problemsolverdashboard"; // Ensure this file exists
+import Problemsolver from "../pages/Problemsolvingdashboard/problemsolvingdashboard"; // Ensure this file exists
 
 export default function Routernav() {
   return (
