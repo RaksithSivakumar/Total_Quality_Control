@@ -88,6 +88,41 @@ function ProblemRaisorDashboard() {
       date: "10/07/2025",
       status: "accepted",
     },
+    {
+      id: 1,
+      title: "Productivity failure",
+      description: "Productive failure is a learning design where individuals are allowed to fail in a managed..",
+      date: "10/07/2025",
+      status: "inprogress",
+    },
+    {
+      id: 2,
+      title: "Productivity failure",
+      description: "Productive failure is a learning design where individuals are allowed to fail in a managed..",
+      date: "10/07/2025",
+      status: "rejected",
+    },
+    {
+      id: 3,
+      title: "Productivity failure",
+      description: "Productive failure is a learning design where individuals are allowed to fail in a managed..",
+      date: "10/07/2025",
+      status: "accepted",
+    },
+    {
+      id: 4,
+      title: "Productivity failure",
+      description: "Productive failure is a learning design where individuals are allowed to fail in a managed..",
+      date: "10/07/2025",
+      status: "inprogress",
+    },
+    {
+      id: 5,
+      title: "Productivity failure",
+      description: "Productive failure is a learning design where individuals are allowed to fail in a managed..",
+      date: "10/07/2025",
+      status: "accepted",
+    },
   ];
 
   const handleDayClick = (index) => {

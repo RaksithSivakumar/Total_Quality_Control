@@ -42,6 +42,20 @@ const Accepted = ({ open, onClose }) => {
       maxWidth="md"
       fullScreen={isMobile}
     >
+      {/* Add CSS to hide the scrollbar */}
+      <style>
+        {`
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+          .scrollbar-hide {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+          }
+        `}
+      </style>
+
+      {/* Dialog Content with Scrollbar Hidden */}
       <DialogContent
         sx={{
           bgcolor: "background.paper",
@@ -50,6 +64,7 @@ const Accepted = ({ open, onClose }) => {
           maxHeight: "90vh",
           overflowY: "auto",
         }}
+        className="scrollbar-hide" // Apply the scrollbar-hide class
       >
         {/* Dialog Header */}
         <Box
