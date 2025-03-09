@@ -18,6 +18,7 @@ import { Search, Tune } from "@mui/icons-material";
 import LogCreation from "../../components/Popups/LogCreation";
 import Rejected from "../../components/Popups/Rejected";
 import Accepted from "../../components/Popups/Accepted";
+
 // Transition component for the dialog
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -25,102 +26,6 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 // Sample data for productivity failures
 const productivityFailures = [
-  {
-    id: 1,
-    title: "Productivity failure",
-    description: "Productive failure is a learning design where individuals are allowed to fail in a managed..",
-    date: "10/07/2025",
-    requestedBy: "J. David",
-    status: "New",
-  },
-  {
-    id: 2,
-    title: "Productivity failure",
-    description: "Productive failure is a learning design where individuals are allowed to fail in a managed..",
-    date: "10/07/2025",
-    requestedBy: "J. David",
-    status: "Rejected",
-  },
-  {
-    id: 3,
-    title: "Productivity failure",
-    description: "Productive failure is a learning design where individuals are allowed to fail in a managed..",
-    date: "10/07/2025",
-    requestedBy: "J. David",
-    status: "Accepted",
-  },
-  {
-    id: 4,
-    title: "Productivity failure",
-    description: "Productive failure is a learning design where individuals are allowed to fail in a managed..",
-    date: "10/07/2025",
-    requestedBy: "J. David",
-    status: "Resolved",
-  },
-  {
-    id: 1,
-    title: "Productivity failure",
-    description: "Productive failure is a learning design where individuals are allowed to fail in a managed..",
-    date: "10/07/2025",
-    requestedBy: "J. David",
-    status: "New",
-  },
-  {
-    id: 2,
-    title: "Productivity failure",
-    description: "Productive failure is a learning design where individuals are allowed to fail in a managed..",
-    date: "10/07/2025",
-    requestedBy: "J. David",
-    status: "Rejected",
-  },
-  {
-    id: 3,
-    title: "Productivity failure",
-    description: "Productive failure is a learning design where individuals are allowed to fail in a managed..",
-    date: "10/07/2025",
-    requestedBy: "J. David",
-    status: "Accepted",
-  },
-  {
-    id: 4,
-    title: "Productivity failure",
-    description: "Productive failure is a learning design where individuals are allowed to fail in a managed..",
-    date: "10/07/2025",
-    requestedBy: "J. David",
-    status: "Resolved",
-  },
-  {
-    id: 1,
-    title: "Productivity failure",
-    description: "Productive failure is a learning design where individuals are allowed to fail in a managed..",
-    date: "10/07/2025",
-    requestedBy: "J. David",
-    status: "New",
-  },
-  {
-    id: 2,
-    title: "Productivity failure",
-    description: "Productive failure is a learning design where individuals are allowed to fail in a managed..",
-    date: "10/07/2025",
-    requestedBy: "J. David",
-    status: "Rejected",
-  },
-  {
-    id: 3,
-    title: "Productivity failure",
-    description: "Productive failure is a learning design where individuals are allowed to fail in a managed..",
-    date: "10/07/2025",
-    requestedBy: "J. David",
-    status: "Accepted",
-  },
-  {
-    id: 4,
-    title: "Productivity failure",
-    description: "Productive failure is a learning design where individuals are allowed to fail in a managed..",
-    date: "10/07/2025",
-    requestedBy: "J. David",
-    status: "Resolved",
-  },
   {
     id: 1,
     title: "Productivity failure",
@@ -165,8 +70,61 @@ const schedules = {
       venue: "Library front",
       image: "/api/placeholder/60/60",
     },
+    {
+      name: "Mahesh Kumar",
+      time: "10.00 AM to 11.00 AM",
+      contact: "9654781231",
+      venue: "Library front",
+      image: "/api/placeholder/60/60",
+    },
+    {
+      name: "Mahesh Kumar",
+      time: "10.00 AM to 11.00 AM",
+      contact: "9654781231",
+      venue: "Library front",
+      image: "/api/placeholder/60/60",
+    },
+    {
+      name: "Mahesh Kumar",
+      time: "10.00 AM to 11.00 AM",
+      contact: "9654781231",
+      venue: "Library front",
+      image: "/api/placeholder/60/60",
+    },
   ],
   accepted: [
+    {
+      name: "Mahesh Kumar",
+      time: "11.00 AM to 12.00 PM",
+      contact: "9654781231",
+      venue: "Library front",
+      date: "15/02/25",
+      image: "/api/placeholder/60/60",
+    },
+    {
+      name: "Mahesh Kumar",
+      time: "11.00 AM to 12.00 PM",
+      contact: "9654781231",
+      venue: "Library front",
+      date: "15/02/25",
+      image: "/api/placeholder/60/60",
+    },
+    {
+      name: "Mahesh Kumar",
+      time: "11.00 AM to 12.00 PM",
+      contact: "9654781231",
+      venue: "Library front",
+      date: "15/02/25",
+      image: "/api/placeholder/60/60",
+    },
+    {
+      name: "Mahesh Kumar",
+      time: "11.00 AM to 12.00 PM",
+      contact: "9654781231",
+      venue: "Library front",
+      date: "15/02/25",
+      image: "/api/placeholder/60/60",
+    },
     {
       name: "Mahesh Kumar",
       time: "11.00 AM to 12.00 PM",
@@ -193,7 +151,32 @@ const schedules = {
       date: "15/02/25",
       image: "/api/placeholder/60/60",
     },
+    {
+      name: "Mahesh Kumar",
+      time: "11.00 AM to 12.00 PM",
+      contact: "9654781231",
+      venue: "Library front",
+      date: "15/02/25",
+      image: "/api/placeholder/60/60",
+    },
+    {
+      name: "Mahesh Kumar",
+      time: "11.00 AM to 12.00 PM",
+      contact: "9654781231",
+      venue: "Library front",
+      date: "15/02/25",
+      image: "/api/placeholder/60/60",
+    },
+    {
+      name: "Mahesh Kumar",
+      time: "11.00 AM to 12.00 PM",
+      contact: "9654781231",
+      venue: "Library front",
+      date: "15/02/25",
+      image: "/api/placeholder/60/60",
+    },
   ],
+  
 };
 
 // Status Badge Component
