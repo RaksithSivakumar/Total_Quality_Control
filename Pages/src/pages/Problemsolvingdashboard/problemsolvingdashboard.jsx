@@ -414,10 +414,7 @@ function Problemsolver() {
           </div>
         </DialogActions>
       </Dialog>
-      <LogCreation
-        open={openLogCreation}
-        onClose={() => setOpenLogCreation(false)}
-      />
+      <LogCreation open={openLogCreation} onClose={() => setOpenLogCreation(false)} />
       <Rejected open={openRejected} onClose={() => setOpenRejected(false)} />
       <Accepted open={openAccepted} onClose={() => setOpenAccepted(false)} />
     </div>
