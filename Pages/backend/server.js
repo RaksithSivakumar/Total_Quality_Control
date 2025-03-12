@@ -53,6 +53,119 @@ app.post("/api/login", (req, res) => {
     }
   });
 });
+// GET API to retrieve all records from master_problem table
+app.get("/api/master_problem", (req, res) => {
+  const query = "SELECT * FROM master_problem";
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching data: ", err);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+    res.status(200).json(results);
+  });
+});
+// POST API to handle adding a new problem to master_problem table
+app.post("/api/master_problem", (req, res) => {
+  const { Category, Problem_Title, Description, Media_Upload, Questions, created_by } = req.body;
+  // Validate input
+  if (!Category || !Problem_Title || !Description || !Media_Upload || !Questions || !created_by) {
+    return res.status(400).json({ message: "All fields are required." });
+  }
+  // Insert new problem into the database
+  const query = "INSERT INTO master_problem (Category, `Problem Title`, Description, Media_Upload, Questions, created_at, created_by) VALUES (?, ?, ?, ?, ?, NOW(), ?)";
+  db.query(query, [Category, Problem_Title, Description, Media_Upload, Questions, created_by], (err, results) => {
+    if (err) {
+      console.error("Error inserting data: ", err);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+    res.status(201).json({ message: "Problem added successfully", id: results.insertId });
+  });
+ 
+ // GET API to retrieve all records from master_supervisor table
+app.get("/api/supervisor", (req, res) => {
+    const query = "SELECT * FROM master_supervisor";
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error("Error fetching data: ", err);
+            return res.status(500).json({ error: "Internal server error" });
+        }
+        res.status(200).json(results);
+    });
+});
+// POST API to handle adding a new supervisor problem to master_supervisor table
+app.post("/api/supervisor", (req, res) => {
+    const { Category, Problem_Title, Description, Media_Upload, Questions, status, created_by } = req.body;
+    // Validate input
+    if (!Category || !Problem_Title || !Description || !Media_Upload || !Questions || !status || !created_by) {
+        return res.status(400).json({ message: "All fields are required." });
+    }
+    // Insert new supervisor problem into the database
+    const query = "INSERT INTO master_supervisor (Category, `Problem Title`, Description, Media_Upload, Questions, status, created_at, created_by) VALUES (?, ?, ?, ?, ?, ?, NOW(), ?)";
+    db.query(query, [Category, Problem_Title, Description, Media_Upload, Questions, status, created_by], (err, results) => {
+        if (err) {
+            console.error("Error inserting data: ", err);
+            return res.status(500).json({ error: "Internal server error" });
+        }
+        res.status(201).json({ message: "Supervisor problem added successfully", id: results.insertId });
+    });
+});
+});
+app.get("/api/prsolving", (req, res) => {
+  const query = "SELECT * FROM master_prsolving";
+  db.query(query, (err, results) => {
+      if (err) {
+          console.error("Error fetching data: ", err);
+          return res.status(500).json({ error: "Internal server error" });
+      }
+      res.status(200).json(results);
+  });
+});
+// POST API to handle adding a new problem to master_prsolving table
+app.post("/api/prsolving", (req, res) => {
+  const { Category, Problem_Title, Description, Media_Upload, Questions, status_pr, deadline, created_by } = req.body;
+  // Validate input
+  if (!Category || !Problem_Title || !Description || !Media_Upload || !Questions || !status_pr || !deadline || !created_by) {
+      return res.status(400).json({ message: "All fields are required." });
+  }
+  // Insert new problem into the database
+  const query = "INSERT INTO master_prsolving (Category, `Problem Title`, Description, Media_Upload, Questions, status_pr, deadline, created_at, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)";
+  db.query(query, [Category, Problem_Title, Description, Media_Upload, Questions, status_pr, deadline, created_by], (err, results) => {
+      if (err) {
+          console.error("Error inserting data: ", err);
+          return res.status(500).json({ error: "Internal server error" });
+      }
+      res.status(201).json({ message: "Problem added successfully", id: results.insertId });
+  });
+});
+
+app.get("/api/maintenance", (req, res) => {
+  const query = "SELECT * FROM master_problem";
+  db.query(query, (err, results) => {
+      if (err) {
+          console.error("Error fetching data: ", err);
+          return res.status(500).json({ error: "Internal server error" });
+      }
+      res.status(200).json(results);
+  });
+});
+// POST API to handle adding a new problem to master_problem table for maintenance
+app.post("/api/maintenance", (req, res) => {
+  const { Category, Problem_Title, Description, Media_Upload, Questions, created_by } = req.body;
+  // Validate input
+  if (!Category || !Problem_Title || !Description || !Media_Upload || !Questions || !created_by) {
+      return res.status(400).json({ message: "All fields are required." });
+  }
+  // Insert new problem into the database
+  const query = "INSERT INTO master_problem (Category, `Problem Title`, Description, Media_Upload, Questions, created_at, created_by) VALUES (?, ?, ?, ?, ?, NOW(), ?)";
+  db.query(query, [Category, Problem_Title, Description, Media_Upload, Questions, created_by], (err, results) => {
+      if (err) {
+          console.error("Error inserting data: ", err);
+          return res.status(500).json({ error: "Internal server error" });
+      }
+      res.status(201).json({ message: "Problem added successfully", id: results.insertId });
+  });
+});
+
 // Start server
 const PORT = 5000;
 app.listen(PORT, () => {
