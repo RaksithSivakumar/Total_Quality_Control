@@ -36,7 +36,6 @@ function ProblemRaisorDashboard() {
       startTime: "9:00",
       endTime: "10:00",
       timePosition: 1, // Position based on timeSlots index
-      hasPlayButton: false,
       profileImage: null,
     },
     {
@@ -47,7 +46,6 @@ function ProblemRaisorDashboard() {
       startTime: "10:00",
       endTime: "11:00",
       timePosition: 2, // Position based on timeSlots index
-      hasPlayButton: true,
       profileImage: "/placeholder.svg?height=40&width=40",
     },
   ];

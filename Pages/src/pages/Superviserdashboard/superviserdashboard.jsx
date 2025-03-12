@@ -76,7 +76,7 @@ const SupervisorDashboard = () => {
         <span
           className={`cursor-pointer pb-1 ${
             activeTab === "Accepted"
-              ? "text-orange-500 border-b-2 border-orange-500"
+              ? "text-orange-500 border-b-2 border-[#FF7622]-500"
               : "text-gray-500"
           }`}
           onClick={() => setActiveTab("Accepted")}
