@@ -21,53 +21,58 @@ const LoginPage = () => {
     setSuccess(""); // Clear any previous success messages
   };
   // Handle form submission
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
-  setSuccess("");
-  // Validate all fields
-  if (!email || !password) {
-    setError("All fields are required.");
-    return;
-  }
-  // API endpoint
-  const endpoint = "http://localhost:5000/api/login"; // Add your API endpoint here
-  const payload = { email, password }; // Create payload for the request
-  try {
-    // Send API request using axios
-    const response = await axios.post(endpoint, payload);
-    if (response.status === 200) {
-      setSuccess("Login successful!");
-      // Get the role from the response
-      const userRole = response.data.user.role; // Assuming the backend sends the role
-      // Redirect based on role
-      switch (userRole.toLowerCase()) {
-        case "student":
-          navigate("/Problemrd");
-          break;
-        case "supervisor":
-          navigate("/Superviser");
-          break;
-        case "problem solving team":
-          navigate("/Problemsol");
-          break;
-        case "maintainance":
-          navigate("/Maintain");
-          break;
-        default:
-          setError("Invalid role.");
-          break;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    // Validate all fields
+    if (!email || !password || !role) {
+      setError("All fields are required.");
+      return;
+    }
+    // Validate password during registration
+    if (isRegistering && !validatePassword(password)) {
+      setError(
+        "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character."
+      );
+      return;
+    }
+    // API endpoint
+    const endpoint = "http://localhost:5000/api/login"; // Add your API endpoint here
+    const payload = { email, password, role }; // Create payload for the request
+    try {
+      // Send API request using axios
+      const response = await axios.post(endpoint, payload);
+      if (response.status === 200) {
+        setSuccess("Login successful!");
+        // Redirect based on role
+        switch (role) {
+          case "student":
+            navigate("/Problemrd"); // Use navigate instead of history.push
+            break;
+          case "":
+            navigate("/Superviser");
+            break;
+          case "Problem Solving Team":
+            navigate("/Problemsol");
+            break;
+          case "Maintainance":
+            navigate("/Maintain");
+            break;
+          default:
+            setError("Invalid role.");
+            break;
+        }
+      }
+    } catch (err) {
+      // Handle errors
+      if (err.response) {
+        setError(err.response.data.message || "An error occurred.");
+      } else {
+        setError("Network error. Please try again.");
       }
     }
-  } catch (err) {
-    // Handle errors
-    if (err.response) {
-      setError(err.response.data.message || "An error occurred.");
-    } else {
-      setError("Network error. Please try again.");
-    }
-  }
-};
+  };
   return (
     <div className="flex justify-center items-center h-screen bg-amber-50 p-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
