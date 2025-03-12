@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 /* Hide scrollbar for Chrome, Safari, and Opera */
@@ -37,4 +38,37 @@
 .scrollbar-hidden {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+}
+
+/* src/pages/Login/Login.css */
+/* Mobile responsive styles */
+@media (max-width: 870px) {
+  .sign-up-mode:before {
+    transform: translate(-50%, 100%);
+    bottom: 32%;
+    right: initial;
+  }
+  
+  /* Additional mobile styles to match the original CSS */
+  .panel {
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    padding: 2.5rem 8%;
+    grid-column: 1 / 2;
+  }
+  
+  .image {
+    width: 200px;
+  }
+}
+
+@media (max-width: 570px) {
+  .image {
+    display: none;
+  }
+  
+  .panel .content {
+    padding: 0.5rem 1rem;
+  }
 }

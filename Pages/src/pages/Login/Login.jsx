@@ -21,53 +21,53 @@ const LoginPage = () => {
     setSuccess(""); // Clear any previous success messages
   };
   // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-    // Validate all fields
-    if (!email || !password) {
-      setError("All fields are required.");
-      return;
-    }
-    // API endpoint
-    const endpoint = "http://localhost:5000/api/login"; // Add your API endpoint here
-    const payload = { email, password }; // Create payload for the request
-    try {
-      // Send API request using axios
-      const response = await axios.post(endpoint, payload);
-      if (response.status === 200) {
-        setSuccess("Login successful!");
-        // Get the role from the response
-        const userRole = response.data.user.role; // Assuming the backend sends the role
-        // Redirect based on role
-        switch (userRole.toLowerCase()) {
-          case "student":
-            navigate("/Problemrd");
-            break;
-          case "supervisor":
-            navigate("/Superviser");
-            break;
-          case "problem_solving_team":
-            navigate("/Problemsol");
-            break;
-          case "maintainance":
-            navigate("/Maintain");
-            break;
-          default:
-            setError("Invalid role.");
-            break;
-        }
-      }
-    } catch (err) {
-      // Handle errors
-      if (err.response) {
-        setError(err.response.data.message || "An error occurred.");
-      } else {
-        setError("Network error. Please try again.");
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+  setSuccess("");
+  // Validate all fields
+  if (!email || !password) {
+    setError("All fields are required.");
+    return;
+  }
+  // API endpoint
+  const endpoint = "http://localhost:5000/api/login"; // Add your API endpoint here
+  const payload = { email, password }; // Create payload for the request
+  try {
+    // Send API request using axios
+    const response = await axios.post(endpoint, payload);
+    if (response.status === 200) {
+      setSuccess("Login successful!");
+      // Get the role from the response
+      const userRole = response.data.user.role; // Assuming the backend sends the role
+      // Redirect based on role
+      switch (userRole.toLowerCase()) {
+        case "student":
+          navigate("/Problemrd");
+          break;
+        case "supervisor":
+          navigate("/Superviser");
+          break;
+        case "problem solving team":
+          navigate("/Problemsol");
+          break;
+        case "maintainance":
+          navigate("/Maintain");
+          break;
+        default:
+          setError("Invalid role.");
+          break;
       }
     }
-  };
+  } catch (err) {
+    // Handle errors
+    if (err.response) {
+      setError(err.response.data.message || "An error occurred.");
+    } else {
+      setError("Network error. Please try again.");
+    }
+  }
+};
   return (
     <div className="flex justify-center items-center h-screen bg-amber-50 p-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
