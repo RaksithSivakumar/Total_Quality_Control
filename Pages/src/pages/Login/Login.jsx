@@ -17,7 +17,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50 p-4">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
       <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 w-full max-w-md">
         <div className="text-center">
           {/* Use the imported ProjectLogo variable */}
