@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Google } from "@mui/icons-material";
-import ProjectLogo from "../../../public/ProjectLogo.svg";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ToastContainer, toast } from 'react-toastify'; // Import ToastContainer and toast
 import 'react-toastify/dist/ReactToastify.css'; // Import Toastify CSS
-const LoginPage = () => {
+import ProjectLogo from "../../assets/Images/ProjectLogo.svg"; // Correct path
+ 
+ 
+ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -34,26 +36,31 @@ const LoginPage = () => {
           navigate("/Maintain");
           break;
         default:
-          toast.error("Invalid role or login failed."); // Use toast for error
+
+          alert("Invalid role or login failed.");
           break;
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Login failed. Please check your credentials."); // Use toast for error
+
+      alert("Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
   };
+
   const handleGooglesignin = () => {
-    // Google sign-in logic here (not implemented in this example)
+    // Google sign-in logic here
   };
+
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50 p-4">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
       <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 w-full max-w-md">
         <div className="text-center">
           <img
-            src={ProjectLogo}
-            alt="Tqc"
+
+            src={ProjectLogo} // Use the imported SVG
+            alt="Total Quality Circle"
             className="w-20 mx-auto mb-6"
           />
           <h2 className="text-2xl font-semibold text-gray-800 mb-2">
@@ -90,7 +97,7 @@ const LoginPage = () => {
             className="w-full px-3 py-2 border border-transparent bg-[#FF7622] rounded-md focus:outline-none transition-colors text-white"
             disabled={loading}
           >
-            {loading ? "Logging in..." : "Login"} 
+            {loading ? "Logging in..." : "Login"}
           </button>
           <button
             type="button"
@@ -110,4 +117,5 @@ const LoginPage = () => {
     </div>
   );
 };
+
 export default LoginPage;

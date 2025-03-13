@@ -7,9 +7,10 @@ import Card from "../../components/problem/Card";
 import LogCreation from "../../components/Popups/LogCreation";
 import Rejected from "../../components/Popups/Rejected";
 import Accepted from "../../components/Popups/Accepted";
-import axios from 'axios'; // Import Axios
-const Dashboard = () => {
-  // State variables
+ import axios from 'axios'; // Import Axios
+  
+const FormDashboard = () => {
+   // State variables
   const [open, setOpen] = useState(false);
   const [openLogCreation, setOpenLogCreation] = useState(false); // For LogCreation popup
   const [openRejected, setOpenRejected] = useState(false); // For Rejected popup
@@ -350,4 +351,7 @@ const Dashboard = () => {
     </div>
   );
 };
-export default Dashboard;
+ 
+
+export default FormDashboard;
+ 
