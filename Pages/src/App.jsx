@@ -84,7 +84,7 @@ const App = ({ image = "/placeholder.svg?height=60&width=60" }) => {
 
   // Handle back button click
   const handleBackClick = () => {
-    navigate(-1); // Navigate back to the previous page
+    navigate(); // Navigate back to the previous page
   };
 
   return (
