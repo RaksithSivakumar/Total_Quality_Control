@@ -8,7 +8,7 @@ import LogCreation from "../../components/Popups/LogCreation";
 import Rejected from "../../components/Popups/Rejected";
 import Accepted from "../../components/Popups/Accepted";
 
-const Dashboard = () => {
+const FormDashboard = () => {
   // State variables
   const [open, setOpen] = useState(false);
   const [openLogCreation, setOpenLogCreation] = useState(false); // For LogCreation popup
@@ -422,4 +422,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default FormDashboard;
