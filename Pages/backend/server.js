@@ -214,8 +214,67 @@ app.post("/api/maintenance", (req, res) => {
   });
 });
 
+ const { OAuth2Client } = require('google-auth-library');
 
+ 
+// Middleware
+app.use(cors({
+  origin: 'http://localhost:5173', // Your frontend URL
+  credentials: true
+}));
+app.use(express.json());
 
+// Debug middleware
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+
+// Test route
+app.get('/', (req, res) => {
+  res.send('Server is running');
+});
+
+// Google OAuth client
+const client = new OAuth2Client('275309862189-naca865pd0dri3lh5h76ng3m2m6vqh4q.apps.googleusercontent.com');
+
+// Google login route
+app.post('/api/google-login', async (req, res) => {
+  console.log('Received Google login request:', req.body);
+  try {
+    const { credential } = req.body;
+    
+    // Verify the Google ID token
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: '275309862189-naca865pd0dri3lh5h76ng3m2m6vqh4q.apps.googleusercontent.com',
+    });
+    
+    const payload = ticket.getPayload();
+    console.log('Google payload:', payload);
+    
+    // For testing, return a simple success response
+    return res.status(200).json({
+      success: true,
+      user: {
+        email: payload.email,
+        name: payload.name,
+        role: 'student' // Default role
+      }
+    });
+  } catch (error) {
+    console.error('Google login error:', error);
+    return res.status(401).json({
+      success: false,
+      message: 'Google authentication failed'
+    });
+  }
+});
+
+// Regular login route
+app.post('/api/login', (req, res) => {
+  // Your existing login logic
+});
 
 // Start server
 const PORT = 5000;
