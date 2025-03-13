@@ -1,15 +1,17 @@
 import React, { useState } from "react";
 import { Google } from "@mui/icons-material";
-import ProjectLogo from "../../assets/Images/ProjectLogo.svg"; // Correct path
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
-const LoginPage = () => {
+import { ToastContainer, toast } from 'react-toastify'; // Import ToastContainer and toast
+import 'react-toastify/dist/ReactToastify.css'; // Import Toastify CSS
+import ProjectLogo from "../../assets/Images/ProjectLogo.svg"; // Correct path
+ 
+ 
+ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -20,7 +22,6 @@ const LoginPage = () => {
       });
       console.log("Response data:", response.data);
       const { role } = response.data.user;
-
       switch (role) {
         case "student":
           navigate("/Problemrd");
@@ -35,11 +36,13 @@ const LoginPage = () => {
           navigate("/Maintain");
           break;
         default:
+
           alert("Invalid role or login failed.");
           break;
       }
     } catch (error) {
       console.error("Login error:", error);
+
       alert("Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
@@ -55,6 +58,7 @@ const LoginPage = () => {
       <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 w-full max-w-md">
         <div className="text-center">
           <img
+
             src={ProjectLogo} // Use the imported SVG
             alt="Total Quality Circle"
             className="w-20 mx-auto mb-6"
@@ -109,6 +113,7 @@ const LoginPage = () => {
           </button>
         </form>
       </div>
+      <ToastContainer /> {/* Add ToastContainer here */}
     </div>
   );
 };
