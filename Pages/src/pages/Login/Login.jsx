@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import ProjectLogo from "../../assets/Images/ProjectLogo.svg";
+import { ToastContainer, toast } from 'react-toastify'; // Import ToastContainer and toast
+import 'react-toastify/dist/ReactToastify.css'; // Import Toastify CSS
+import ProjectLogo from "../../assets/Images/ProjectLogo.svg"; // Correct path
 import GoogleLogo from "../../assets/Images/google.png"; // Import the Google logo
 
 const LoginPage = () => {
@@ -22,6 +22,8 @@ const LoginPage = () => {
       });
       console.log("Response data:", response.data);
       const { role } = response.data.user;
+      // Show success toast
+      toast.success("Login successful!");
       switch (role) {
         case "student":
           navigate("/Problemrd");
@@ -36,26 +38,28 @@ const LoginPage = () => {
           navigate("/Maintain");
           break;
         default:
+          toast.error("Invalid role or login failed.");
+
           alert("Invalid role or login failed.");
           break;
       }
     } catch (error) {
       console.error("Login error:", error);
+      toast.error("Login failed. Please check your credentials.");
       alert("Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
   };
-
   const handleGooglesignin = () => {
-    // Google sign-in logic here
+    toast.error("Login failed. Please check your credentials.");
   };
-
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
       <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 w-full max-w-md">
         <div className="text-center">
           <img
+
             src={ProjectLogo}
             alt="Total Quality Circle"
             className="w-20 mx-auto mb-6"
@@ -114,5 +118,4 @@ const LoginPage = () => {
     </div>
   );
 };
-
 export default LoginPage;
