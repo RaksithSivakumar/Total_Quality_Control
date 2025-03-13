@@ -2,12 +2,15 @@ import { useState, useRef } from "react";
 import { Filter, PlusCircle, Clock } from "lucide-react";
 import { IoSearchOutline } from "react-icons/io5";
 import Input from "../input/Input";
+import { useNavigate } from "react-router-dom";
 
 const ApprovalsPanel = ({ approvals, onCardClick }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState([]); 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterButtonRef = useRef(null);
+  const navigate = useNavigate();
+
 
   const filteredApprovals = approvals.filter((approval) => {
     const matchesSearch = approval.title
@@ -28,6 +31,11 @@ const ApprovalsPanel = ({ approvals, onCardClick }) => {
         ? prev.filter((s) => s !== status)
         : [...prev, status]
     );
+  };
+
+  const handleCreate = () => {
+    console.log("Create event");
+    navigate("/survey");
   };
 
   const handleClear = () => {
@@ -67,7 +75,7 @@ const ApprovalsPanel = ({ approvals, onCardClick }) => {
             <Filter className="h-4 w-4" />
             Filter
           </button>
-          <button className="flex items-center text-orange-500 text-sm font-medium px-3 py-2 border border-orange-200 rounded-md hover:bg-orange-50 transition-colors">
+          <button className="flex items-center text-orange-500 text-sm font-medium px-3 py-2 border border-orange-200 rounded-md hover:bg-orange-50 transition-colors" onClick={handleCreate}>
             <PlusCircle className="h-4 w-4 mr-1" />
             Add New
           </button>

@@ -1,7 +1,4 @@
-"use client"
-import { FaBell } from "react-icons/fa"
-
-function Header({ username, onFilterClick }) {
+function Header({ username }) {
   return (
     <div className="flex justify-between items-center mb-6">
       <div className="flex items-center gap-4">
@@ -27,9 +24,6 @@ function Header({ username, onFilterClick }) {
           </div>
         </div>
       </div>
-      <button onClick={onFilterClick} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-        <FaBell className="text-gray-500 text-xl" />
-      </button>
     </div>
   )
 }
