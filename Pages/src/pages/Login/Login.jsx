@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const LoginPage = () => {
@@ -8,6 +9,8 @@ const LoginPage = () => {
   const [role, setRole] = useState("Student");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const navigate = useNavigate();
 
   // Password validation
   const validatePassword = (password) => {
@@ -22,52 +25,56 @@ const LoginPage = () => {
     setSuccess(""); // Clear any previous success messages
   };
 
+  const handleSubmit = () => {
+    navigate("/Problemrd");
+  }
+
   // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setError("");
+  //   setSuccess("");
 
-    // Validate all fields
-    if (!email || !password || !role) {
-      setError("All fields are required.");
-      return;
-    }
+  //   // Validate all fields
+  //   if (!email || !password || !role) {
+  //     setError("All fields are required.");
+  //     return;
+  //   }
 
-    // Validate password during registration
-    if (isRegistering && !validatePassword(password)) {
-      setError(
-        "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character."
-      );
-      return;
-    }
+  //   // Validate password during registration
+  //   if (isRegistering && !validatePassword(password)) {
+  //     setError(
+  //       "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character."
+  //     );
+  //     return;
+  //   }
 
-    // API endpoint
-    const endpoint = isRegistering ? "http://localhost:5000/register" : "http://localhost:5000/login";
-    const payload = { email, password, role };
+  //   // API endpoint
+  //   const endpoint = isRegistering ? "http://localhost:5000/register" : "http://localhost:5000/login";
+  //   const payload = { email, password, role };
 
-    try {
-      // Send API request using axios
-      const response = await axios.post(endpoint, payload);
+  //   try {
+  //     // Send API request using axios
+  //     const response = await axios.post(endpoint, payload);
 
-      if (response.status === 201 || response.status === 200) {
-        if (isRegistering) {
-          setSuccess("Registration successful! Redirecting to login...");
-          setTimeout(() => setIsRegistering(false), 2000); // Switch to login page after delay
-        } else {
-          setSuccess("Login successful!");
-          // Here you would typically redirect or store auth token
-        }
-      }
-    } catch (err) {
-      // Handle errors
-      if (err.response) {
-        setError(err.response.data.message || "An error occurred.");
-      } else {
-        setError("Network error. Please try again.");
-      }
-    }
-  };
+  //     if (response.status === 201 || response.status === 200) {
+  //       if (isRegistering) {
+  //         setSuccess("Registration successful! Redirecting to login...");
+  //         setTimeout(() => setIsRegistering(false), 2000); // Switch to login page after delay
+  //       } else {
+  //         setSuccess("Login successful!");
+  //         // Here you would typically redirect or store auth token
+  //       }
+  //     }
+  //   } catch (err) {
+  //     // Handle errors
+  //     if (err.response) {
+  //       setError(err.response.data.message || "An error occurred.");
+  //     } else {
+  //       setError("Network error. Please try again.");
+  //     }
+  //   }
+  // };
 
   return (
     <div className="flex justify-center items-center h-screen bg-amber-50 p-4">
