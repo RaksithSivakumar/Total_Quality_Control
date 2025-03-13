@@ -40,13 +40,11 @@ const LoginPage = () => {
         default:
           toast.error("Invalid role or login failed.");
 
-          alert("Invalid role or login failed.");
           break;
       }
     } catch (error) {
       console.error("Login error:", error);
       toast.error("Login failed. Please check your credentials.");
-      alert("Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
