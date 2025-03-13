@@ -5,9 +5,7 @@ import axios from "axios";
 import { ToastContainer, toast } from 'react-toastify'; // Import ToastContainer and toast
 import 'react-toastify/dist/ReactToastify.css'; // Import Toastify CSS
 import ProjectLogo from "../../assets/Images/ProjectLogo.svg"; // Correct path
- 
- 
- const LoginPage = () => {
+const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,6 +20,8 @@ import ProjectLogo from "../../assets/Images/ProjectLogo.svg"; // Correct path
       });
       console.log("Response data:", response.data);
       const { role } = response.data.user;
+      // Show success toast
+     
       switch (role) {
         case "student":
           navigate("/Problemrd");
@@ -36,29 +36,23 @@ import ProjectLogo from "../../assets/Images/ProjectLogo.svg"; // Correct path
           navigate("/Maintain");
           break;
         default:
-
-          alert("Invalid role or login failed.");
+          toast.error("Invalid role or login failed.");
           break;
       }
     } catch (error) {
       console.error("Login error:", error);
-
-      alert("Login failed. Please check your credentials.");
+      toast.error("Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
   };
-
   const handleGooglesignin = () => {
-    // Google sign-in logic here
-  };
-
+   };
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
       <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 w-full max-w-md">
         <div className="text-center">
           <img
-
             src={ProjectLogo} // Use the imported SVG
             alt="Total Quality Circle"
             className="w-20 mx-auto mb-6"
@@ -117,5 +111,4 @@ import ProjectLogo from "../../assets/Images/ProjectLogo.svg"; // Correct path
     </div>
   );
 };
-
 export default LoginPage;
