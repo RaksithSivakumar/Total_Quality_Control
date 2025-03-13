@@ -1,17 +1,17 @@
 import React, { useState } from "react";
-import { Google } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { ToastContainer, toast } from 'react-toastify'; // Import ToastContainer and toast
-import 'react-toastify/dist/ReactToastify.css'; // Import Toastify CSS
-import ProjectLogo from "../../assets/Images/ProjectLogo.svg"; // Correct path
- 
- 
- const LoginPage = () => {
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import ProjectLogo from "../../assets/Images/ProjectLogo.svg";
+import GoogleLogo from "../../assets/Images/google.png"; // Import the Google logo
+
+const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -36,13 +36,11 @@ import ProjectLogo from "../../assets/Images/ProjectLogo.svg"; // Correct path
           navigate("/Maintain");
           break;
         default:
-
           alert("Invalid role or login failed.");
           break;
       }
     } catch (error) {
       console.error("Login error:", error);
-
       alert("Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
@@ -58,8 +56,7 @@ import ProjectLogo from "../../assets/Images/ProjectLogo.svg"; // Correct path
       <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 w-full max-w-md">
         <div className="text-center">
           <img
-
-            src={ProjectLogo} // Use the imported SVG
+            src={ProjectLogo}
             alt="Total Quality Circle"
             className="w-20 mx-auto mb-6"
           />
@@ -105,7 +102,7 @@ import ProjectLogo from "../../assets/Images/ProjectLogo.svg"; // Correct path
             className="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-md hover:shadow-sm transition-shadow"
           >
             <div className="flex items-center justify-center mr-3">
-              <Google className="w-5 h-5 text-gray-600" />
+              <img src={GoogleLogo} alt="Google Logo" className="w-5 h-5" />
             </div>
             <span className="text-gray-600 text-sm font-medium">
               Sign in with Google
@@ -113,7 +110,7 @@ import ProjectLogo from "../../assets/Images/ProjectLogo.svg"; // Correct path
           </button>
         </form>
       </div>
-      <ToastContainer /> {/* Add ToastContainer here */}
+      <ToastContainer />
     </div>
   );
 };
