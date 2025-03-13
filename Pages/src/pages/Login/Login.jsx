@@ -21,7 +21,7 @@ const LoginPage = () => {
       console.log("Response data:", response.data);
       const { role } = response.data.user;
       // Show success toast
-     
+      toast.success("Login successful!");
       switch (role) {
         case "student":
           navigate("/Problemrd");
@@ -47,7 +47,8 @@ const LoginPage = () => {
     }
   };
   const handleGooglesignin = () => {
-   };
+    toast.error("Login failed. Please check your credentials.");
+  };
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
       <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 w-full max-w-md">
