@@ -40,6 +40,7 @@ const LoginPage = () => {
           break;
         default:
           toast.error("Invalid role or login failed.");
+
           break;
       }
     } catch (error) {
