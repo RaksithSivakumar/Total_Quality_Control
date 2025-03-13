@@ -259,7 +259,7 @@ const FormDashboard = () => {
             <div className="w-full mt-4 flex flex-col lg:flex-row items-center">
               <input
                 type="text"
-                className="flex-1 px-3 py-2 text-sm rounded-md border border-[#FF7622] mr-0 lg:mr-2 mb-2 lg:mb-0"
+                className="flex-1 px-3 py-2 text-sm rounded-md border border-[#FF7622] focus:outline-none focus:ring-2 focus:ring-[#FF7622] focus:border-[#FF7622] transition-colors mr-0 lg:mr-2 mb-2 lg:mb-0"
                 placeholder="New Category Name"
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
