@@ -1,32 +1,44 @@
 import React, { useState, useRef, useEffect } from "react";
 import { IoArrowBack, IoSearchOutline, IoAdd } from "react-icons/io5";
 import { FiUpload } from "react-icons/fi";
-import { BiBold, BiItalic, BiUnderline, BiListOl, BiListUl, BiLink } from "react-icons/bi";
+import {
+  BiBold,
+  BiItalic,
+  BiUnderline,
+  BiListOl,
+  BiListUl,
+  BiLink,
+} from "react-icons/bi";
+import { useNavigate } from "react-router-dom"; // Use useNavigate instead of useRouter
 import Input from "../../components/input/Input";
 import Card from "../../components/problem/Card";
 import LogCreation from "../../components/Popups/LogCreation";
 import Rejected from "../../components/Popups/Rejected";
 import Accepted from "../../components/Popups/Accepted";
-import axios from 'axios'; // Import Axios
+import axios from "axios";
 
 const FormDashboard = () => {
+  const navigate = useNavigate(); // Initialize navigate
+
   // State variables
   const [open, setOpen] = useState(false);
-  const [openLogCreation, setOpenLogCreation] = useState(false); // For LogCreation popup
-  const [openRejected, setOpenRejected] = useState(false); // For Rejected popup
-  const [openAccepted, setOpenAccepted] = useState(false); // For Accepted popup
+  const [activePopup, setActivePopup] = useState(null); // For managing active popup
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [files, setFiles] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [fileError, setFileError] = useState("");
-  const [newCategoryName, setNewCategoryName] = useState(""); // Declare newCategoryName
+  const [newCategoryName, setNewCategoryName] = useState("");
   const [activeTab, setActiveTab] = useState("creation"); // 'creation' or 'problemBank'
   const [categories, setCategories] = useState([
     "Productivity failure",
     "Mismanagement",
     "Time Management",
     "Communication Issues",
-  ]); // Declare categories
+  ]);
+  const [problemTitle, setProblemTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [questions, setQuestions] = useState(["", "", "", "", ""]);
+
   const contentEditableRef = useRef(null);
   const scrollableRef = useRef(null);
 
@@ -35,7 +47,8 @@ const FormDashboard = () => {
     {
       title: "Productivity failure",
       status: "New",
-      description: "Productive failure is a learning design where individuals are allowed to fail in a managed way.",
+      description:
+        "Productive failure is a learning design where individuals are allowed to fail in a managed way.",
       date: "2023-10-15",
       author: "J. David",
       imageUrl: "/user1.jpg",
@@ -43,7 +56,8 @@ const FormDashboard = () => {
     {
       title: "Task Management",
       status: "Accepted",
-      description: "Effective task management strategies to improve productivity and focus.",
+      description:
+        "Effective task management strategies to improve productivity and focus.",
       date: "2023-10-14",
       author: "A. Smith",
       imageUrl: "/user2.jpg",
@@ -51,108 +65,133 @@ const FormDashboard = () => {
     {
       title: "Time Tracking",
       status: "Rejected",
-      description: "Tools and techniques for tracking time and improving efficiency.",
+      description:
+        "Tools and techniques for tracking time and improving efficiency.",
       date: "2023-10-13",
       author: "A. Johnson",
       imageUrl: "/user3.jpg",
     },
-    // Additional card data...
   ];
+
   // Filter cards based on search query
   const filteredCards = cardData.filter(
     (card) =>
       card.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       card.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      card.author.toLowerCase().includes(searchQuery.toLowerCase()),
+      card.author.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
   // Handle card click
   const handleCardClick = (card) => {
-    console.log("Card clicked:", card); // Debugging
     if (card.status === "New") {
-      console.log("Opening LogCreation popup"); // Debugging
-      setOpenLogCreation(true); // Open LogCreation popup
+      setActivePopup("LogCreation");
     } else if (card.status === "Rejected") {
-      console.log("Opening Rejected popup"); // Debugging
-      setOpenRejected(true); // Open Rejected popup
+      setActivePopup("Rejected");
     } else if (card.status === "Accepted") {
-      console.log("Opening Accepted popup"); // Debugging
-      setOpenAccepted(true); // Open Accepted popup
+      setActivePopup("Accepted");
     }
   };
 
+  // Apply formatting to contentEditable
   const applyFormatting = (command, value = null) => {
     if (contentEditableRef.current) {
       document.execCommand(command, false, value);
     }
   };
 
+  // Toggle category selection
   const toggleCategory = (category) => {
     setSelectedCategory(category === selectedCategory ? null : category);
   };
 
+  // Add new category
   const handleAddNewCategory = () => {
     if (newCategoryName.trim() !== "") {
-      setCategories([...categories, newCategoryName]); // Add new category
-      setNewCategoryName(""); // Clear the input field
+      setCategories([...categories, newCategoryName]);
+      setNewCategoryName("");
     }
   };
 
+  // Handle file upload
   const handleFileChange = (event) => {
     const selectedFiles = Array.from(event.target.files);
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+
     if (selectedFiles.length + files.length > 5) {
       setFileError("You can upload a maximum of 5 files.");
       return;
     }
+
+    const invalidFiles = selectedFiles.filter(
+      (file) => !allowedTypes.includes(file.type) || file.size > maxSize
+    );
+
+    if (invalidFiles.length > 0) {
+      setFileError("Invalid file type or size. Only JPEG, PNG, and PDF files under 5MB are allowed.");
+      return;
+    }
+
     setFileError("");
     setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
   };
 
+  // Remove file
   const handleRemoveFile = (index) => {
     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
+  // Handle search input change
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
 
-  const handleCreate = async () => {
-    const problemTitle = document.querySelector("input[placeholder='Enter the problem']").value;
-    const description = contentEditableRef.current.innerText;
-    const questions = Array.from(document.querySelectorAll("input[placeholder='Type your answer']")).map(
-      (input) => input.value,
-    );
-    
-    // Prepare form data
-    const formData = new FormData();
-    formData.append('Category', selectedCategory);
-    formData.append('Problem_Title', problemTitle);
-    formData.append('Description', description);
-    files.forEach(file => {
-      formData.append('Media_Upload', file); // Append each file to the form data
-    });
-    formData.append('Questions', JSON.stringify(questions)); // Convert questions to JSON string
-    formData.append('created_by', 'YourUser'); // Replace with actual user info
-    // Send POST request
-    // console.log("Form Dataaa:", formData);
-    try {
-      const response = await axios.post('http://localhost:5000/api/master_problem', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-         },
+  // Handle back button click
+  const handleBackClick = () => {
+    navigate(-1); // Navigate back
+  };
 
-      });
-      console.log("Responsess:", response.data);
+  // Handle form submission
+  const handleCreate = async () => {
+    if (!selectedCategory) {
+      alert("Please select a category.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("Category", selectedCategory);
+    formData.append("Problem_Title", problemTitle);
+    formData.append("Description", description);
+    files.forEach((file) => {
+      formData.append("Media_Upload", file);
+    });
+    formData.append("Questions", JSON.stringify(questions));
+    formData.append("created_by", "YourUser"); // Replace with actual user info
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/master_problem",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log("Response:", response.data);
       alert("Form submitted successfully!");
     } catch (error) {
       console.error("Error submitting form:", error);
       alert("Error submitting form.");
     }
   };
+
+  // Scroll to bottom when cardData changes
   useEffect(() => {
     if (scrollableRef.current) {
       scrollableRef.current.scrollTop = scrollableRef.current.scrollHeight;
     }
-  }, [cardData]);
+  }, [cardData.length]);
 
   return (
     <div className="min-h-screen bg-gray-50 scrollbar-hide">
@@ -160,13 +199,21 @@ const FormDashboard = () => {
         {/* Mobile Tab Navigation */}
         <div className="lg:hidden flex justify-around border-b border-gray-200 mb-4">
           <button
-            className={`py-2 px-4 ${activeTab === "creation" ? "border-b-2 border-orange-500 text-orange-500" : "text-gray-500"}`}
+            className={`py-2 px-4 ${
+              activeTab === "creation"
+                ? "border-b-2 border-orange-500 text-orange-500"
+                : "text-gray-500"
+            }`}
             onClick={() => setActiveTab("creation")}
           >
             Creation
           </button>
           <button
-            className={`py-2 px-4 ${activeTab === "problemBank" ? "border-b-2 border-orange-500 text-orange-500" : "text-gray-500"}`}
+            className={`py-2 px-4 ${
+              activeTab === "problemBank"
+                ? "border-b-2 border-orange-500 text-orange-500"
+                : "text-gray-500"
+            }`}
             onClick={() => setActiveTab("problemBank")}
           >
             Problem Bank
@@ -174,13 +221,22 @@ const FormDashboard = () => {
         </div>
 
         {/* Left side - Log creation form */}
-        <div className={`w-full lg:w-4/5 p-1 overflow-x-auto overflow-y-auto scrollbar-hide ${activeTab === 'problemBank' && 'hidden lg:block'}`}>
+        <div
+          className={`w-full lg:w-4/5 p-1 overflow-x-auto overflow-y-auto scrollbar-hide ${
+            activeTab === "problemBank" && "hidden lg:block"
+          }`}
+        >
           <div className="flex items-center mb-6">
-            <button className="text-gray-500 mr-3" onClick={() => setOpen(false)}>
+            <button
+              className="text-gray-500 mr-3"
+              onClick={handleBackClick}
+              aria-label="Go back"
+            >
               <IoArrowBack />
             </button>
             <h2 className="text-lg font-medium">Log creation</h2>
           </div>
+
           {/* Category */}
           <div className="mb-6">
             <h3 className="text-sm font-medium mb-3">Category</h3>
@@ -199,7 +255,7 @@ const FormDashboard = () => {
                 </button>
               ))}
             </div>
-            {/* Add New Button (Full Width) */}
+            {/* Add New Category */}
             <div className="w-full mt-4 flex flex-col lg:flex-row items-center">
               <input
                 type="text"
@@ -216,6 +272,7 @@ const FormDashboard = () => {
               </button>
             </div>
           </div>
+
           {/* Problem Title */}
           <div className="mb-6">
             <h3 className="text-sm font-medium mb-3">Problem Title</h3>
@@ -223,8 +280,11 @@ const FormDashboard = () => {
               type="text"
               placeholder="Enter the problem"
               className="w-full p-3 bg-gray-100 rounded-md border-none outline-none"
+              value={problemTitle}
+              onChange={(e) => setProblemTitle(e.target.value)}
             />
           </div>
+
           {/* Description */}
           <div className="mb-6">
             <h3 className="text-sm font-medium mb-3">Description</h3>
@@ -233,21 +293,23 @@ const FormDashboard = () => {
               contentEditable
               placeholder="Describe the issue..."
               className="w-full p-3 bg-gray-100 rounded-md border-none outline-none min-h-[100px] mb-2"
+              onInput={(e) => setDescription(e.target.innerText)}
+              dangerouslySetInnerHTML={{ __html: description }}
             ></div>
             <div className="flex gap-2 text-gray-500">
-              <button onClick={() => applyFormatting("bold")}>
+              <button onClick={() => applyFormatting("bold")} aria-label="Bold">
                 <BiBold />
               </button>
-              <button onClick={() => applyFormatting("italic")}>
+              <button onClick={() => applyFormatting("italic")} aria-label="Italic">
                 <BiItalic />
               </button>
-              <button onClick={() => applyFormatting("underline")}>
+              <button onClick={() => applyFormatting("underline")} aria-label="Underline">
                 <BiUnderline />
               </button>
-              <button onClick={() => applyFormatting("insertOrderedList")}>
+              <button onClick={() => applyFormatting("insertOrderedList")} aria-label="Ordered List">
                 <BiListOl />
               </button>
-              <button onClick={() => applyFormatting("insertUnorderedList")}>
+              <button onClick={() => applyFormatting("insertUnorderedList")} aria-label="Unordered List">
                 <BiListUl />
               </button>
               <button
@@ -255,15 +317,19 @@ const FormDashboard = () => {
                   const url = prompt("Enter the URL:");
                   if (url) applyFormatting("createLink", url);
                 }}
+                aria-label="Insert Link"
               >
                 <BiLink />
               </button>
             </div>
           </div>
+
           {/* Media Upload */}
           <div className="mb-6">
             <h3 className="text-sm font-medium mb-1">Media Upload</h3>
-            <p className="text-xs text-gray-500 mb-3">Add your documents here, and you can upload up to 5 files max</p>
+            <p className="text-xs text-gray-500 mb-3">
+              Add your documents here, and you can upload up to 5 files max
+            </p>
             <div className="border border-dashed border-orange-300 rounded-md p-8 flex flex-col items-center justify-center">
               {files.length > 0 ? (
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 w-full">
@@ -277,6 +343,7 @@ const FormDashboard = () => {
                       <button
                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-700"
                         onClick={() => handleRemoveFile(index)}
+                        aria-label="Remove file"
                       >
                         &times;
                       </button>
@@ -288,10 +355,17 @@ const FormDashboard = () => {
                   <div className="bg-orange-100 p-3 rounded-full text-orange-500 mb-3">
                     <FiUpload size={24} />
                   </div>
-                  <p className="text-sm text-gray-600 mb-1">Drag your file(s) to start uploading</p>
+                  <p className="text-sm text-gray-600 mb-1">
+                    Drag your file(s) to start uploading
+                  </p>
                   <p className="text-xs text-gray-500 mb-3">OR</p>
-                  {/* File Input */}
-                  <input type="file" id="file-upload" className="hidden" multiple onChange={handleFileChange} />
+                  <input
+                    type="file"
+                    id="file-upload"
+                    className="hidden"
+                    multiple
+                    onChange={handleFileChange}
+                  />
                   <label
                     htmlFor="file-upload"
                     className="px-4 py-2 border border-orange-500 text-orange-500 rounded-md text-sm cursor-pointer"
@@ -300,39 +374,58 @@ const FormDashboard = () => {
                   </label>
                 </>
               )}
-              {fileError && <p className="text-red-500 text-xs mt-2">{fileError}</p>}
+              {fileError && (
+                <p className="text-red-500 text-xs mt-2">{fileError}</p>
+              )}
             </div>
           </div>
+
           {/* Questions */}
           <div className="mb-6">
             <h3 className="text-sm font-medium mb-3">Questions</h3>
-            {[
-              "HAVE YOU TRIED TO SOLVE THE PROBLEM?",
-              "WHEN DID THE PROBLEM ARISE?",
-              "VENUE OF THE PROBLEM ARISE?",
-              "SPECIFICATION OF THE PROBLEM?",
-              "PROBLEM ARISE TIME?"
-            ].map((question, index) => (
+            {questions.map((question, index) => (
               <div key={index} className="mb-4">
-                <p className="text-sm mb-2">{index + 1}. {question}</p>
+                <p className="text-sm mb-2">
+                  {index + 1}. {[
+                    "Have you tried to solve the problem?",
+                    "When did the problem arise?",
+                    "Venue of the problem arise?",
+                    "Specification of the problem?",
+                    "Problem arise time?",
+                  ][index]}
+                </p>
                 <input
                   type="text"
                   placeholder="Type your answer"
                   className="w-full p-3 bg-gray-100 rounded-md border-none outline-none"
+                  value={question}
+                  onChange={(e) => {
+                    const newQuestions = [...questions];
+                    newQuestions[index] = e.target.value;
+                    setQuestions(newQuestions);
+                  }}
                 />
               </div>
             ))}
           </div>
+
           {/* Create button */}
           <div className="bottom-6 bg-white pt-1 pb-20">
-            <button className="w-full py-3 bg-orange-500 text-white rounded-md font-medium" onClick={handleCreate}>
+            <button
+              className="w-full py-3 bg-orange-500 text-white rounded-md font-medium"
+              onClick={handleCreate}
+            >
               Create
             </button>
           </div>
         </div>
 
         {/* Right side - Cards */}
-        <div className={`w-full lg:w-1/3 flex flex-col h-screen ${activeTab === 'creation' && 'hidden lg:block'}`}>
+        <div
+          className={`w-full lg:w-1/3 flex flex-col h-screen ${
+            activeTab === "creation" && "hidden lg:block"
+          }`}
+        >
           {/* Sticky Search Bar and Profile */}
           <div className="sticky top-0 bg-white z-10 p-4 flex items-center justify-between">
             <div className="flex-1 mr-4">
@@ -346,6 +439,7 @@ const FormDashboard = () => {
               />
             </div>
           </div>
+
           {/* Scrollable Cards Container */}
           <div
             ref={scrollableRef}
@@ -365,15 +459,23 @@ const FormDashboard = () => {
                 date={card.date}
                 author={card.author}
                 imageUrl={card.imageUrl}
-                onClick={() => handleCardClick(card)} // Handle card click
+                onClick={() => handleCardClick(card)}
               />
             ))}
           </div>
         </div>
       </div>
-      <LogCreation open={openLogCreation} onClose={() => setOpenLogCreation(false)} />
-      <Rejected open={openRejected} onClose={() => setOpenRejected(false)} />
-      <Accepted open={openAccepted} onClose={() => setOpenAccepted(false)} />
+
+      {/* Popups */}
+      {activePopup === "LogCreation" && (
+        <LogCreation open onClose={() => setActivePopup(null)} />
+      )}
+      {activePopup === "Rejected" && (
+        <Rejected open onClose={() => setActivePopup(null)} />
+      )}
+      {activePopup === "Accepted" && (
+        <Accepted open onClose={() => setActivePopup(null)} />
+      )}
     </div>
   );
 };
