@@ -7,10 +7,10 @@ import Card from "../../components/problem/Card";
 import LogCreation from "../../components/Popups/LogCreation";
 import Rejected from "../../components/Popups/Rejected";
 import Accepted from "../../components/Popups/Accepted";
- import axios from 'axios'; // Import Axios
-  
+import axios from 'axios'; // Import Axios
+
 const FormDashboard = () => {
-   // State variables
+  // State variables
   const [open, setOpen] = useState(false);
   const [openLogCreation, setOpenLogCreation] = useState(false); // For LogCreation popup
   const [openRejected, setOpenRejected] = useState(false); // For Rejected popup
@@ -20,6 +20,7 @@ const FormDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [fileError, setFileError] = useState("");
   const [newCategoryName, setNewCategoryName] = useState(""); // Declare newCategoryName
+  const [activeTab, setActiveTab] = useState("creation"); // 'creation' or 'problemBank'
   const [categories, setCategories] = useState([
     "Productivity failure",
     "Mismanagement",
@@ -28,7 +29,7 @@ const FormDashboard = () => {
   ]); // Declare categories
   const contentEditableRef = useRef(null);
   const scrollableRef = useRef(null);
-  
+
   // Card data
   const cardData = [
     {
@@ -52,7 +53,7 @@ const FormDashboard = () => {
       status: "Rejected",
       description: "Tools and techniques for tracking time and improving efficiency.",
       date: "2023-10-13",
-      author: "M. Johnson",
+      author: "A. Johnson",
       imageUrl: "/user3.jpg",
     },
     // Additional card data...
@@ -78,20 +79,24 @@ const FormDashboard = () => {
       setOpenAccepted(true); // Open Accepted popup
     }
   };
+
   const applyFormatting = (command, value = null) => {
     if (contentEditableRef.current) {
       document.execCommand(command, false, value);
     }
   };
+
   const toggleCategory = (category) => {
     setSelectedCategory(category === selectedCategory ? null : category);
   };
+
   const handleAddNewCategory = () => {
     if (newCategoryName.trim() !== "") {
       setCategories([...categories, newCategoryName]); // Add new category
       setNewCategoryName(""); // Clear the input field
     }
   };
+
   const handleFileChange = (event) => {
     const selectedFiles = Array.from(event.target.files);
     if (selectedFiles.length + files.length > 5) {
@@ -101,12 +106,15 @@ const FormDashboard = () => {
     setFileError("");
     setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
   };
+
   const handleRemoveFile = (index) => {
     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
+
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
+
   const handleCreate = async () => {
     const problemTitle = document.querySelector("input[placeholder='Enter the problem']").value;
     const description = contentEditableRef.current.innerText;
@@ -131,7 +139,7 @@ const FormDashboard = () => {
         headers: {
           'Content-Type': 'multipart/form-data',
          },
- 
+
       });
       console.log("Responsess:", response.data);
       alert("Form submitted successfully!");
@@ -145,11 +153,28 @@ const FormDashboard = () => {
       scrollableRef.current.scrollTop = scrollableRef.current.scrollHeight;
     }
   }, [cardData]);
+
   return (
-    <div className="min-h-screen bg-gray-50 scrollbar-hide" style={{ overflow: "hidden" }}>
+    <div className="min-h-screen bg-gray-50 scrollbar-hide">
       <div className="flex flex-col lg:flex-row h-screen justify-between w-full bg-white p-4 lg:p-6 border-b border-[#D3E4FF] scrollbar-hide">
+        {/* Mobile Tab Navigation */}
+        <div className="lg:hidden flex justify-around border-b border-gray-200 mb-4">
+          <button
+            className={`py-2 px-4 ${activeTab === "creation" ? "border-b-2 border-orange-500 text-orange-500" : "text-gray-500"}`}
+            onClick={() => setActiveTab("creation")}
+          >
+            Creation
+          </button>
+          <button
+            className={`py-2 px-4 ${activeTab === "problemBank" ? "border-b-2 border-orange-500 text-orange-500" : "text-gray-500"}`}
+            onClick={() => setActiveTab("problemBank")}
+          >
+            Problem Bank
+          </button>
+        </div>
+
         {/* Left side - Log creation form */}
-        <div className="w-full lg:w-4/5 p-1 overflow-x-auto overflow-y-auto scrollbar-hide">
+        <div className={`w-full lg:w-4/5 p-1 overflow-x-auto overflow-y-auto scrollbar-hide ${activeTab === 'problemBank' && 'hidden lg:block'}`}>
           <div className="flex items-center mb-6">
             <button className="text-gray-500 mr-3" onClick={() => setOpen(false)}>
               <IoArrowBack />
@@ -305,8 +330,9 @@ const FormDashboard = () => {
             </button>
           </div>
         </div>
+
         {/* Right side - Cards */}
-        <div className="w-full lg:w-1/3 flex flex-col h-screen">
+        <div className={`w-full lg:w-1/3 flex flex-col h-screen ${activeTab === 'creation' && 'hidden lg:block'}`}>
           {/* Sticky Search Bar and Profile */}
           <div className="sticky top-0 bg-white z-10 p-4 flex items-center justify-between">
             <div className="flex-1 mr-4">
@@ -351,7 +377,5 @@ const FormDashboard = () => {
     </div>
   );
 };
- 
 
 export default FormDashboard;
- 
