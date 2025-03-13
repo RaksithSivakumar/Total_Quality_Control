@@ -7,7 +7,7 @@ import Card from "../../components/problem/Card";
 import LogCreation from "../../components/Popups/LogCreation";
 import Rejected from "../../components/Popups/Rejected";
 import Accepted from "../../components/Popups/Accepted";
-
+import axios from 'axios'; // Import Axios
 const Dashboard = () => {
   // State variables
   const [open, setOpen] = useState(false);
@@ -27,7 +27,7 @@ const Dashboard = () => {
   ]); // Declare categories
   const contentEditableRef = useRef(null);
   const scrollableRef = useRef(null);
-
+  
   // Card data
   const cardData = [
     {
@@ -54,80 +54,8 @@ const Dashboard = () => {
       author: "M. Johnson",
       imageUrl: "/user3.jpg",
     },
-    {
-      title: "Productivity failure",
-      status: "New",
-      description: "Productive failure is a learning design where individuals are allowed to fail in a managed way.",
-      date: "2023-10-15",
-      author: "J. David",
-      imageUrl: "/user1.jpg",
-    },
-    {
-      title: "Task Management",
-      status: "Accepted",
-      description: "Effective task management strategies to improve productivity and focus.",
-      date: "2023-10-14",
-      author: "A. Smith",
-      imageUrl: "/user2.jpg",
-    },
-    {
-      title: "Time Tracking",
-      status: "Rejected",
-      description: "Tools and techniques for tracking time and improving efficiency.",
-      date: "2023-10-13",
-      author: "M. Johnson",
-      imageUrl: "/user3.jpg",
-    },
-    {
-      title: "Productivity failure",
-      status: "New",
-      description: "Productive failure is a learning design where individuals are allowed to fail in a managed way.",
-      date: "2023-10-15",
-      author: "J. David",
-      imageUrl: "/user1.jpg",
-    },
-    {
-      title: "Task Management",
-      status: "Accepted",
-      description: "Effective task management strategies to improve productivity and focus.",
-      date: "2023-10-14",
-      author: "A. Smith",
-      imageUrl: "/user2.jpg",
-    },
-    {
-      title: "Time Tracking",
-      status: "Rejected",
-      description: "Tools and techniques for tracking time and improving efficiency.",
-      date: "2023-10-13",
-      author: "M. Johnson",
-      imageUrl: "/user3.jpg",
-    },
-    {
-      title: "Productivity failure",
-      status: "New",
-      description: "Productive failure is a learning design where individuals are allowed to fail in a managed way.",
-      date: "2023-10-15",
-      author: "J. David",
-      imageUrl: "/user1.jpg",
-    },
-    {
-      title: "Task Management",
-      status: "Accepted",
-      description: "Effective task management strategies to improve productivity and focus.",
-      date: "2023-10-14",
-      author: "A. Smith",
-      imageUrl: "/user2.jpg",
-    },
-    {
-      title: "Time Tracking",
-      status: "Rejected",
-      description: "Tools and techniques for tracking time and improving efficiency.",
-      date: "2023-10-13",
-      author: "M. Johnson",
-      imageUrl: "/user3.jpg",
-    },
+    // Additional card data...
   ];
-
   // Filter cards based on search query
   const filteredCards = cardData.filter(
     (card) =>
@@ -135,7 +63,6 @@ const Dashboard = () => {
       card.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       card.author.toLowerCase().includes(searchQuery.toLowerCase()),
   );
-
   // Handle card click
   const handleCardClick = (card) => {
     console.log("Card clicked:", card); // Debugging
@@ -150,24 +77,20 @@ const Dashboard = () => {
       setOpenAccepted(true); // Open Accepted popup
     }
   };
-
   const applyFormatting = (command, value = null) => {
     if (contentEditableRef.current) {
       document.execCommand(command, false, value);
     }
   };
-
   const toggleCategory = (category) => {
     setSelectedCategory(category === selectedCategory ? null : category);
   };
-
   const handleAddNewCategory = () => {
     if (newCategoryName.trim() !== "") {
       setCategories([...categories, newCategoryName]); // Add new category
       setNewCategoryName(""); // Clear the input field
     }
   };
-
   const handleFileChange = (event) => {
     const selectedFiles = Array.from(event.target.files);
     if (selectedFiles.length + files.length > 5) {
@@ -177,40 +100,50 @@ const Dashboard = () => {
     setFileError("");
     setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
   };
-
   const handleRemoveFile = (index) => {
     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
-
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
-
-  const handleCreate = () => {
+  const handleCreate = async () => {
     const problemTitle = document.querySelector("input[placeholder='Enter the problem']").value;
     const description = contentEditableRef.current.innerText;
     const questions = Array.from(document.querySelectorAll("input[placeholder='Type your answer']")).map(
       (input) => input.value,
     );
-
-    const formData = {
-      problemTitle,
-      description,
-      questions,
-      selectedCategory,
-      files,
-    };
-
-    console.log("Form Data:", formData);
-    alert("Form submitted successfully!");
+    
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('Category', selectedCategory);
+    formData.append('Problem_Title', problemTitle);
+    formData.append('Description', description);
+    files.forEach(file => {
+      formData.append('Media_Upload', file); // Append each file to the form data
+    });
+    formData.append('Questions', JSON.stringify(questions)); // Convert questions to JSON string
+    formData.append('created_by', 'YourUser'); // Replace with actual user info
+    // Send POST request
+    // console.log("Form Dataaa:", formData);
+    try {
+      const response = await axios.post('http://localhost:5000/api/master_problem', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+         },
+ 
+      });
+      console.log("Responsess:", response.data);
+      alert("Form submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("Error submitting form.");
+    }
   };
-
   useEffect(() => {
     if (scrollableRef.current) {
       scrollableRef.current.scrollTop = scrollableRef.current.scrollHeight;
     }
   }, [cardData]);
-
   return (
     <div className="min-h-screen bg-gray-50 scrollbar-hide" style={{ overflow: "hidden" }}>
       <div className="flex flex-col lg:flex-row h-screen justify-between w-full bg-white p-4 lg:p-6 border-b border-[#D3E4FF] scrollbar-hide">
@@ -222,7 +155,6 @@ const Dashboard = () => {
             </button>
             <h2 className="text-lg font-medium">Log creation</h2>
           </div>
-
           {/* Category */}
           <div className="mb-6">
             <h3 className="text-sm font-medium mb-3">Category</h3>
@@ -241,7 +173,6 @@ const Dashboard = () => {
                 </button>
               ))}
             </div>
-
             {/* Add New Button (Full Width) */}
             <div className="w-full mt-4 flex flex-col lg:flex-row items-center">
               <input
@@ -259,7 +190,6 @@ const Dashboard = () => {
               </button>
             </div>
           </div>
-
           {/* Problem Title */}
           <div className="mb-6">
             <h3 className="text-sm font-medium mb-3">Problem Title</h3>
@@ -269,7 +199,6 @@ const Dashboard = () => {
               className="w-full p-3 bg-gray-100 rounded-md border-none outline-none"
             />
           </div>
-
           {/* Description */}
           <div className="mb-6">
             <h3 className="text-sm font-medium mb-3">Description</h3>
@@ -305,7 +234,6 @@ const Dashboard = () => {
               </button>
             </div>
           </div>
-
           {/* Media Upload */}
           <div className="mb-6">
             <h3 className="text-sm font-medium mb-1">Media Upload</h3>
@@ -336,7 +264,6 @@ const Dashboard = () => {
                   </div>
                   <p className="text-sm text-gray-600 mb-1">Drag your file(s) to start uploading</p>
                   <p className="text-xs text-gray-500 mb-3">OR</p>
-
                   {/* File Input */}
                   <input type="file" id="file-upload" className="hidden" multiple onChange={handleFileChange} />
                   <label
@@ -350,13 +277,18 @@ const Dashboard = () => {
               {fileError && <p className="text-red-500 text-xs mt-2">{fileError}</p>}
             </div>
           </div>
-
           {/* Questions */}
           <div className="mb-6">
             <h3 className="text-sm font-medium mb-3">Questions</h3>
-            {[1, 2, 3, 4, 5].map((num) => (
-              <div key={num} className="mb-4">
-                <p className="text-sm mb-2">{num}. Have you solved this problem?</p>
+            {[
+              "HAVE YOU TRIED TO SOLVE THE PROBLEM?",
+              "WHEN DID THE PROBLEM ARISE?",
+              "VENUE OF THE PROBLEM ARISE?",
+              "SPECIFICATION OF THE PROBLEM?",
+              "PROBLEM ARISE TIME?"
+            ].map((question, index) => (
+              <div key={index} className="mb-4">
+                <p className="text-sm mb-2">{index + 1}. {question}</p>
                 <input
                   type="text"
                   placeholder="Type your answer"
@@ -365,7 +297,6 @@ const Dashboard = () => {
               </div>
             ))}
           </div>
-
           {/* Create button */}
           <div className="bottom-6 bg-white pt-1 pb-20">
             <button className="w-full py-3 bg-orange-500 text-white rounded-md font-medium" onClick={handleCreate}>
@@ -373,7 +304,6 @@ const Dashboard = () => {
             </button>
           </div>
         </div>
-
         {/* Right side - Cards */}
         <div className="w-full lg:w-1/3 flex flex-col h-screen">
           {/* Sticky Search Bar and Profile */}
@@ -389,7 +319,6 @@ const Dashboard = () => {
               />
             </div>
           </div>
-
           {/* Scrollable Cards Container */}
           <div
             ref={scrollableRef}
@@ -421,5 +350,4 @@ const Dashboard = () => {
     </div>
   );
 };
-
 export default Dashboard;

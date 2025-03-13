@@ -1,49 +1,47 @@
 import React, { useState } from "react";
 import { Google } from "@mui/icons-material";
 import ProjectLogo from "../../../public/ProjectLogo.svg";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
-import axios from "axios"; // Import axios for making HTTP requests
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { ToastContainer, toast } from 'react-toastify'; // Import ToastContainer and toast
+import 'react-toastify/dist/ReactToastify.css'; // Import Toastify CSS
 const LoginPage = () => {
-  const [email, setEmail] = useState(""); // State for email input
-  const [password, setPassword] = useState(""); // State for password input
-  const [loading, setLoading] = useState(false); // State for loading indicator
-  const navigate = useNavigate(); // Initialize useNavigate for navigation
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const handleLogin = async (e) => {
-    e.preventDefault(); // Prevent default form submission
-    setLoading(true); // Set loading state to true
+    e.preventDefault();
+    setLoading(true);
     try {
-      // Send POST request to backend with email and password
       const response = await axios.post("http://localhost:5000/api/login", {
         email,
         password,
       });
-      // Log the response data for debugging
       console.log("Response data:", response.data);
-      // Extract the role from the response data
-      const { role } = response.data.user; // Assuming the API response contains the user object with role
-      // Navigate based on the user's role
+      const { role } = response.data.user;
       switch (role) {
         case "student":
-          navigate("/Problemrd"); // Navigate to student page
+          navigate("/Problemrd");
           break;
         case "supervisor":
-          navigate("/Superviser"); // Navigate to supervisor page
+          navigate("/Superviser");
           break;
         case "problem":
-          navigate("/Problemsol"); // Navigate to problem-solving team page
+          navigate("/Problemsol");
           break;
         case "maintainanace":
-          navigate("/Maintain"); // Navigate to maintenance page
+          navigate("/Maintain");
           break;
         default:
-          alert("Invalid role or login failed."); // Handle unexpected roles
+          toast.error("Invalid role or login failed."); // Use toast for error
           break;
       }
     } catch (error) {
-      console.error("Login error:", error); // Log the error for debugging
-      alert("Login failed. Please check your credentials."); // Alert the user of the failure
+      console.error("Login error:", error);
+      toast.error("Login failed. Please check your credentials."); // Use toast for error
     } finally {
-      setLoading(false); // Reset loading state
+      setLoading(false);
     }
   };
   const handleGooglesignin = () => {
@@ -55,7 +53,7 @@ const LoginPage = () => {
         <div className="text-center">
           <img
             src={ProjectLogo}
-            alt="Bitlinks"
+            alt="Tqc"
             className="w-20 mx-auto mb-6"
           />
           <h2 className="text-2xl font-semibold text-gray-800 mb-2">
@@ -90,7 +88,7 @@ const LoginPage = () => {
           </div>
           <button
             className="w-full px-3 py-2 border border-transparent bg-[#FF7622] rounded-md focus:outline-none transition-colors text-white"
-            disabled={loading} // Disable button while loading
+            disabled={loading}
           >
             {loading ? "Logging in..." : "Login"} 
           </button>
@@ -108,6 +106,7 @@ const LoginPage = () => {
           </button>
         </form>
       </div>
+      <ToastContainer /> {/* Add ToastContainer here */}
     </div>
   );
 };
