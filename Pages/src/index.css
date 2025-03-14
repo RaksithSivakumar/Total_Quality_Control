@@ -176,4 +176,6 @@
       transition: none !important;
     }
   }
-  
+  .MuiPickersLayout-root::before {
+    display: none !important;
+  }

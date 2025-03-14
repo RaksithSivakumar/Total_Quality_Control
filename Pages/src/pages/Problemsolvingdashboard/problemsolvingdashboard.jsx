@@ -15,6 +15,7 @@ import Slide from "@mui/material/Slide"; // Import Slide for the transition   //
 import LogCreation from "../../components/Popups/LogCreation";
 import Rejected from "../../components/Popups/Rejected";
 import Accepted from "../../components/Popups/Accepted";
+import Solver from "../../components/Popups/Solver";
 
 // Define the Transition component for the Dialog
 const Transition = React.forwardRef(function Transition(props, ref) {
@@ -29,15 +30,19 @@ function Problemsolver() {
   const [openLogCreation, setOpenLogCreation] = React.useState(false);
   const [openRejected, setOpenRejected] = React.useState(false);
   const [openAccepted, setOpenAccepted] = React.useState(false);
+  const [openSolver, setOpenSolver] = React.useState(false);
 
   const toggleFilter = () => {
     setShowFilter(!showFilter);
   };
   const handleCardClick = (card) => {
     console.log("Card clicked:", card); // Debugging
-    if (card.status === "New") {
+    if (card.status === "Need to verify") {
       console.log("Opening LogCreation popup"); // Debugging
       setOpenLogCreation(true); // Open LogCreation popup
+    } else if (card.status === "New") {
+      console.log("Opening Solver popup"); // Debugging
+      setOpenSolver(true); // Open Solver popup
     } else if (card.status === "Rejected") {
       console.log("Opening Rejected popup"); // Debugging
       setOpenRejected(true); // Open Rejected popup
@@ -418,6 +423,7 @@ function Problemsolver() {
       <LogCreation open={openLogCreation} onClose={() => setOpenLogCreation(false)} />
       <Rejected open={openRejected} onClose={() => setOpenRejected(false)} />
       <Accepted open={openAccepted} onClose={() => setOpenAccepted(false)} />
+      <Solver open={openSolver} onClose={() => setOpenSolver(false)} />
     </div>
   );
 }
