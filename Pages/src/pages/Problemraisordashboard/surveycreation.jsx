@@ -10,8 +10,7 @@ import { FiUpload } from "react-icons/fi";
   BiLink,
 } from "react-icons/bi";
 import { useNavigate } from "react-router-dom"; // Use useNavigate instead of useRouter  // State for filter popup visibility
- import { BiBold, BiItalic, BiUnderline, BiListOl, BiListUl, BiLink } from "react-icons/bi";
- import Input from "../../components/input/Input";
+import Input from "../../components/input/Input";
 import Card from "../../components/problem/Card";
 import LogCreation from "../../components/Popups/LogCreation";
 import Rejected from "../../components/Popups/Rejected";
