@@ -93,7 +93,7 @@ const schedules = {
     },
   ],
   accepted: [
-    {
+    {    // State for filter popup visibility
       name: "Mahesh Kumar",
       time: "11.00 AM to 12.00 PM",
       contact: "9654781231",
