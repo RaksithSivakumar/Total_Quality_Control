@@ -1,21 +1,41 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import ProjectLogo from "../../assets/Images/ProjectLogo.svg";
-import GoogleLogo from "../../assets/Images/google.png";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const passwordInputRef = useRef(null); // Ref to the password input field
+
+  const handleClickShowPassword = () => {
+    // Save the current cursor position
+    const cursorPosition = passwordInputRef.current.selectionStart;
+
+    // Toggle the password visibility
+    setShowPassword((prevShowPassword) => !prevShowPassword);
+
+    // After the state updates, restore the cursor position
+    setTimeout(() => {
+      passwordInputRef.current.setSelectionRange(cursorPosition, cursorPosition);
+      passwordInputRef.current.focus(); // Ensure the input remains focused
+    }, 0);
+  };
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault(); // Prevent default behavior
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);   // State for filter popup visibility
+    setLoading(true);
     try {
       const response = await axios.post("http://localhost:5000/api/login", {
         email,
@@ -23,7 +43,6 @@ const LoginPage = () => {
       });
       console.log("Response data:", response.data);
       const { role } = response.data.user;
-      // Show success toast
       toast.success("Login successful!");
       switch (role) {
         case "student":
@@ -53,16 +72,12 @@ const LoginPage = () => {
   const handleGoogleSuccess = async (credentialResponse) => {
     setLoading(true);
     try {
-      // Send the ID token to your backend
       const response = await axios.post('http://localhost:5000/api/google-login', {
         credential: credentialResponse.credential
       });
-      
       console.log("Google login response:", response.data);
       const { role } = response.data.user;
-      
       toast.success("Google login successful!");
-      
       switch (role) {
         case "student":
           navigate("/Problemrd");
@@ -118,21 +133,42 @@ const LoginPage = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF7622] focus:border-[#FF7622] transition-colors"
+                required
               />
             </div>
             <div className="flex flex-col space-y-1">
               <label className="text-left text-sm font-medium text-gray-600">
                 Password
               </label>
-              <input
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF7622] focus:border-[#FF7622] transition-colors"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF7622] focus:border-[#FF7622] transition-colors"
+                  ref={passwordInputRef} // Attach the ref
+                  required
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                  <button
+                    type="button"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    onClick={handleClickShowPassword}
+                    onMouseDown={handleMouseDownPassword}
+                    className="text-gray-500 hover:text-gray-700 focus:outline-none"
+                  >
+                    {showPassword ? (
+                      <EyeOffIcon className="w-5 h-5" /> // Show "eye off" icon when password is visible
+                    ) : (
+                      <EyeIcon className="w-5 h-5" /> // Show "eye" icon when password is hidden
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
             <button
+              type="submit"
               className="w-full px-3 py-2 border border-transparent bg-[#FF7622] rounded-md focus:outline-none transition-colors text-white"
               disabled={loading}
             >
