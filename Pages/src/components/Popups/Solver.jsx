@@ -1,9 +1,7 @@
-"use client";
-
 import { useState } from "react";
 import { ArrowLeft, ChevronDown, Check, Calendar, Trophy } from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
-import { toast } from "react-toastify"; // Import toast
+import { toast } from "react-toastify";
 import {
   Dialog,
   DialogContent,
@@ -22,9 +20,9 @@ import {
 import { Close as CloseIcon } from "@mui/icons-material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { DateRangeCalendar } from "@mui/x-date-pickers-pro/DateRangeCalendar";
-import dayjs from "dayjs"; // Added missing import
+import dayjs from "dayjs";
 
 const Solver = ({ open, onClose }) => {
   const theme = useTheme();
@@ -46,6 +44,9 @@ const Solver = ({ open, onClose }) => {
   // Date range states and functions
   const [dateDialogOpen, setDateDialogOpen] = useState(false);
   const [dateRange, setDateRange] = useState([dayjs(), dayjs().add(5, "day")]);
+
+  // Status state
+  const [status, setStatus] = useState(""); // "Accepted" or "Rejected"
 
   // Calculate days between dates
   const getDaysDifference = () => {
@@ -335,240 +336,235 @@ const Solver = ({ open, onClose }) => {
                 ))}
               </div>
 
-              {/* Problem Rating UI */}
-              <div className="space-y-4 sm:space-y-6 mb-6">
-                <div>
-                  <Typography
-                    variant={isMobile ? "subtitle1" : "h6"}
-                    className="text-gray-700 font-medium mb-2 text-sm sm:text-base"
-                  >
-                    Problem rating
-                  </Typography>
-                  <div className="flex flex-col space-y-3">
-                    {/* Rating buttons */}
-                    <div className="flex gap-4">
-                      {/* Small Button */}
-                      <Button
-                        onClick={() => toggleActiveState("small")}
-                        variant={activeStates.small ? "contained" : "outlined"}
-                        size={isMobile ? "small" : "medium"}
-                        sx={{
-                          flex: 1,
-                          color: activeStates.small ? "white" : "#FF7622",
-                          backgroundColor: activeStates.small
-                            ? "#FF7622"
-                            : "transparent",
-                          borderColor: "#FF7622",
-                          fontSize: isMobile ? "0.75rem" : "0.875rem",
-                          padding: isMobile ? "4px 10px" : "6px 16px",
-                          "&:hover": {
-                            borderColor: "#E56A1E",
-                            backgroundColor: activeStates.small
-                              ? "#E56A1E"
-                              : "rgba(255, 118, 34, 0.04)",
-                          },
-                        }}
-                      >
-                        Small
-                      </Button>
-                      {/* Medium Button */}
-                      <Button
-                        onClick={() => toggleActiveState("medium")}
-                        variant={activeStates.medium ? "contained" : "outlined"}
-                        size={isMobile ? "small" : "medium"}
-                        sx={{
-                          flex: 1,
-                          color: activeStates.medium ? "white" : "#FF7622",
-                          backgroundColor: activeStates.medium
-                            ? "#FF7622"
-                            : "transparent",
-                          borderColor: "#FF7622",
-                          fontSize: isMobile ? "0.75rem" : "0.875rem",
-                          padding: isMobile ? "4px 10px" : "6px 16px",
-                          "&:hover": {
-                            borderColor: "#E56A1E",
-                            backgroundColor: activeStates.medium
-                              ? "#E56A1E"
-                              : "rgba(255, 118, 34, 0.04)",
-                          },
-                        }}
-                      >
-                        Medium
-                      </Button>
-                      {/* Large Button */}
-                      <Button
-                        onClick={() => toggleActiveState("large")}
-                        variant={activeStates.large ? "contained" : "outlined"}
-                        size={isMobile ? "small" : "medium"}
-                        sx={{
-                          flex: 1,
-                          color: activeStates.large ? "white" : "#FF7622",
-                          backgroundColor: activeStates.large
-                            ? "#FF7622"
-                            : "transparent",
-                          borderColor: "#FF7622",
-                          fontSize: isMobile ? "0.75rem" : "0.875rem",
-                          padding: isMobile ? "4px 10px" : "6px 16px",
-                          "&:hover": {
-                            borderColor: "#E56A1E",
-                            backgroundColor: activeStates.large
-                              ? "#E56A1E"
-                              : "rgba(255, 118, 34, 0.04)",
-                          },
-                        }}
-                      >
-                        Large
-                      </Button>
-                    </div>
+              {/* Status Selection */}
+              <div className="mt-4 sm:mt-6">
+                <Typography
+                  variant="subtitle2"
+                  className="text-xs sm:text-sm font-medium mb-1 sm:mb-2"
+                >
+                  Status
+                </Typography>
+                <div className="flex gap-3 sm:gap-4 p-2 sm:p-4 flex-wrap">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="status"
+                      value="Accepted"
+                      className="mr-1 sm:mr-2"
+                      checked={status === "Accepted"}
+                      onChange={(e) => setStatus(e.target.value)}
+                    />
+                    <span className="text-xs sm:text-sm">Accepted</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="status"
+                      value="Rejected"
+                      className="mr-1 sm:mr-2"
+                      checked={status === "Rejected"}
+                      onChange={(e) => setStatus(e.target.value)}
+                    />
+                    <span className="text-xs sm:text-sm">Rejected</span>
+                  </label>
+                </div>
+              </div>
 
-                    {/* Current selection display */}
-                    <div className="w-full border border-gray-200 rounded-lg p-3 sm:p-4">
+              {/* Conditionally Render Sections Based on Status */}
+              {status === "Accepted" && (
+                <>
+                  {/* Problem Rating UI */}
+                  <div className="space-y-4 sm:space-y-6 mb-6">
+                    <div>
                       <Typography
-                        variant="body1"
-                        className="text-center text-gray-600"
+                        variant={isMobile ? "subtitle1" : "h6"}
+                        className="text-gray-700 font-medium mb-2 text-sm sm:text-base"
                       >
-                        {getProblemRating()}
+                        Problem rating
                       </Typography>
-                    </div>
-                  </div>
-                </div>
+                      <div className="flex flex-col space-y-3">
+                        {/* Rating buttons */}
+                        <div className="flex gap-4">
+                          {/* Small Button */}
+                          <Button
+                            onClick={() => toggleActiveState("small")}
+                            variant={activeStates.small ? "contained" : "outlined"}
+                            size={isMobile ? "small" : "medium"}
+                            sx={{
+                              flex: 1,
+                              color: activeStates.small ? "white" : "#FF7622",
+                              backgroundColor: activeStates.small
+                                ? "#FF7622"
+                                : "transparent",
+                              borderColor: "#FF7622",
+                              fontSize: isMobile ? "0.75rem" : "0.875rem",
+                              padding: isMobile ? "4px 10px" : "6px 16px",
+                              "&:hover": {
+                                borderColor: "#E56A1E",
+                                backgroundColor: activeStates.small
+                                  ? "#E56A1E"
+                                  : "rgba(255, 118, 34, 0.04)",
+                              },
+                            }}
+                          >
+                            Small
+                          </Button>
+                          {/* Medium Button */}
+                          <Button
+                            onClick={() => toggleActiveState("medium")}
+                            variant={activeStates.medium ? "contained" : "outlined"}
+                            size={isMobile ? "small" : "medium"}
+                            sx={{
+                              flex: 1,
+                              color: activeStates.medium ? "white" : "#FF7622",
+                              backgroundColor: activeStates.medium
+                                ? "#FF7622"
+                                : "transparent",
+                              borderColor: "#FF7622",
+                              fontSize: isMobile ? "0.75rem" : "0.875rem",
+                              padding: isMobile ? "4px 10px" : "6px 16px",
+                              "&:hover": {
+                                borderColor: "#E56A1E",
+                                backgroundColor: activeStates.medium
+                                  ? "#E56A1E"
+                                  : "rgba(255, 118, 34, 0.04)",
+                              },
+                            }}
+                          >
+                            Medium
+                          </Button>
+                          {/* Large Button */}
+                          <Button
+                            onClick={() => toggleActiveState("large")}
+                            variant={activeStates.large ? "contained" : "outlined"}
+                            size={isMobile ? "small" : "medium"}
+                            sx={{
+                              flex: 1,
+                              color: activeStates.large ? "white" : "#FF7622",
+                              backgroundColor: activeStates.large
+                                ? "#FF7622"
+                                : "transparent",
+                              borderColor: "#FF7622",
+                              fontSize: isMobile ? "0.75rem" : "0.875rem",
+                              padding: isMobile ? "4px 10px" : "6px 16px",
+                              "&:hover": {
+                                borderColor: "#E56A1E",
+                                backgroundColor: activeStates.large
+                                  ? "#E56A1E"
+                                  : "rgba(255, 118, 34, 0.04)",
+                              },
+                            }}
+                          >
+                            Large
+                          </Button>
+                        </div>
 
-                {/* Deadline with DateRangeCalendar */}
-                <div>
-                  <Typography
-                    variant={isMobile ? "subtitle1" : "h6"}
-                    className="text-gray-700 font-medium mb-2 text-sm sm:text-base"
-                  >
-                    Deadline for solving the problem
-                  </Typography>
-                  <div
-                    className="w-full border border-gray-200 rounded-lg p-3 sm:p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition-colors"
-                    onClick={toggleDateDialog}
-                  >
-                    <Typography variant="body1" className="text-gray-600">
-                      {dateRange[0] && dateRange[1]
-                        ? `${dateRange[0].format(
-                            "MMM DD"
-                          )} - ${dateRange[1].format(
-                            "MMM DD"
-                          )} (${getDaysDifference()} days)`
-                        : "Select deadline"}
-                    </Typography>
-                    <div className="text-orange-500">
-                      <Calendar size={20} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Points for solving the problem */}
-                <div>
-                  <Typography
-                    variant={isMobile ? "subtitle1" : "h6"}
-                    className="text-gray-700 font-medium mb-2 text-sm sm:text-base"
-                  >
-                    Points provided for solving the problem
-                  </Typography>
-                  <div className="space-y-3">
-                    <div className="w-full border border-gray-200 rounded-lg p-3 sm:p-4 flex justify-between items-center">
-                      <TextField
-                        value={points}
-                        onChange={handlePointsChange}
-                        type="number"
-                        variant="standard"
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              points
-                            </InputAdornment>
-                          ),
-                          disableUnderline: true,
-                        }}
-                        sx={{
-                          width: "100%",
-                          "& input": {
-                            fontSize: isMobile ? "0.875rem" : "1rem",
-                            padding: 0,
-                            color: "#4B5563",
-                          },
-                        }}
-                      />
-                      <div className="text-orange-500 ml-2">
-                        <Trophy size={20} />
+                        {/* Current selection display */}
+                        <div className="w-full border border-gray-200 rounded-lg p-3 sm:p-4">
+                          <Typography
+                            variant="body1"
+                            className="text-center text-gray-600"
+                          >
+                            {getProblemRating()}
+                          </Typography>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Slider for points */}
-                    <Slider
-                      value={points}
-                      onChange={handleSliderChange}
-                      aria-labelledby="points-slider"
-                      min={100}
-                      max={1000}
-                      step={50}
-                      sx={{
-                        color: "#FF7622",
-                        "& .MuiSlider-thumb": {
-                          height: 20,
-                          width: 20,
-                        },
-                        "& .MuiSlider-rail": {
-                          opacity: 0.5,
-                          backgroundColor: "#E5E7EB",
-                        },
-                      }}
-                    />
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>100 pts</span>
-                      <span>500 pts</span>
-                      <span>1000 pts</span>
+                    {/* Deadline with DateRangeCalendar */}
+                    <div>
+                      <Typography
+                        variant={isMobile ? "subtitle1" : "h6"}
+                        className="text-gray-700 font-medium mb-2 text-sm sm:text-base"
+                      >
+                        Deadline for solving the problem
+                      </Typography>
+                      <div
+                        className="w-full border border-gray-200 rounded-lg p-3 sm:p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition-colors"
+                        onClick={toggleDateDialog}
+                      >
+                        <Typography variant="body1" className="text-gray-600">
+                          {dateRange[0] && dateRange[1]
+                            ? `${dateRange[0].format(
+                                "MMM DD"
+                              )} - ${dateRange[1].format(
+                                "MMM DD"
+                              )} (${getDaysDifference()} days)`
+                            : "Select deadline"}
+                        </Typography>
+                        <div className="text-orange-500">
+                          <Calendar size={20} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Points for solving the problem */}
+                    <div>
+                      <Typography
+                        variant={isMobile ? "subtitle1" : "h6"}
+                        className="text-gray-700 font-medium mb-2 text-sm sm:text-base"
+                      >
+                        Points provided for solving the problem
+                      </Typography>
+                      <div className="space-y-3">
+                        <div className="w-full border border-gray-200 rounded-lg p-3 sm:p-4 flex justify-between items-center">
+                          <TextField
+                            value={points}
+                            onChange={handlePointsChange}
+                            type="number"
+                            variant="standard"
+                            InputProps={{
+                              endAdornment: (
+                                <InputAdornment position="end">
+                                  points
+                                </InputAdornment>
+                              ),
+                              disableUnderline: true,
+                            }}
+                            sx={{
+                              width: "100%",
+                              "& input": {
+                                fontSize: isMobile ? "0.875rem" : "1rem",
+                                padding: 0,
+                                color: "#4B5563",
+                              },
+                            }}
+                          />
+                          <div className="text-orange-500 ml-2">
+                            <Trophy size={20} />
+                          </div>
+                        </div>
+
+                        {/* Slider for points */}
+                        <Slider
+                          value={points}
+                          onChange={handleSliderChange}
+                          aria-labelledby="points-slider"
+                          min={100}
+                          max={1000}
+                          step={50}
+                          sx={{
+                            color: "#FF7622",
+                            "& .MuiSlider-thumb": {
+                              height: 20,
+                              width: 20,
+                            },
+                            "& .MuiSlider-rail": {
+                              opacity: 0.5,
+                              backgroundColor: "#E5E7EB",
+                            },
+                          }}
+                        />
+                        <div className="flex justify-between text-xs text-gray-500">
+                          <span>100 pts</span>
+                          <span>500 pts</span>
+                          <span>1000 pts</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                {/* DateRangeCalendar Dialog */}
-                <Dialog
-                  open={dateDialogOpen}
-                  onClose={toggleDateDialog}
-                  fullWidth
-                  maxWidth="sm"
-                  PaperProps={{
-                    sx: {
-                      "& .MuiPickersLayout-root::before": {
-                        display: "none !important",
-                      },
-                    },
-                  }}
-                >
-                  <DialogContent>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DemoContainer components={["DateRangeCalendar"]}>
-                        <DateRangeCalendar
-                          value={dateRange}
-                          onChange={(newValue) => setDateRange(newValue)}
-                          calendars={1}
-                        />
-                      </DemoContainer>
-                    </LocalizationProvider>
-                  </DialogContent>
-                  <DialogActions>
-                    <Button onClick={toggleDateDialog} color="inherit">
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={toggleDateDialog}
-                      variant="contained"
-                      sx={{
-                        backgroundColor: "#FF7622",
-                        "&:hover": {
-                          backgroundColor: "#E56A1E",
-                        },
-                      }}
-                    >
-                      Confirm
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </div>
+                </>
+              )}
 
               {/* Remarks Section */}
               <div className="mt-4 sm:mt-6">
