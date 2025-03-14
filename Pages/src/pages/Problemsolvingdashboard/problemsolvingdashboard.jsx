@@ -355,7 +355,6 @@ function Problemsolver() {
       <Dialog
         onClose={toggleFilter}
         open={showFilter}
-        TransitionComponent={Transition} // Add slide transition
         keepMounted // Keep the dialog mounted in the DOM
         aria-describedby="filter-dialog-description" // Improve accessibility
       >
