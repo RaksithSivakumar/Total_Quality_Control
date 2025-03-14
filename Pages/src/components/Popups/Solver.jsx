@@ -350,7 +350,7 @@ const Solver = ({ open, onClose }) => {
                       type="radio"
                       name="status"
                       value="Accepted"
-                      className="mr-1 sm:mr-2"
+                      className="mr-1 sm:mr-2 custom-radio"
                       checked={status === "Accepted"}
                       onChange={(e) => setStatus(e.target.value)}
                     />
@@ -361,7 +361,7 @@ const Solver = ({ open, onClose }) => {
                       type="radio"
                       name="status"
                       value="Rejected"
-                      className="mr-1 sm:mr-2"
+                      className="mr-1 sm:mr-2 custom-radio"
                       checked={status === "Rejected"}
                       onChange={(e) => setStatus(e.target.value)}
                     />
@@ -388,7 +388,9 @@ const Solver = ({ open, onClose }) => {
                           {/* Small Button */}
                           <Button
                             onClick={() => toggleActiveState("small")}
-                            variant={activeStates.small ? "contained" : "outlined"}
+                            variant={
+                              activeStates.small ? "contained" : "outlined"
+                            }
                             size={isMobile ? "small" : "medium"}
                             sx={{
                               flex: 1,
@@ -412,7 +414,9 @@ const Solver = ({ open, onClose }) => {
                           {/* Medium Button */}
                           <Button
                             onClick={() => toggleActiveState("medium")}
-                            variant={activeStates.medium ? "contained" : "outlined"}
+                            variant={
+                              activeStates.medium ? "contained" : "outlined"
+                            }
                             size={isMobile ? "small" : "medium"}
                             sx={{
                               flex: 1,
@@ -436,7 +440,9 @@ const Solver = ({ open, onClose }) => {
                           {/* Large Button */}
                           <Button
                             onClick={() => toggleActiveState("large")}
-                            variant={activeStates.large ? "contained" : "outlined"}
+                            variant={
+                              activeStates.large ? "contained" : "outlined"
+                            }
                             size={isMobile ? "small" : "medium"}
                             sx={{
                               flex: 1,
