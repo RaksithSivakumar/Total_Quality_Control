@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, ChevronDown, Check } from "lucide-react";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import {
   Dialog,
   DialogContent,
@@ -36,6 +38,8 @@ const LogCreation = ({ open, onClose }) => {
     // Validation for the save action
     if (!status && isExpanded) {
       alert("Please select a status.");
+      
+      
       return;
     }
 
@@ -234,26 +238,26 @@ const LogCreation = ({ open, onClose }) => {
                 </Typography>
               </div>
 
-              {/* Additional Questions Section */}
-              <div className="space-y-3 sm:space-y-4">
-                {[1, 2, 3, 4, 5].map((num) => (
-                  <div key={num}>
-                    <Typography
-                      variant="body2"
-                      className="text-xs sm:text-sm mb-1 sm:mb-2"
-                    >
-                      {num}. Have you solved this problem?
-                    </Typography>
-                    <input
-                      type="text"
-                      placeholder="Type your answer"
-                      className="w-full p-2 sm:p-3 bg-gray-100 rounded-md border-none outline-none text-xs sm:text-sm"
-                      aria-label={`Question ${num} answer`}
-                    />
-                  </div>
-                ))}
+              {/* Questions */}
+          <div className="mb-6">
+            <h3 className="text-sm font-medium mb-3">Questions</h3>
+            {[
+              "HAVE YOU TRIED TO SOLVE THE PROBLEM?",
+              "WHEN DID THE PROBLEM ARISE?",
+              "VENUE OF THE PROBLEM ARISE?",
+              "SPECIFICATION OF THE PROBLEM?",
+              "PROBLEM ARISE TIME?"
+            ].map((question, index) => (
+              <div key={index} className="mb-4">
+                <p className="text-sm mb-2">{index + 1}. {question}</p>
+                <input
+                  type="text"
+                  placeholder="Type your answer"
+                  className="w-full p-3 bg-gray-100 rounded-md border-none outline-none"
+                />
               </div>
-
+            ))}
+          </div>
               {/* Status Section */}
               <div className="mt-4 sm:mt-6">
                 <Typography
