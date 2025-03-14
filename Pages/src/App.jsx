@@ -83,9 +83,9 @@ const App = ({ image = "/placeholder.svg?height=60&width=60" }) => {
   );
 
   // Handle back button click
-  const handleBackClick = () => {
-    navigate(-1); // Navigate back to the previous page
-  };
+  // const handleBackClick = () => {
+  //   navigate(-1); // Navigate back to the previous page
+  // };
 
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col">
@@ -189,7 +189,7 @@ const App = ({ image = "/placeholder.svg?height=60&width=60" }) => {
                   <button
                     className="flex items-center space-x-3 p-3 rounded-lg hover:bg-[#F5F7FA]"
                     onClick={() => {
-                      handleBackClick(); // Navigate back
+                      //handleBackClick(); // Navigate back
                       setIsMenuOpen(false); // Close the mobile menu
                     }}
                   >
