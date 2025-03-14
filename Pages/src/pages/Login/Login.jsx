@@ -15,7 +15,7 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setLoading(true);   // State for filter popup visibility
     try {
       const response = await axios.post("http://localhost:5000/api/login", {
         email,
