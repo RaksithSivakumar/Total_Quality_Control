@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 /* Hide scrollbar for Chrome, Safari, and Opera */
@@ -38,3 +39,141 @@
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
+
+/* App.css or index.css */
+
+/* ==========================================================================
+   Base styles: Opinionated defaults
+   ========================================================================== */
+
+   body {
+    font-family: sans-serif;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+    /* background-color: #efc8b1; */
+    color: #333; /* Default text color */
+  }
+  
+  /* ==========================================================================
+     Layout and Component Styles (Mobile-First)
+     ========================================================================== */
+  
+  .form {
+    width: 100%; /* Full width on mobile */
+    padding: 1rem;
+    box-sizing: border-box; /* Ensure padding doesn't break layout */
+  }
+  
+  .input-container {
+    max-width: 100%; /* Full width on mobile */
+    width: 100%;
+    background-color: #f0f0f0;
+    margin: 0.5rem 0;
+    height: 55px;
+    border-radius: 55px;
+    display: grid;
+    grid-template-columns: 15% 85%;
+    padding: 0.4rem;
+    position: relative;
+  }
+  
+  .input-container label {
+    /* Ensure label is tappable */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .input-container input {
+    background-color: transparent;
+    outline: none;
+    border: none;
+    line-height: normal;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #333;
+    width: 100%; /* Take up the available space */
+  }
+  
+  .input-container input::placeholder {
+    color: #aaa;
+    font-weight: 500;
+  }
+  
+  .social-icons-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem; /* Increased gap for mobile */
+  }
+  
+  .social-icon {
+    /* Shared styles for social icons */
+    height: 46px;
+    width: 46px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #333;
+    border-radius: 50%;
+    border: 1px solid #333;
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+  }
+  
+  .social-icon:hover {
+    color: #ffb8b1;
+    border-color: #efc8b1;
+  }
+  
+  /* Style adjustments for the mobile toggle */
+  .bottom-4 {
+    bottom: 1rem; /* Reduced bottom spacing */
+  }
+  
+  /* ==========================================================================
+     Tablet Styles (Example - Adjust breakpoint as needed)
+     ========================================================================== */
+  
+  @media (min-width: 600px) {
+    .form {
+      padding: 1.5rem;
+    }
+  
+    .input-container {
+      height: 60px; /* Slightly larger input fields */
+    }
+  }
+  
+  /* ==========================================================================
+     Desktop Styles
+     ========================================================================== */
+  
+  @media (min-width: 769px) {
+    .form {
+      width: 50%; /* Back to half-width on desktop */
+      padding: 2rem;
+    }
+  
+    .input-container {
+      max-width: 380px; /* Restore max-width */
+    }
+  
+    .social-icons-container {
+      gap: 0.5rem; /* Restore smaller gap on desktop */
+    }
+  }
+  
+  /* ==========================================================================
+     Animations (Consider disabling some on mobile for performance)
+     ========================================================================== */
+  
+  /* Example: Disabling animations on mobile */
+  @media (max-width: 768px) {
+    .transition-all {
+      transition: none !important;
+    }
+  }
+  

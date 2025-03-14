@@ -1,154 +1,167 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import ProjectLogo from "../../assets/Images/ProjectLogo.svg";
+import GoogleLogo from "../../assets/Images/google.png";
 
 const LoginPage = () => {
-  const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("Student");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Password validation
-  const validatePassword = (password) => {
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    return regex.test(password);
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await axios.post("http://localhost:5000/api/login", {
+        email,
+        password,
+      });
+      console.log("Response data:", response.data);
+      const { role } = response.data.user;
+      // Show success toast
+      toast.success("Login successful!");
+      switch (role) {
+        case "student":
+          navigate("/Problemrd");
+          break;
+        case "supervisor":
+          navigate("/Superviser");
+          break;
+        case "problem":
+          navigate("/Problemsol");
+          break;
+        case "maintainanace":
+          navigate("/Maintain");
+          break;
+        default:
+          toast.error("Invalid role or login failed.");
+
+          break;
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("Login failed. Please check your credentials.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Toggle between login and registration forms
-  const handleToggle = () => {
-    setIsRegistering(!isRegistering);
-    setError(""); // Clear any previous errors
-    setSuccess(""); // Clear any previous success messages
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    try {
+      // Send the ID token to your backend
+      const response = await axios.post('http://localhost:5000/api/google-login', {
+        credential: credentialResponse.credential
+      });
+      
+      console.log("Google login response:", response.data);
+      const { role } = response.data.user;
+      
+      toast.success("Google login successful!");
+      
+      switch (role) {
+        case "student":
+          navigate("/Problemrd");
+          break;
+        case "supervisor":
+          navigate("/Superviser");
+          break;
+        case "problem":
+          navigate("/Problemsol");
+          break;
+        case "maintainanace":
+          navigate("/Maintain");
+          break;
+        default:
+          toast.error("Invalid role or login failed.");
+          break;
+      }
+    } catch (error) {
+      console.error("Google login error:", error);
+      toast.error("Google login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = () => {
-    navigate("/Problemrd");
-  }
-
-  // Handle form submission
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setError("");
-  //   setSuccess("");
-
-  //   // Validate all fields
-  //   if (!email || !password || !role) {
-  //     setError("All fields are required.");
-  //     return;
-  //   }
-
-  //   // Validate password during registration
-  //   if (isRegistering && !validatePassword(password)) {
-  //     setError(
-  //       "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character."
-  //     );
-  //     return;
-  //   }
-
-  //   // API endpoint
-  //   const endpoint = isRegistering ? "http://localhost:5000/register" : "http://localhost:5000/login";
-  //   const payload = { email, password, role };
-
-  //   try {
-  //     // Send API request using axios
-  //     const response = await axios.post(endpoint, payload);
-
-  //     if (response.status === 201 || response.status === 200) {
-  //       if (isRegistering) {
-  //         setSuccess("Registration successful! Redirecting to login...");
-  //         setTimeout(() => setIsRegistering(false), 2000); // Switch to login page after delay
-  //       } else {
-  //         setSuccess("Login successful!");
-  //         // Here you would typically redirect or store auth token
-  //       }
-  //     }
-  //   } catch (err) {
-  //     // Handle errors
-  //     if (err.response) {
-  //       setError(err.response.data.message || "An error occurred.");
-  //     } else {
-  //       setError("Network error. Please try again.");
-  //     }
-  //   }
-  // };
+  const handleGoogleError = () => {
+    toast.error("Google sign-in was cancelled or failed.");
+  };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-amber-50 p-4">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-center text-amber-500 text-2xl font-bold mb-6">
-          {isRegistering ? "Register" : "Login"}
-        </h2>
-        
-        {/* Error and Success Messages */}
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-        {success && <p className="text-green-500 text-center mb-4">{success}</p>}
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email Field */}
-          <div>
-            <label className="block mb-2 font-medium">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full p-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent"
+    <GoogleOAuthProvider clientId="275309862189-naca865pd0dri3lh5h76ng3m2m6vqh4q.apps.googleusercontent.com">
+      <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
+        <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 w-full max-w-md">
+          <div className="text-center">
+            <img
+              src={ProjectLogo}
+              alt="Total Quality Circle"
+              className="w-20 mx-auto mb-6"
             />
+            <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+              Total Quality Circle
+            </h2>
+            <p className="text-gray-500 mb-6">Please log in to continue</p>
           </div>
-
-          {/* Password Field */}
-          <div>
-            <label className="block mb-2 font-medium">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full p-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent"
-            />
-          </div>
-
-          {/* Role Field */}
-          <div>
-            <label className="block mb-2 font-medium">Role</label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              required
-              className="w-full p-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent"
+          <form className="space-y-4" onSubmit={handleLogin}>
+            <div className="flex flex-col space-y-1">
+              <label className="text-left text-sm font-medium text-gray-600">
+                Email
+              </label>
+              <input
+                type="email"
+                placeholder="tqc@bitsathy.ac.in"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF7622] focus:border-[#FF7622] transition-colors"
+              />
+            </div>
+            <div className="flex flex-col space-y-1">
+              <label className="text-left text-sm font-medium text-gray-600">
+                Password
+              </label>
+              <input
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF7622] focus:border-[#FF7622] transition-colors"
+              />
+            </div>
+            <button
+              className="w-full px-3 py-2 border border-transparent bg-[#FF7622] rounded-md focus:outline-none transition-colors text-white"
+              disabled={loading}
             >
-              <option value="Student">Student</option>
-              <option value="Supervisor">Supervisor</option>
-              <option value="Problem Solving Team">Problem Solving Team</option>
-            </select>
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full p-3 bg-amber-500 text-white border-none rounded cursor-pointer text-base font-medium hover:bg-amber-600 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2"
-          >
-            {isRegistering ? "Register" : "Login"}
-          </button>
-        </form>
-
-        {/* Toggle between Login and Register */}
-        <p className="text-center mt-6">
-          {isRegistering ? "Already have an account? " : "New user? "}
-          <button
-            onClick={handleToggle}
-            className="text-amber-500 font-bold hover:text-amber-600 focus:outline-none"
-            type="button"
-          >
-            {isRegistering ? "Login here" : "Register here"}
-          </button>
-        </p>
+              {loading ? "Logging in..." : "Login"}
+            </button>
+            
+            <div className="relative flex items-center justify-center w-full mt-4">
+              <div className="border-t border-gray-300 w-full"></div>
+              <div className="text-center text-gray-500 text-sm bg-white px-2 absolute">OR</div>
+            </div>
+            
+            <div className="flex justify-center mt-4">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                theme="outline"
+                size="large"
+                text="signin_with"
+                shape="rectangular"
+                logo_alignment="center"
+                width="100%"
+              />
+            </div>
+          </form>
+        </div>
+        <ToastContainer />
       </div>
-    </div>
+    </GoogleOAuthProvider>
   );
 };
 
