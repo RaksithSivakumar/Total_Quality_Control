@@ -183,28 +183,25 @@ app.get("/api/master_problem", async (req, res) => {
   }
 });
 
-// POST API to handle adding a new problem to master_problem table
 app.post("/api/master_problem", async (req, res) => {
-  const { Category, Problem_Title, Description, Questions, created_by } = req.body;
-  
+  const { Category, Problem_Title, Description, Media_Upload, Questions1, Questions2, Questions3, Questions4, Questions5, created_by } = req.body;
   // Validate input
-  if (!Category || !Problem_Title || !Description || !Questions || !created_by) {
+  if (!Category || !Problem_Title || !Description || !Media_Upload || !created_by || !Questions1 || !Questions2 || !Questions3 || !Questions4 || !Questions5) {
     return res.status(400).json({ message: "All fields are required." });
   }
-  
   try {
     // Insert new problem into the database
     const [result] = await pool.query(
-      "INSERT INTO master_problem (Category, `Problem Title`, Description, Questions, created_at, created_by) VALUES (?, ?, ?, ?, NOW(), ?)",
-      [Category, Problem_Title, Description, Questions, created_by]
+      "INSERT INTO master_problem (Category, `Problem Title`, Description, Media_Upload, `Questions 1`, `Questions 2`, `Questions 3`, `Questions 4`, `Questions 5`, created_at, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)",
+      [Category, Problem_Title, Description, Media_Upload, Questions1, Questions2, Questions3, Questions4, Questions5, created_by]
     );
-    
     res.status(201).json({ message: "Problem added successfully", id: result.insertId });
   } catch (err) {
     console.error("Error inserting data:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 // GET API to retrieve all records from master_supervisor table
 app.get("/api/supervisor", async (req, res) => {
@@ -216,29 +213,29 @@ app.get("/api/supervisor", async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 });
+app.post('/api/supervisor', async (req, res) => {
+  const { Category, Problem_Title, status, created_by } = req.body; 
+  console.log("Received data:", req.body); // Log incoming request data
 
-// POST API to handle adding a new supervisor problem to master_supervisor table
-app.post("/api/supervisor", async (req, res) => {
-  const { Category, Problem_Title, Description, Media_Upload, Questions, status, created_by } = req.body;
-  
   // Validate input
-  if (!Category || !Problem_Title || !Description || !Media_Upload || !Questions || !status || !created_by) {
-    return res.status(400).json({ message: "All fields are required." });
+  if (!Category || !Problem_Title || !status || !created_by) {
+      return res.status(400).json({ message: 'All fields are required.' });
   }
-  
+
   try {
-    // Insert new supervisor problem into the database
-    const [result] = await pool.query(
-      "INSERT INTO master_supervisor (Category, `Problem Title`, Description, Media_Upload, Questions, status, created_at, created_by) VALUES (?, ?, ?, ?, ?, ?, NOW(), ?)",
-      [Category, Problem_Title, Description, Media_Upload, Questions, status, created_by]
+    // Insert data into master_supervisor table using pool
+    const [results] = await pool.query(
+      `INSERT INTO master_supervisor (Category, \`Problem Title\`, status, created_by) VALUES (?, ?, ?, ?)`, 
+      [Category, Problem_Title, status, created_by]
     );
-    
-    res.status(201).json({ message: "Supervisor problem added successfully", id: result.insertId });
-  } catch (err) {
-    console.error("Error inserting data: ", err);
-    return res.status(500).json({ error: "Internal server error" });
+
+    res.status(201).json({ message: 'Data inserted successfully!', id: results.insertId });
+  } catch (error) {
+    console.error('Error inserting data:', error);
+    res.status(500).json({ message: 'Error inserting data.' });
   }
 });
+
 
 app.get("/api/prsolving", async (req, res) => {
   try {
