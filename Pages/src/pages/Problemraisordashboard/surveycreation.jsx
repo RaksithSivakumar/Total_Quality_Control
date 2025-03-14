@@ -265,7 +265,7 @@ const FormDashboard = () => {
                 onChange={(e) => setNewCategoryName(e.target.value)}
               />
               <button
-                className="px-3 py-2 text-sm rounded-md border border-[#FF7622] text-[#FF7622] flex items-center justify-center"
+                className="px-3 py-2 text-sm rounded-md border border-[#FF7622] text-[#FF7622]  flex items-center justify-center"
                 onClick={handleAddNewCategory}
               >
                 <IoAdd className="mr-1" /> Add New
