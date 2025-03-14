@@ -62,15 +62,37 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
     setIsExpanded(!isExpanded);
   };
   const handleSave = () => {
-    setIsActive(!isActive);
-    if (!status && isExpanded) {
-      alert("Please select a status.");
-      return;
-    }
-    // Your save logic here
-    alert("Saved!");
-  };
-  // Prepare the questions array. Use fetched data if available; otherwise, default questions.
+    const data = {
+        Category: problem ? problem.Category : "Default Category", // Ensure this is set
+        Problem_Title: problem ? problem["Problem Title"] : storedProblemTitle, // Ensure this is set
+        status: status, // Should be either "Accepted" or "Rejected"
+        Remarks: remarks // Optional remarks field
+    };
+    console.log("Data being sent to the server:", data); // Log the data being sent
+    // Send POST request to the backend
+    fetch("http://localhost:5000/api/supervisor", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Network response was not ok");
+        }
+        return response.json();
+    })
+    .then(data => {
+        alert(data.message); // Show success message
+        onClose(); // Close the dialog
+    })
+    .catch(error => {
+        console.error("Error saving data:", error);
+        alert("Failed to save data.");
+    });
+};
+  // Prepare the questnions array. Use fetched data if available; otherwise, default questions.
   const defaultQuestions = [
     "HAVE YOU TRIED TO SOLVE THE PROBLEM?",
     "WHEN DID THE PROBLEM ARISE?",
