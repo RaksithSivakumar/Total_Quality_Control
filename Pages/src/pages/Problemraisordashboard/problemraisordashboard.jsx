@@ -7,10 +7,11 @@ import Rejected from "../../components/Popups/Rejected";
 import Accepted from "../../components/Popups/Accepted";
 import { useNavigate } from "react-router-dom"
 
+
 function ProblemRaisorDashboard() {
   const navigate = useNavigate()
   const [selectedDay, setSelectedDay] = useState(3) // Wednesday (index 3) selected by default
-  const [showFilter, setShowFilter] = useState(false) // State for filter popup visibility
+  const [showFilter, setShowFilter] = useState(false) // State for filter popup visibility // State for filter popup visibility
   
   // Added state variables for popups
   const [openLogCreation, setOpenLogCreation] = useState(false)
@@ -312,7 +313,7 @@ function ProblemRaisorDashboard() {
       <LogCreation open={openLogCreation} onClick={() => setOpenLogCreation(false)} />
       <Rejected open={openRejected} onClick={() => setOpenRejected(false)} />
       <Accepted open={openAccepted} onClick={() => setOpenAccepted(false)} />
-    </div>
+    </div>  
   )
 }
 
