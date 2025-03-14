@@ -313,7 +313,7 @@ function ProblemRaisorDashboard() {
       <LogCreation open={openLogCreation} onClick={() => setOpenLogCreation(false)} />
       <Rejected open={openRejected} onClick={() => setOpenRejected(false)} />
       <Accepted open={openAccepted} onClick={() => setOpenAccepted(false)} />
-    </div>
+    </div>  
   )
 }
 
