@@ -33,6 +33,9 @@ function ProblemRaisorDashboard() {
     { time: "12 pm" },
     { time: "1 pm" },
     { time: "2 pm" },
+    { time: "3 pm" },
+    { time: "4 pm" },
+    { time: "5 pm" },
   ]
 
   const events = [
