@@ -33,7 +33,6 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0
 });
-
 // Google OAuth client
 const client = new OAuth2Client('275309862189-naca865pd0dri3lh5h76ng3m2m6vqh4q.apps.googleusercontent.com');
 
@@ -130,186 +129,126 @@ app.post('/api/google-login', async (req, res) => {
   }
 });
 
-// Regular login route
-app.post("/api/login", async (req, res) => {
-  const { email, password } = req.body;
-  
-  // Validate input
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required." });
-  }
-  
+// Problem Raiser API
+app.get('/api/problem_raiser', async (req, res) => {
   try {
-    // Query to find the user
-    const [results] = await pool.query("SELECT * FROM master_login WHERE email = ?", [email]);
-    
-    // Check if user exists
-    if (results.length > 0) {
-      const user = results[0];
-      // Assuming you have a hashed password in the database
-      if (user.password === password) { // Replace this with bcrypt comparison in production
-        res.status(200).json({ message: "Login successful", user: { email: user.email, role: user.role } });
-      } else {
-        res.status(401).json({ message: "Invalid email or password" });
-      }
-    } else {
-      res.status(401).json({ message: "Invalid email or password" });
-    }
-  } catch (err) {
-    console.error("Error during login: ", err);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-// GET API to retrieve all records from master_login table
-app.get("/api/login", async (req, res) => {
-  try {
-    const [results] = await pool.query("SELECT * FROM master_login");
+    const [results] = await pool.query('SELECT * FROM problem_raiser');
     res.status(200).json(results);
   } catch (err) {
-    console.error("Error fetching data: ", err);
-    return res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// GET API to retrieve all records from master_problem table
-app.get("/api/master_problem", async (req, res) => {
+app.post('/api/problem_raiser', async (req, res) => {
+  const { category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, created_at, created_by } = req.body;
   try {
-    const [results] = await pool.query("SELECT * FROM master_problem");
+    const [results] = await pool.query('INSERT INTO problem_raiser (category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, created_at, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+    [category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, created_at, created_by]);
+    res.status(201).json({ message: 'Problem Raiser added successfully', id: results.insertId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Superviser API
+app.get('/api/superviser', async (req, res) => {
+  try {
+    const [results] = await pool.query('SELECT * FROM superviser');
     res.status(200).json(results);
   } catch (err) {
-    console.error("Error fetching data: ", err);
-    return res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
-app.post("/api/master_problem", async (req, res) => {
-  const { Category, Problem_Title, Description, Media_Upload, Questions1, Questions2, Questions3, Questions4, Questions5, created_by } = req.body;
-  // Validate input
-  if (!Category || !Problem_Title || !Description || !Media_Upload || !created_by || !Questions1 || !Questions2 || !Questions3 || !Questions4 || !Questions5) {
-    return res.status(400).json({ message: "All fields are required." });
-  }
+app.post('/api/superviser', async (req, res) => {
+  const { category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, problem_severity, status, Remarks, updated_at, updated_by } = req.body;
   try {
-    // Insert new problem into the database
-    const [result] = await pool.query(
-      "INSERT INTO master_problem (Category, `Problem Title`, Description, Media_Upload, `Questions 1`, `Questions 2`, `Questions 3`, `Questions 4`, `Questions 5`, created_at, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)",
-      [Category, Problem_Title, Description, Media_Upload, Questions1, Questions2, Questions3, Questions4, Questions5, created_by]
-    );
-    res.status(201).json({ message: "Problem added successfully", id: result.insertId });
+    const [results] = await pool.query('INSERT INTO superviser (category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, problem_severity, status, Remarks, updated_at, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+    [category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, problem_severity, status, Remarks, updated_at, updated_by]);
+    res.status(201).json({ message: 'Superviser added successfully', id: results.insertId });
   } catch (err) {
-    console.error("Error inserting data:", err);
-    return res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
-
-// GET API to retrieve all records from master_supervisor table
-app.get("/api/supervisor", async (req, res) => {
+// PR Bank API
+app.get('/api/pr_bank', async (req, res) => {
   try {
-    const [results] = await pool.query("SELECT * FROM master_supervisor");
+    const [results] = await pool.query('SELECT * FROM pr_bank');
     res.status(200).json(results);
   } catch (err) {
-    console.error("Error fetching data: ", err);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
-app.post('/api/supervisor', async (req, res) => {
-  const { Category, Problem_Title, status, created_by } = req.body; 
-  console.log("Received data:", req.body); // Log incoming request data
-
-  // Validate input
-  if (!Category || !Problem_Title || !status || !created_by) {
-      return res.status(400).json({ message: 'All fields are required.' });
-  }
-
-  try {
-    // Insert data into master_supervisor table using pool
-    const [results] = await pool.query(
-      `INSERT INTO master_supervisor (Category, \`Problem Title\`, status, created_by) VALUES (?, ?, ?, ?)`, 
-      [Category, Problem_Title, status, created_by]
-    );
-
-    res.status(201).json({ message: 'Data inserted successfully!', id: results.insertId });
-  } catch (error) {
-    console.error('Error inserting data:', error);
-    res.status(500).json({ message: 'Error inserting data.' });
+    res.status(500).json({ error: err.message });
   }
 });
 
-
-app.get("/api/prsolving", async (req, res) => {
+app.post('/api/pr_bank', async (req, res) => {
+  const { category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, problem_severity, status, Remarks, Deadline, rp, assign_to, assign_by, maintainance, created_at, created_by, updated_at, updated_by } = req.body;
   try {
-    const [results] = await pool.query("SELECT * FROM master_prsolving");
+    const [results] = await pool.query('INSERT INTO pr_bank (category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, problem_severity, status, Remarks, Deadline, rp, assign_to, assign_by, maintainance, created_at, created_by, updated_at, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+    [category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, problem_severity, status, Remarks, Deadline, rp, assign_to, assign_by, maintainance, created_at, created_by, updated_at, updated_by]);
+    res.status(201).json({ message: 'PR Bank added successfully', id: results.insertId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Master Maintain API
+app.get('/api/master_maintain', async (req, res) => {
+  try {
+    const [results] = await pool.query('SELECT * FROM master_maintain');
     res.status(200).json(results);
   } catch (err) {
-    console.error("Error fetching data: ", err);
-    return res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// POST API to handle adding a new problem to master_prsolving table
-app.post("/api/prsolving", async (req, res) => {
-  const { Category, Problem_Title, Description, Media_Upload, Questions, status_pr, deadline, created_by } = req.body;
-  
-  // Validate input
-  if (!Category || !Problem_Title || !Description || !Media_Upload || !Questions || !status_pr || !deadline || !created_by) {
-    return res.status(400).json({ message: "All fields are required." });
-  }
-  
+app.post('/api/master_maintain', async (req, res) => {
+  const { name, email, created_on, created_by, status } = req.body;
   try {
-    // Insert new problem into the database
-    const [result] = await pool.query(
-      "INSERT INTO master_prsolving (Category, `Problem Title`, Description, Media_Upload, Questions, status_pr, deadline, created_at, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)",
-      [Category, Problem_Title, Description, Media_Upload, Questions, status_pr, deadline, created_by]
-    );
-    
-    res.status(201).json({ message: "Problem added successfully", id: result.insertId });
+    const [results] = await pool.query('INSERT INTO master_maintain (name, email, created_on, created_by, status) VALUES (?, ?, ?, ?, ?)', 
+    [name, email, created_on, created_by, status]);
+    res.status(201).json({ message: 'Master Maintain added successfully', id: results.insertId });
   } catch (err) {
-    console.error("Error inserting data: ", err);
-    return res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
-app.get("/api/maintenance", async (req, res) => {
+// Master Login API
+app.get('/api/master_login', async (req, res) => {
   try {
-    const [results] = await pool.query("SELECT * FROM master_problem");
+    const [results] = await pool.query('SELECT * FROM master_login');
     res.status(200).json(results);
   } catch (err) {
-    console.error("Error fetching data: ", err);
-    return res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// POST API to handle adding a new problem to master_problem table for maintenance
-app.post("/api/maintenance", async (req, res) => {
-  const { Category, Problem_Title, Description, Media_Upload, Questions, created_by } = req.body;
-  
-  // Validate input
-  if (!Category || !Problem_Title || !Description || !Media_Upload || !Questions || !created_by) {
-    return res.status(400).json({ message: "All fields are required." });
-  }
-  
+app.post('/api/master_login', async (req, res) => {
+  const { name, email, role } = req.body;
   try {
-    // Insert new problem into the database
-    const [result] = await pool.query(
-      "INSERT INTO master_problem (Category, `Problem Title`, Description, Media_Upload, Questions, created_at, created_by) VALUES (?, ?, ?, ?, ?, NOW(), ?)",
-      [Category, Problem_Title, Description, Media_Upload, Questions, created_by]
-    );
-    
-    res.status(201).json({ message: "Problem added successfully", id: result.insertId });
+    const [results] = await pool.query('INSERT INTO master_login (name, email, role) VALUES (?, ?, ?)', 
+    [name, email, role]);
+    res.status(201).json({ message: 'Master Login added successfully', id: results.insertId });
   } catch (err) {
-    console.error("Error inserting data: ", err);
-    return res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Test route
-app.get('/', (req, res) => {
-  res.send('Server is running');
+// Questions API
+app.get('/api/questions', async (req, res) => {
+  try {
+    const [results] = await pool.query('SELECT * FROM questions');
+    res.status(200).json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
+
+ 
 
 // Start server
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+

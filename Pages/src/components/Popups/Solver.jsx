@@ -1,16 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
- 
 import { DateRange } from "react-date-range";
 import { format, differenceInDays } from "date-fns";
 import "react-date-range/dist/styles.css"; // Main CSS
 import "react-date-range/dist/theme/default.css"; // Theme CSS
-import { ArrowLeft, ChevronDown, Check, Calendar, Trophy } from "lucide-react";
+import { ArrowLeft, ChevronDown, Check, Calendar, Trophy, User } from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify"; // Import toast
 import { createTheme, ThemeProvider } from "@mui/material/styles";
- 
 import {
   Dialog,
   DialogContent,
@@ -27,17 +25,12 @@ import {
   InputAdornment,
   Menu,
   MenuItem,
-  ThemeProvider,
-  createTheme,
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { DateRangeCalendar } from "@mui/x-date-pickers-pro/DateRangeCalendar";
-import { DateRange } from "react-date-range";
-import 'react-date-range/dist/styles.css'; // Import main style file
-import 'react-date-range/dist/theme/default.css'; // Import theme css file
 import dayjs from "dayjs";
 
 const Solver = ({ open, onClose }) => {
@@ -54,16 +47,12 @@ const Solver = ({ open, onClose }) => {
     large: false,
   });
 
- 
   const customTheme = createTheme({
     components: {
       MuiTypography: {
         styleOverrides: {
           root: {
- // Apply theme color to header texts
- 
             color: "#FF7622",
- 
             fontWeight: "bold",
           },
         },
@@ -71,7 +60,7 @@ const Solver = ({ open, onClose }) => {
       MuiButtonBase: {
         styleOverrides: {
           root: {
-             color: "#FF7622", // Apply theme color to buttons
+            color: "#FF7622", // Apply theme color to buttons
             "&:hover": {
               backgroundColor: "rgba(255, 118, 34, 0.1)", // Light hover effect
             },
@@ -81,65 +70,10 @@ const Solver = ({ open, onClose }) => {
     },
   });
 
-  const [dateRange, setDateRange] = useState([
-    {
-      startDate: new Date(),
-      endDate: new Date(),
-      key: "selection",
-      color: "#FF7622", // Updated theme color
-    },
-  ]);
-  const [showCalendar, setShowCalendar] = useState(false);
-  const calendarRef = useRef(null);
-
-  // Toggle calendar visibility
-  const toggleCalendar = () => setShowCalendar(!showCalendar);
-
-  // Close calendar when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (calendarRef.current && !calendarRef.current.contains(event.target)) {
-        setShowCalendar(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Points state
-  const [points, setPoints] = useState(500);
-
-  // Date range states and functions
-  const [dateDialogOpen, setDateDialogOpen] = useState(false);
-  // const [dateRange, setDateRange] = useState([dayjs(), dayjs().add(5, "day")]);
-
-  // Calculate days between dates
-  const getDaysDifference = () => {
-    if (!dateRange[0] || !dateRange[1]) return 0;
-    return dateRange[1].diff(dateRange[0], "day");
-  };
-
-  // Function to toggle the date dialog
-  const toggleDateDialog = () => {
-    setDateDialogOpen(!dateDialogOpen);
-  };
- 
-            color: "#FF7622",
-            "&:hover": {
-              backgroundColor: "rgba(255, 118, 34, 0.1)",
-            },
-          },
-        },
-      },
-    },
-  });
- 
-  // Initialize with actual Date objects for react-date-range
   const [dateRange, setDateRange] = useState({
-    startDate: dayjs().toDate(),
-    endDate: dayjs().add(5, "day").toDate(),
+    startDate: new Date(),
+    endDate: new Date(),
   });
-  
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarRef = useRef(null);
 
@@ -149,10 +83,8 @@ const Solver = ({ open, onClose }) => {
   const [assignToAnchorEl, setAssignToAnchorEl] = useState(null);
   const [assignedTo, setAssignedTo] = useState("");
 
-  // Toggle calendar visibility
   const toggleCalendar = () => setShowCalendar(!showCalendar);
 
-  // Close calendar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (calendarRef.current && !calendarRef.current.contains(event.target)) {
@@ -163,33 +95,27 @@ const Solver = ({ open, onClose }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Handle points change
   const handlePointsChange = (event) => {
     setPoints(event.target.value === "" ? 0 : Number(event.target.value));
   };
 
-  // Handle slider change
   const handleSliderChange = (event, newValue) => {
     setPoints(newValue);
   };
 
-  // Handle Assign To dropdown open
   const handleAssignToClick = (event) => {
     setAssignToAnchorEl(event.currentTarget);
   };
 
-  // Handle Assign To dropdown close
   const handleAssignToClose = () => {
     setAssignToAnchorEl(null);
   };
 
-  // Handle Assign To selection
   const handleAssignToSelect = (assignee) => {
     setAssignedTo(assignee);
     handleAssignToClose();
   };
 
-  // Handle save
   const handleSave = () => {
     if (!activeStates.category && isExpanded) {
       toast.error("Please select a category.");
@@ -214,7 +140,6 @@ const Solver = ({ open, onClose }) => {
     toast.success("Problem details saved successfully!");
   };
 
-  // Get the current problem rating
   const getProblemRating = () => {
     if (activeStates.small) return "Small";
     if (activeStates.medium) return "Medium";
@@ -222,7 +147,6 @@ const Solver = ({ open, onClose }) => {
     return "Not selected";
   };
 
-  // Handle date range selection from react-date-range
   const handleDateRangeChange = (ranges) => {
     setDateRange({
       startDate: ranges.selection.startDate,
@@ -230,7 +154,6 @@ const Solver = ({ open, onClose }) => {
     });
   };
 
-  // Format date range for display
   const formatDateRange = () => {
     if (!dateRange.startDate || !dateRange.endDate) return "Select deadline";
     
@@ -379,12 +302,9 @@ const Solver = ({ open, onClose }) => {
                   </div>
                 </div>
 
-                 {/* Deadline with DateRangeCalendar */}
-                {/* <div>
-  
                 {/* Problem Title */}
                 <div>
-                   <Typography
+                  <Typography
                     variant={isMobile ? "subtitle1" : "h6"}
                     className="text-gray-700 font-medium mb-1 sm:mb-2 text-sm sm:text-base"
                   >
@@ -394,71 +314,11 @@ const Solver = ({ open, onClose }) => {
                     variant="body1"
                     className="text-gray-600 p-2 sm:p-4 text-sm sm:text-base"
                   >
-                     <Typography variant="body1" className="text-gray-600">
-                      {dateRange[0] && dateRange[1]
-                        ? `${dateRange[0].format(
-                            "MMM DD"
-                          )} - ${dateRange[1].format(
-                            "MMM DD"
-                          )} (${getDaysDifference()} days)`
-                        : "Select deadline"}
-                    </Typography>
-                    <div className="text-orange-500">
-                      <Calendar size={20} />
-                    </div>
-                  </div>
-                </div> */}
-                <ThemeProvider theme={customTheme}>
-      <div className="relative">
-        <Typography
-          variant="h6"
-          className="text-gray-800 font-semibold mb-2 text-sm sm:text-base"
-        >
-          Select Deadline for the Problem
-        </Typography>
-
-        <div
-          className="w-full border border-gray-300 rounded-lg p-3 sm:p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition-colors"
-          onClick={toggleCalendar}
-        >
-          <Typography variant="body1" className="text-gray-700">
-            {dateRange[0].startDate && dateRange[0].endDate
-              ? `${format(dateRange[0].startDate, "MMM dd")} - ${format(
-                  dateRange[0].endDate,
-                  "MMM dd"
-                )} (${differenceInDays(dateRange[0].endDate, dateRange[0].startDate) + 1} days)`
-              : "Select deadline"}
-          </Typography>
-          <div className="text-[#FF7622]">
-            <Calendar size={22} />
-          </div>
-        </div>
-
-        {showCalendar && (
-          <div
-            ref={calendarRef}
-            className="absolute mt-2 z-50 bg-white p-3 shadow-lg rounded-lg border border-gray-200"
-          >
-            <DateRange
-              ranges={dateRange}
-              onChange={(item) => setDateRange([item.selection])}
-              moveRangeOnFirstSelection={false}
-              rangeColors={["#FF7622"]} // Theme color for selection
-              showMonthAndYearPickers={true} // Enable month & year selection
-            />
-          </div>
-        )}
-      </div>
-    </ThemeProvider>
-    
-                {/* Points for solving the problem */}
- 
                     Water leakage
                   </Typography>
                 </div>
 
                 {/* Description */}
- 
                 <div>
                   <Typography
                     variant={isMobile ? "subtitle1" : "h6"}
