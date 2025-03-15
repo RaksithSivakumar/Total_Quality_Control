@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ArrowLeft, ChevronDown, Check } from "lucide-react";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   Dialog,
   DialogContent,
@@ -15,19 +15,29 @@ import {
   useTheme,
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const LogCreation = ({ open, onClose }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [status, setStatus] = useState("");
   const [remarks, setRemarks] = useState("");
   const [isActive, setIsActive] = useState(false);
+  const [questions, setQuestions] = useState(["", "", "", "", ""]); // State for questions
 
   const handleViewDetails = () => {
     setIsExpanded(!isExpanded);
+  };
+
+  // Handle question input change
+  const handleQuestionChange = (index, value) => {
+    const newQuestions = [...questions];
+    newQuestions[index] = value;
+    setQuestions(newQuestions);
   };
 
   // Combined handleSave function with all necessary logic
@@ -37,20 +47,29 @@ const LogCreation = ({ open, onClose }) => {
 
     // Validation for the save action
     if (!status && isExpanded) {
-      alert("Please select a status.");
-      
-      
+      toast.error("Please select a status.");
+      return;
+    }
+
+    if (!remarks.trim()) {
+      toast.error("Please add remarks.");
       return;
     }
 
     // Your save logic here
-    alert("Saved!");
+    toast.success("Saved successfully!");
+  };
+
+  // Handle closing the popup
+  const handleClose = () => {
+    onClose(); // Call the onClose function passed from the parent component
+    navigate("/"); // Navigate to the desired route (e.g., home page)
   };
 
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={handleClose} // Use handleClose here
       fullWidth
       maxWidth="md"
       fullScreen={isMobile}
@@ -77,7 +96,7 @@ const LogCreation = ({ open, onClose }) => {
                 <IconButton
                   edge="start"
                   color="inherit"
-                  onClick={onClose}
+                  onClick={handleClose} // Use handleClose here
                   aria-label="close"
                   size={isMobile ? "small" : "medium"}
                 >
@@ -94,7 +113,7 @@ const LogCreation = ({ open, onClose }) => {
             </DialogTitle>
             <IconButton
               aria-label="close"
-              onClick={onClose}
+              onClick={handleClose} // Use handleClose here
               size={isMobile ? "small" : "medium"}
             >
               <CloseIcon fontSize={isMobile ? "small" : "medium"} />
@@ -229,35 +248,37 @@ const LogCreation = ({ open, onClose }) => {
               </div>
 
               {/* Questions */}
-              <div>
+              <div className="mb-6">
                 <Typography
                   variant={isMobile ? "subtitle1" : "h6"}
-                  className="text-gray-700 font-medium mb-1 sm:mb-2 text-sm sm:text-base"
+                  className="text-gray-700 font-medium mb-3 text-sm sm:text-base"
                 >
                   Questions
                 </Typography>
+                {[
+                  "HAVE YOU TRIED TO SOLVE THE PROBLEM?",
+                  "WHEN DID THE PROBLEM ARISE?",
+                  "VENUE OF THE PROBLEM ARISE?",
+                  "SPECIFICATION OF THE PROBLEM?",
+                  "PROBLEM ARISE TIME?",
+                ].map((question, index) => (
+                  <div key={index} className="mb-4">
+                    <p className="text-sm mb-2">
+                      {index + 1}. {question}
+                    </p>
+                    <input
+                      type="text"
+                      placeholder="Type your answer"
+                      className="w-full p-3 bg-gray-100 rounded-md border-none outline-none"
+                      value={questions[index]}
+                      onChange={(e) =>
+                        handleQuestionChange(index, e.target.value)
+                      }
+                    />
+                  </div>
+                ))}
               </div>
 
-              {/* Questions */}
-          <div className="mb-6">
-            <h3 className="text-sm font-medium mb-3">Questions</h3>
-            {[
-              "HAVE YOU TRIED TO SOLVE THE PROBLEM?",
-              "WHEN DID THE PROBLEM ARISE?",
-              "VENUE OF THE PROBLEM ARISE?",
-              "SPECIFICATION OF THE PROBLEM?",
-              "PROBLEM ARISE TIME?"
-            ].map((question, index) => (
-              <div key={index} className="mb-4">
-                <p className="text-sm mb-2">{index + 1}. {question}</p>
-                <input
-                  type="text"
-                  placeholder="Type your answer"
-                  className="w-full p-3 bg-gray-100 rounded-md border-none outline-none"
-                />
-              </div>
-            ))}
-          </div>
               {/* Status Section */}
               <div className="mt-4 sm:mt-6">
                 <Typography
@@ -312,7 +333,7 @@ const LogCreation = ({ open, onClose }) => {
               {/* Buttons Section */}
               <DialogActions className="mt-4 sm:mt-6 flex justify-end gap-2 sm:gap-4 p-0 sm:p-2">
                 <Button
-                  onClick={onClose}
+                  onClick={handleClose} // Use handleClose here
                   color="primary"
                   size={isMobile ? "small" : "medium"}
                   sx={{
@@ -340,6 +361,7 @@ const LogCreation = ({ open, onClose }) => {
           )}
         </div>
       </DialogContent>
+      <ToastContainer />
     </Dialog>
   );
 };

@@ -9,7 +9,7 @@ import {
   BiListUl,
   BiLink,
 } from "react-icons/bi";
-import { useNavigate } from "react-router-dom"; // Use useNavigate instead of useRouter  // State for filter popup visibility
+import { useNavigate } from "react-router-dom";
 import Input from "../../components/input/Input";
 import Card from "../../components/problem/Card";
 import LogCreation from "../../components/Popups/LogCreation";
@@ -18,17 +18,17 @@ import Accepted from "../../components/Popups/Accepted";
 import axios from "axios";
 
 const FormDashboard = () => {
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
 
   // State variables
   const [open, setOpen] = useState(false);
-  const [activePopup, setActivePopup] = useState(null); // For managing active popup
+  const [activePopup, setActivePopup] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [files, setFiles] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [fileError, setFileError] = useState("");
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [activeTab, setActiveTab] = useState("creation"); // 'creation' or 'problemBank'
+  const [activeTab, setActiveTab] = useState("creation");
   const [categories, setCategories] = useState([
     "Productivity failure",
     "Mismanagement",
@@ -38,6 +38,11 @@ const FormDashboard = () => {
   const [problemTitle, setProblemTitle] = useState("");
   const [description, setDescription] = useState("");
   const [questions, setQuestions] = useState(["", "", "", "", ""]);
+  const [activeStates, setActiveStates] = useState({
+    small: true,
+    medium: false,
+    large: false,
+  });
 
   const contentEditableRef = useRef(null);
   const scrollableRef = useRef(null);
@@ -128,7 +133,9 @@ const FormDashboard = () => {
     );
 
     if (invalidFiles.length > 0) {
-      setFileError("Invalid file type or size. Only JPEG, PNG, and PDF files under 5MB are allowed.");
+      setFileError(
+        "Invalid file type or size. Only JPEG, PNG, and PDF files under 5MB are allowed."
+      );
       return;
     }
 
@@ -148,7 +155,7 @@ const FormDashboard = () => {
 
   // Handle back button click
   const handleBackClick = () => {
-    navigate(-1); // Navigate back
+    navigate(-1);
   };
 
   // Handle form submission
@@ -166,7 +173,7 @@ const FormDashboard = () => {
       formData.append("Media_Upload", file);
     });
     formData.append("Questions", JSON.stringify(questions));
-    formData.append("created_by", "YourUser"); // Replace with actual user info
+    formData.append("created_by", "YourUser");
 
     try {
       const response = await axios.post(
@@ -184,6 +191,24 @@ const FormDashboard = () => {
       console.error("Error submitting form:", error);
       alert("Error submitting form.");
     }
+  };
+
+  // Toggle active state for problem rating
+  const toggleActiveState = (buttonKey) => {
+    setActiveStates((prevStates) => ({
+      ...prevStates,
+      small: buttonKey === "small",
+      medium: buttonKey === "medium",
+      large: buttonKey === "large",
+    }));
+  };
+
+  // Get the current problem rating
+  const getProblemRating = () => {
+    if (activeStates.small) return "Small";
+    if (activeStates.medium) return "Medium";
+    if (activeStates.large) return "Large";
+    return "Not selected";
   };
 
   // Scroll to bottom when cardData changes
@@ -300,16 +325,28 @@ const FormDashboard = () => {
               <button onClick={() => applyFormatting("bold")} aria-label="Bold">
                 <BiBold />
               </button>
-              <button onClick={() => applyFormatting("italic")} aria-label="Italic">
+              <button
+                onClick={() => applyFormatting("italic")}
+                aria-label="Italic"
+              >
                 <BiItalic />
               </button>
-              <button onClick={() => applyFormatting("underline")} aria-label="Underline">
+              <button
+                onClick={() => applyFormatting("underline")}
+                aria-label="Underline"
+              >
                 <BiUnderline />
               </button>
-              <button onClick={() => applyFormatting("insertOrderedList")} aria-label="Ordered List">
+              <button
+                onClick={() => applyFormatting("insertOrderedList")}
+                aria-label="Ordered List"
+              >
                 <BiListOl />
               </button>
-              <button onClick={() => applyFormatting("insertUnorderedList")} aria-label="Unordered List">
+              <button
+                onClick={() => applyFormatting("insertUnorderedList")}
+                aria-label="Unordered List"
+              >
                 <BiListUl />
               </button>
               <button
@@ -386,13 +423,16 @@ const FormDashboard = () => {
             {questions.map((question, index) => (
               <div key={index} className="mb-4">
                 <p className="text-sm mb-2">
-                  {index + 1}. {[
-                    "Have you tried to solve the problem?",
-                    "When did the problem arise?",
-                    "Venue of the problem arise?",
-                    "Specification of the problem?",
-                    "Problem arise time?",
-                  ][index]}
+                  {index + 1}.{" "}
+                  {
+                    [
+                      "Have you tried to solve the problem?",
+                      "When did the problem arise?",
+                      "Venue of the problem arise?",
+                      "Specification of the problem?",
+                      "Problem arise time?",
+                    ][index]
+                  }
                 </p>
                 <input
                   type="text"
@@ -408,9 +448,53 @@ const FormDashboard = () => {
               </div>
             ))}
           </div>
+          <div>
+            <h3 className="text-sm font-medium mb-2">Problem rating</h3>
+            <div className="flex flex-col space-y-3">
+              {/* Rating buttons */}
+              <div className="flex gap-4 p-4">
+                <button
+                  onClick={() => toggleActiveState("small")}
+                  className={`px-4 py-2 rounded-md ${
+                    activeStates.small
+                      ? "bg-[#FF7622] text-white"
+                      : "bg-white text-[#FF7622] border border-[#FF7622]"
+                  }`}
+                >
+                  Small
+                </button>
+                <button
+                  onClick={() => toggleActiveState("medium")}
+                  className={`px-4 py-2 rounded-md ${
+                    activeStates.medium
+                      ? "bg-[#FF7622] text-white"
+                      : "bg-white text-[#FF7622] border border-[#FF7622]"
+                  }`}
+                >
+                  Medium
+                </button>
+                <button
+                  onClick={() => toggleActiveState("large")}
+                  className={`px-4 py-2 rounded-md ${
+                    activeStates.large
+                      ? "bg-[#FF7622] text-white"
+                      : "bg-white text-[#FF7622] border border-[#FF7622]"
+                  }`}
+                >
+                  Large
+                </button>
+              </div>
 
+              {/* Current selection display */}
+              <div className="w-full border border-gray-200 rounded-lg pt-1 pb-20 p-2 sm:p-2">
+                <p className="text-center text-gray-600">
+                  {getProblemRating()}
+                </p>
+              </div>
+            </div>
+          </div>
           {/* Create button */}
-          <div className="bottom-6 bg-white pt-1 pb-20">
+          <div className="bottom-6 bg-white pt-1 pb-20 m-2 sm:p-2">
             <button
               className="w-full py-3 bg-orange-500 text-white rounded-md font-medium"
               onClick={handleCreate}
