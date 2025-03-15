@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Header from "../../components/Header/Header"
 import Calender from "../../components/Calender/calender"
 import ApprovalsPanel from "../../components/Approval/ApprovalsPanel"
@@ -18,21 +18,12 @@ function ProblemRaisorDashboard() {
   const [openLogCreation, setOpenLogCreation] = useState(false)
   const [openRejected, setOpenRejected] = useState(false)
   const [openAccepted, setOpenAccepted] = useState(false)
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
 
   const [filters, setFilters] = useState({
     inprogress: true,
     rejected: false,
     accepted: false,
   }) // State for selected filters
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 900);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const days = ["S", "M", "T", "W", "T", "F", "S"]
   const dates = ["21", "22", "23", "24", "25", "26", "27"]
@@ -201,95 +192,79 @@ function ProblemRaisorDashboard() {
 
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden">
-      {/* Toggle Buttons - Visible only on small screens */}
-      {isMobile && (
-        <div className="flex justify-start p-4 space-x-4">
-          <button
-            className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-              selectedTab === "problem"
-                ? "bg-[#FF7622] text-white"
-                : "bg-gray-100 text-gray-600"
-            }`}
-            onClick={() => setSelectedTab("problem")}
-          >
-            Problem status
-          </button>
-          <button
-            className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-              selectedTab === "resource"
-                ? "bg-[#FF7622] text-white"
-                : "bg-gray-100 text-gray-600"
-            }`}
-            onClick={() => setSelectedTab("resource")}
-          >
-            Resource status
-          </button>
+      {/* Mobile and Desktop Layout Container */}
+      <div className="flex flex-col md:flex-row h-full overflow-hidden">
+        {/* Header and Calendar Section */}
+        <div className="w-full md:w-4/5 flex flex-col h-full overflow-hidden">
+          <div className="p-4 md:p-6">
+            <Header username="Kiruthika..." onFilterClick={toggleFilter} />
+          </div>
+          <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-4 md:pb-6 scrollbar-hide">
+            <Calender
+              days={days}
+              dates={dates}
+              timeSlots={timeSlots}
+              events={events}
+              selectedDay={selectedDay}
+              onDayClick={handleDayClick}
+            />
+          </div>
         </div>
-      )}
 
-      {/* Main Content Section */}
-      <div className={`flex ${isMobile ? "flex-col" : "flex-row"} h-full overflow-hidden`}>
-        {/* Problem Status Section - Shown in mobile only when selectedTab is "problem" */}
-        {!isMobile || selectedTab === "problem" ? (
-          <div className="w-full md:w-4/5 flex flex-col h-full overflow-hidden">
-            <div className="p-4 md:p-6">
-              <Header username="Kiruthika..." onFilterClick={() => setShowFilter(true)} />
+        {/* Approvals Panel Section */}
+        <div className="w-full md:w-2/5 bg-gray-50 flex flex-col h-full overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 scrollbar-hide">
+            <ApprovalsPanel approvals={filteredApprovals} onCardClick={handleCardClick} />
+          </div>
+
+          {/* Mobile Bottom Filter Bar */}
+          <div className="md:hidden flex justify-between items-center p-4 border-t">
+            <div className="flex space-x-4">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 mr-2"
+                  checked={filters.accepted}
+                  onChange={() => handleFilterChange("accepted")}
+                />
+                <span className="text-sm">Accepted</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 mr-2"
+                  checked={filters.rejected}
+                  onChange={() => handleFilterChange("rejected")}
+                />
+                <span className="text-sm">Rejected</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 mr-2"
+                  checked={filters.inprogress}
+                  onChange={() => handleFilterChange("inprogress")}
+                />
+                <span className="text-sm">Inprogress</span>
+              </label>
             </div>
-            <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-4 md:pb-6 scrollbar-hide">
-              <Calender
-                            days={days}
-                            dates={dates}
-                            timeSlots={timeSlots}
-                            events={events}
-                            selectedDay={selectedDay}
-                            onDayClick={handleDayClick}
-                          />
+            <div className="flex space-x-2">
+              <button className="px-4 py-1 border border-gray-300 rounded-md text-sm" onClick={handleClearFilters}>
+                Clear
+              </button>
+              <button className="px-4 py-1 bg-orange-500 text-white rounded-md text-sm" onClick={handleApplyFilters}>
+                Apply
+              </button>
             </div>
           </div>
-        ) : null}
-
-        {/* Resource Status Section - Shown in mobile only when selectedTab is "resource" */}
-        {!isMobile || selectedTab === "resource" ? (
-          <div className="w-full md:w-2/5 bg-gray-50 flex flex-col h-full overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 scrollbar-hide">
-              <ApprovalsPanel approvals={filteredApprovals} onCardClick={handleCardClick} />
-            </div>
-
-            {/* Mobile Bottom Filter Bar */}
-            {isMobile && (
-              <div className="md:hidden flex justify-between items-center p-4 border-t">
-                <div className="flex space-x-4">
-                  {["accepted", "rejected", "inprogress"].map((status) => (
-                    <label key={status} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 mr-2"
-                        checked={filters[status]}
-                        onChange={() => handleFilterChange(status)}
-                      />
-                      <span className="text-sm capitalize">{status}</span>
-                    </label>
-                  ))}
-                </div>
-                <div className="flex space-x-2">
-                  <button className="px-4 py-1 border border-gray-300 rounded-md text-sm" onClick={handleClearFilters}>
-                    Clear
-                  </button>
-                  <button className="px-4 py-1 bg-orange-500 text-white rounded-md text-sm" onClick={handleApplyFilters}>
-                    Apply
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        ) : null}
+        </div>
       </div>
 
-      {/* Filter Popup for Desktop */}
+      {/* Filter Popup (Desktop only) */}
       {showFilter && (
         <div
           className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
-          onClick={() => setShowFilter(false)}
+          onClick={toggleFilter}
         >
           <div
             className="bg-white w-full md:w-auto md:min-w-[400px] rounded-lg p-6 z-50"
@@ -297,17 +272,33 @@ function ProblemRaisorDashboard() {
           >
             <h2 className="text-lg font-semibold mb-4">Filters</h2>
             <div className="space-y-3">
-              {["inprogress", "rejected", "accepted"].map((status) => (
-                <label key={status} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 rounded"
-                    checked={filters[status]}
-                    onChange={() => handleFilterChange(status)}
-                  />
-                  <span className="text-sm capitalize">{status}</span>
-                </label>
-              ))}
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded"
+                  checked={filters.inprogress}
+                  onChange={() => handleFilterChange("inprogress")}
+                />
+                <span className="text-sm">In Progress</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded"
+                  checked={filters.rejected}
+                  onChange={() => handleFilterChange("rejected")}
+                />
+                <span className="text-sm">Rejected</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded"
+                  checked={filters.accepted}
+                  onChange={() => handleFilterChange("accepted")}
+                />
+                <span className="text-sm">Accepted</span>
+              </label>
             </div>
             <div className="flex gap-4 mt-6">
               <button className="flex-1 py-2 border border-gray-300 rounded-md text-sm" onClick={handleClearFilters}>
@@ -321,11 +312,11 @@ function ProblemRaisorDashboard() {
         </div>
       )}
 
-      {/* Popups */}
+      {/* Popup Components - Fixed onClose for LogCreation */}
       <LogCreation open={openLogCreation} onClick={() => setOpenLogCreation(false)} />
       <Rejected open={openRejected} onClick={() => setOpenRejected(false)} />
       <Accepted open={openAccepted} onClick={() => setOpenAccepted(false)} />
-    </div>
+    </div>  
   )
 }
 

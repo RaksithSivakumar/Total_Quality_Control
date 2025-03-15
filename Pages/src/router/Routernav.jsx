@@ -6,6 +6,7 @@ import ProblemRaisorDashboard from "../pages/Problemraisordashboard/problemraiso
 import SupervisorDashboard from "../pages/Superviserdashboard/superviserdashboard"; // Ensure this file exists
 import Problemsolver from "../pages/Problemsolvingdashboard/problemsolvingdashboard"; // Ensure this file exists
 import Maintainanceteam from "../pages/Maintainanceteam/maintainanceteam";
+import ProblemAdmin from "../pages/ProblemAdmin/ProblemAdmin";
  export default function Routernav() {
   return (
     
@@ -16,6 +17,7 @@ import Maintainanceteam from "../pages/Maintainanceteam/maintainanceteam";
       <Route path="/Superviser" element={<SupervisorDashboard />} />
       <Route path="/Problemsol" element={<Problemsolver />} />
       <Route path="/Maintain" element={<Maintainanceteam />} />
+      <Route path="/ProblemAdmin" element={<ProblemAdmin />} />
       </Routes>
   );
 }
