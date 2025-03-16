@@ -9,26 +9,28 @@ import {
   BiListUl,
   BiLink,
 } from "react-icons/bi";
-import { useNavigate } from "react-router-dom"; // Use useNavigate instead of useRouter  // State for filter popup visibility
+import { useNavigate } from "react-router-dom";
 import Input from "../../components/input/Input";
 import Card from "../../components/problem/Card";
 import LogCreation from "../../components/Popups/LogCreation";
 import Rejected from "../../components/Popups/Rejected";
 import Accepted from "../../components/Popups/Accepted";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify"; // Import ToastContainer and toast
+import "react-toastify/dist/ReactToastify.css"; // Import the CSS
 
 const FormDashboard = () => {
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
 
   // State variables
   const [open, setOpen] = useState(false);
-  const [activePopup, setActivePopup] = useState(null); // For managing active popup
+  const [activePopup, setActivePopup] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [files, setFiles] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [fileError, setFileError] = useState("");
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [activeTab, setActiveTab] = useState("creation"); // 'creation' or 'problemBank'
+  const [activeTab, setActiveTab] = useState("creation");
   const [categories, setCategories] = useState([
     "Productivity failure",
     "Mismanagement",
@@ -109,6 +111,9 @@ const FormDashboard = () => {
     if (newCategoryName.trim() !== "") {
       setCategories([...categories, newCategoryName]);
       setNewCategoryName("");
+      toast.success("New category added successfully!"); // Toast notification
+    } else {
+      toast.error("Please enter a valid category name."); // Toast notification
     }
   };
 
@@ -120,6 +125,7 @@ const FormDashboard = () => {
 
     if (selectedFiles.length + files.length > 5) {
       setFileError("You can upload a maximum of 5 files.");
+      toast.error("You can upload a maximum of 5 files."); // Toast notification
       return;
     }
 
@@ -129,16 +135,19 @@ const FormDashboard = () => {
 
     if (invalidFiles.length > 0) {
       setFileError("Invalid file type or size. Only JPEG, PNG, and PDF files under 5MB are allowed.");
+      toast.error("Invalid file type or size. Only JPEG, PNG, and PDF files under 5MB are allowed."); // Toast notification
       return;
     }
 
     setFileError("");
     setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
+    toast.success("Files uploaded successfully!"); // Toast notification
   };
 
   // Remove file
   const handleRemoveFile = (index) => {
     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+    toast.info("File removed."); // Toast notification
   };
 
   // Handle search input change
@@ -148,29 +157,32 @@ const FormDashboard = () => {
 
   // Handle back button click
   const handleBackClick = () => {
-    navigate(-1); // Navigate back
+    navigate(-1);
   };
 
-  // Handle form submission
   const handleCreate = async () => {
     if (!selectedCategory) {
-      alert("Please select a category.");
+      toast.error("Please select a category."); // Toast notification
       return;
     }
 
     const formData = new FormData();
     formData.append("Category", selectedCategory);
-    formData.append("Problem_Title", problemTitle);
+    formData.append("problem_title", problemTitle);
     formData.append("Description", description);
     files.forEach((file) => {
       formData.append("Media_Upload", file);
     });
-    formData.append("Questions", JSON.stringify(questions));
+    formData.append("Questions_1", questions[0]);
+    formData.append("Questions_2", questions[1]);
+    formData.append("Questions_3", questions[2]);
+    formData.append("Questions_4", questions[3]);
+    formData.append("Questions_5", questions[4]);
     formData.append("created_by", "YourUser"); // Replace with actual user info
 
     try {
       const response = await axios.post(
-        "http://localhost:6000/api/master_problem",
+        "http://localhost:4000/api/master_problem",
         formData,
         {
           headers: {
@@ -179,10 +191,13 @@ const FormDashboard = () => {
         }
       );
       console.log("Response:", response.data);
-      alert("Form submitted successfully!");
+      toast.success("Form submitted successfully!"); 
+      // Toast notification
+          // navigate("/Problemrd");
+
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("Error submitting form.");
+      toast.error("Error submitting form."); // Toast notification
     }
   };
 
@@ -195,6 +210,19 @@ const FormDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 scrollbar-hide">
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+
       <div className="flex flex-col lg:flex-row h-screen justify-between w-full bg-white p-4 lg:p-6 border-b border-[#D3E4FF] scrollbar-hide">
         {/* Mobile Tab Navigation */}
         <div className="lg:hidden flex justify-around border-b border-gray-200 mb-4">

@@ -1,4 +1,4 @@
- import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowLeft, ChevronDown, Check } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -15,6 +15,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
+
 // ------------------ LogCreation Popup Component ------------------
 const LogCreation = ({ open, onClose, storedProblemTitle }) => {
   const theme = useTheme();
@@ -24,26 +25,25 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
   const [remarks, setRemarks] = useState("");
   const [isActive, setIsActive] = useState(false);
   const [problem, setProblem] = useState(null);
-  // When the dialog opens, fetch the problems and find the one that matches the storedProblemTitle.
+
+  // Fetch problem details when the dialog opens
   useEffect(() => {
     if (open) {
-      fetch("http://localhost:6000/api/master_problem")
+      fetch("http://localhost:4000/api/master_problem")
         .then((response) => {
           if (!response.ok) {
             throw new Error("Network response was not ok");
           }
           return response.json();
         })
-        .then((data) => {
-          const matchedProblem = Array.isArray(data)
-            ? data.find(
-                (item) =>
-                  item["Problem Title"].toLowerCase() ===
-                  storedProblemTitle.toLowerCase()
-              )
-            : data["Problem Title"].toLowerCase() === storedProblemTitle.toLowerCase()
-            ? data
-            : null;
+        .then((response) => {
+          console.log("API Response:", response); // Log the API response
+          const problems = response.data; // Access the `data` key
+          const matchedProblem = problems.find(
+            (item) =>
+              item["Problem Title"].toLowerCase() ===
+              storedProblemTitle.toLowerCase()
+          );
           if (matchedProblem) {
             setProblem(matchedProblem);
           } else {
@@ -58,47 +58,51 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
         });
     }
   }, [open, storedProblemTitle]);
+
   const handleViewDetails = () => {
     setIsExpanded(!isExpanded);
   };
+
   const handleSave = () => {
     const data = {
-        Category: problem ? problem.Category : "Default Category", // Ensure this is set
-        Problem_Title: problem ? problem["Problem Title"] : storedProblemTitle, // Ensure this is set
-        status: status, // Should be either "Accepted" or "Rejected"
-        Remarks: remarks // Optional remarks field
+      Category: problem ? problem.Category : "Default Category",
+      Problem_Title: problem ? problem["Problem Title"] : storedProblemTitle,
+      status: status,
+      Remarks: remarks,
     };
-    console.log("Data being sent to the server:", data); // Log the data being sent
+    console.log("Data being sent to the server:", data);
+
     // Send POST request to the backend
-    fetch("http://localhost:6000/api/supervisor", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+    fetch("http://localhost:4000/api/supervisor", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
     })
-    .then(response => {
+      .then((response) => {
         if (!response.ok) {
-            throw new Error("Network response was not ok");
+          throw new Error("Network response was not ok");
         }
         return response.json();
-    })
-    .then(data => {
+      })
+      .then((data) => {
         alert(data.message); // Show success message
         onClose(); // Close the dialog
-    })
-    .catch(error => {
+      })
+      .catch((error) => {
         console.error("Error saving data:", error);
         alert("Failed to save data.");
-    });
-};
-  // Prepare the questnions array. Use fetched data if available; otherwise, default questions.
+      });
+  };
+
+  // Prepare the questions array
   const defaultQuestions = [
     "HAVE YOU TRIED TO SOLVE THE PROBLEM?",
     "WHEN DID THE PROBLEM ARISE?",
     "VENUE OF THE PROBLEM ARISE?",
     "SPECIFICATION OF THE PROBLEM?",
-    "PROBLEM ARISE TIME?"
+    "PROBLEM ARISE TIME?",
   ];
   const questions = problem
     ? [
@@ -106,9 +110,10 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
         problem["Questions 2"],
         problem["Questions 3"],
         problem["Questions 4"],
-        problem["Questions 5"]
+        problem["Questions 5"],
       ]
     : defaultQuestions;
+
   return (
     <Dialog
       open={open}
@@ -180,7 +185,9 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
             >
               <span className="text-gray-600">View details</span>
               <ChevronDown
-                className={`h-4 w-4 sm:h-5 sm:w-5 text-gray-500 p-1 ml-auto transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                className={`h-4 w-4 sm:h-5 sm:w-5 text-gray-500 p-1 ml-auto transition-transform duration-200 ${
+                  isExpanded ? "rotate-180" : ""
+                }`}
               />
             </Button>
           </div>
@@ -339,6 +346,7 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
     </Dialog>
   );
 };
+
 // ------------------ Dummy Rejected & Accepted Components ------------------
 const Rejected = ({ open, onClose }) => {
   return (
@@ -349,6 +357,7 @@ const Rejected = ({ open, onClose }) => {
     </Dialog>
   );
 };
+
 const Accepted = ({ open, onClose }) => {
   return (
     <Dialog open={open} onClose={onClose}>
@@ -358,6 +367,7 @@ const Accepted = ({ open, onClose }) => {
     </Dialog>
   );
 };
+
 // ------------------ SupervisorDashboard Component ------------------
 const StatusBadge = ({ status }) => {
   const badgeColors = {
@@ -371,6 +381,7 @@ const StatusBadge = ({ status }) => {
     </span>
   );
 };
+
 const SupervisorDashboard = () => {
   const [problems, setProblems] = useState([]);
   const [activeTab, setActiveTab] = useState("All");
@@ -378,20 +389,22 @@ const SupervisorDashboard = () => {
   const [openRejected, setOpenRejected] = useState(false);
   const [openAccepted, setOpenAccepted] = useState(false);
   const [selectedProblemTitle, setSelectedProblemTitle] = useState("");
-  // Fetch the problems when the dashboard mounts.
+
+  // Fetch the problems when the dashboard mounts
   useEffect(() => {
-    fetch("http://localhost:6000/api/master_problem")
+    fetch("http://localhost:4000/api/master_problem")
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
         return response.json();
       })
-      .then((data) => {
-        const problemsWithStatus = data.map((problem) => ({
+      .then((response) => {
+        console.log("API Response:", response); // Log the API response
+        const problems = response.data; // Access the `data` key
+        const problemsWithStatus = problems.map((problem) => ({
           ...problem,
-          // Set a dummy status ("New") for each problem.
-          status: "New",
+          status: "New", // Set a dummy status for each problem
         }));
         setProblems(problemsWithStatus);
       })
@@ -399,13 +412,14 @@ const SupervisorDashboard = () => {
         console.error("Error fetching problems:", error);
       });
   }, []);
+
   const filteredProblems = problems.filter((item) => {
     if (activeTab === "All") return true;
     return item.status === activeTab;
   });
+
   const handleCardClick = (card) => {
     if (card.status === "New") {
-      // Save the clicked problem's title then open LogCreation.
       setSelectedProblemTitle(card["Problem Title"]);
       setOpenLogCreation(true);
     } else if (card.status === "Rejected") {
@@ -414,19 +428,24 @@ const SupervisorDashboard = () => {
       setOpenAccepted(true);
     }
   };
+
   return (
     <div className="min-h-screen bg-white p-6">
       <h2 className="text-2xl font-semibold mb-4">Welcome Supervisor...</h2>
       {/* Tabs */}
       <div className="flex space-x-6 mb-6 text-lg font-medium bg-gray-100 p-2 rounded-lg">
         <span
-          className={`cursor-pointer pb-1 ${activeTab === "All" ? "text-orange-500 border-b-2 border-orange-500" : "text-gray-500"}`}
+          className={`cursor-pointer pb-1 ${
+            activeTab === "All" ? "text-orange-500 border-b-2 border-orange-500" : "text-gray-500"
+          }`}
           onClick={() => setActiveTab("All")}
         >
           All <span className="text-gray-500 text-sm">({problems.length})</span>
         </span>
         <span
-          className={`cursor-pointer pb-1 ${activeTab === "Accepted" ? "text-orange-500 border-b-2 border-orange-500" : "text-gray-500"}`}
+          className={`cursor-pointer pb-1 ${
+            activeTab === "Accepted" ? "text-orange-500 border-b-2 border-orange-500" : "text-gray-500"
+          }`}
           onClick={() => setActiveTab("Accepted")}
         >
           Accepted{" "}
@@ -435,7 +454,9 @@ const SupervisorDashboard = () => {
           </span>
         </span>
         <span
-          className={`cursor-pointer pb-1 ${activeTab === "Rejected" ? "text-orange-500 border-b-2 border-orange-500" : "text-gray-500"}`}
+          className={`cursor-pointer pb-1 ${
+            activeTab === "Rejected" ? "text-orange-500 border-b-2 border-orange-500" : "text-gray-500"
+          }`}
           onClick={() => setActiveTab("Rejected")}
         >
           Rejected{" "}
@@ -464,8 +485,8 @@ const SupervisorDashboard = () => {
             <div className="flex items-center mt-2">
               <span className="text-sm text-gray-700 ml-2 flex items-center">
                 <img
-                  src="data:image/jpeg;base64,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"
-                  alt="Avatar"
+                src = "data:image/jpeg;base64,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"
+                   alt="Avatar"
                   className="w-5 h-5 rounded-full mr-2"
                 />
                 By: {item.created_by}
@@ -486,8 +507,5 @@ const SupervisorDashboard = () => {
     </div>
   );
 };
- 
 
 export default SupervisorDashboard;
-// State for filter popup visibility// State for filter popup visibility// State for filter popup visibility
- 

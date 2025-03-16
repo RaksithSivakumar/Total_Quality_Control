@@ -17,7 +17,7 @@ const LoginPage = () => {
     e.preventDefault();
     setLoading(true);   // State for filter popup visibility
     try {
-      const response = await axios.post("http://localhost:6000/api/login", {
+      const response = await axios.post("http://localhost:4000/api/login", {
         email,
         password,
       });
@@ -54,7 +54,7 @@ const LoginPage = () => {
     setLoading(true);
     try {
       // Send the ID token to your backend
-      const response = await axios.post('http://localhost:6000/api/google-login', {
+      const response = await axios.post('http://localhost:4000/api/google-login', {
         credential: credentialResponse.credential
       });
       

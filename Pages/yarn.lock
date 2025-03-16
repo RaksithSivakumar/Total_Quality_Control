@@ -3179,7 +3179,7 @@ autoprefixer@^10.4.20:
   integrity sha512-XY25y5xSv/wEoqzDyXXME4AFfkZI0P23z6Fs3YgymDnKJkCGOnkL0iTxCa85UTqaSgfcqyf3UA6+c7wUvx/16g==
   dependencies:
     browserslist "^4.23.3"
-    caniuse-lite "^1.0.30001646"
+    caniuse-lite "^1.0.40001646"
     fraction.js "^4.3.7"
     normalize-range "^0.1.2"
     picocolors "^1.0.1"
@@ -3221,7 +3221,7 @@ browserslist@^4.23.3, browserslist@^4.24.0, "browserslist@>= 4.21.0":
   resolved "https://registry.npmjs.org/browserslist/-/browserslist-4.24.4.tgz"
   integrity sha512-KDi1Ny1gSePi1vm0q4oxSF8b4DR44GF4BbmS2YdhPLOEqd8pDviZOGH/GsmRwoWJ2+5Lr085X7naowMwKHDG1A==
   dependencies:
-    caniuse-lite "^1.0.30001688"
+    caniuse-lite "^1.0.40001688"
     electron-to-chromium "^1.5.73"
     node-releases "^2.0.19"
     update-browserslist-db "^1.1.1"
@@ -3261,9 +3261,9 @@ camelize@^1.0.0:
   resolved "https://registry.npmjs.org/camelize/-/camelize-1.0.1.tgz"
   integrity sha512-dU+Tx2fsypxTgtLoE36npi3UqcjSSMNYfkqgmoEhtZrraP5VWq0K7FkWVTYa8eMPtnU/G2txVsfdCJTn9uzpuQ==
 
-caniuse-lite@^1.0.30001646, caniuse-lite@^1.0.30001688:
-  version "1.0.30001702"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001702.tgz"
+caniuse-lite@^1.0.40001646, caniuse-lite@^1.0.40001688:
+  version "1.0.40001702"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.40001702.tgz"
   integrity sha512-LoPe/D7zioC0REI5W73PeR1e1MLCipRGq/VkovJnd6Df+QVqT+vT33OXCp8QUd7kA7RZrHWxb1B36OQKI/0gOA==
 
 chalk@^4.0.0:
