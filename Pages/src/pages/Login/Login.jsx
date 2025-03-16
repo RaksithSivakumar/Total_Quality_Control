@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import CryptoJS from 'crypto-js'; // Importing crypto-js
 import ProjectLogo from "../../assets/Images/ProjectLogo.svg";
-import GoogleLogo from "../../assets/Images/google.png";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -13,18 +13,44 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const secretKey = "qwertyuiopasdfghjklzxcvbnm"; // Replace this with a better secret key (e.g., environment variable)
+
+  // Function to encrypt data
+  const encryptData = (data) => {
+    return CryptoJS.AES.encrypt(JSON.stringify(data), secretKey).toString();
+  };
+
+  // Function to decrypt data
+  const decryptData = (encryptedData) => {
+    const bytes = CryptoJS.AES.decrypt(encryptedData, secretKey);
+    return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);   // State for filter popup visibility
+    setLoading(true);
     try {
       const response = await axios.post("http://localhost:4000/api/login", {
         email,
         password,
       });
-      console.log("Response data:", response.data);
-      const { role } = response.data.user;
+  
+      const { role, token } = response.data.user;
+      const userData = { email, role, token }; // Save the user data along with the token
+  
+      // Encrypt the user data and store it in localStorage
+      const encryptedUserData = encryptData(userData);
+      const encryptedRoleData = encryptData({ role });
+      const encryptedTokenData = encryptData({ token });
+  
+      localStorage.setItem('user', encryptedUserData);
+      localStorage.setItem('role', encryptedRoleData);
+      localStorage.setItem('token', encryptedTokenData);
+  
       // Show success toast
       toast.success("Login successful!");
+  
+      // Redirect based on user role
       switch (role) {
         case "student":
           navigate("/Problemrd");
@@ -49,7 +75,7 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
-
+  
   const handleGoogleSuccess = async (credentialResponse) => {
     setLoading(true);
     try {
@@ -59,7 +85,16 @@ const LoginPage = () => {
       });
       
       console.log("Google login response:", response.data);
-      const { role } = response.data.user;
+      const { role, token, email } = response.data.user;
+      
+      // Encrypt the user data and store it in localStorage
+      const encryptedUserData = encryptData({ email, role, token });
+      const encryptedRoleData = encryptData({ role });
+      const encryptedTokenData = encryptData({ token });
+      
+      localStorage.setItem('user', encryptedUserData);
+      localStorage.setItem('role', encryptedRoleData);
+      localStorage.setItem('token', encryptedTokenData);
       
       toast.success("Google login successful!");
       
