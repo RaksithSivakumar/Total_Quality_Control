@@ -170,7 +170,7 @@ const FormDashboard = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/master_problem",
+        "http://localhost:6000/api/master_problem",
         formData,
         {
           headers: {

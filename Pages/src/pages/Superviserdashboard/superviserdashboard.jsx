@@ -27,7 +27,7 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
   // When the dialog opens, fetch the problems and find the one that matches the storedProblemTitle.
   useEffect(() => {
     if (open) {
-      fetch("http://localhost:5000/api/master_problem")
+      fetch("http://localhost:6000/api/master_problem")
         .then((response) => {
           if (!response.ok) {
             throw new Error("Network response was not ok");
@@ -70,7 +70,7 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
     };
     console.log("Data being sent to the server:", data); // Log the data being sent
     // Send POST request to the backend
-    fetch("http://localhost:5000/api/supervisor", {
+    fetch("http://localhost:6000/api/supervisor", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -380,7 +380,7 @@ const SupervisorDashboard = () => {
   const [selectedProblemTitle, setSelectedProblemTitle] = useState("");
   // Fetch the problems when the dashboard mounts.
   useEffect(() => {
-    fetch("http://localhost:5000/api/master_problem")
+    fetch("http://localhost:6000/api/master_problem")
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
