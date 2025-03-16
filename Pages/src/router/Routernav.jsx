@@ -19,9 +19,3 @@ import Maintainanceteam from "../pages/Maintainanceteam/maintainanceteam";
       </Routes>
   );
 }
-{/* <Route path="/login" element={<Login />} />
-      <Route path="/survey" element={<PrivateRoute element={<SurveyCreation />} isAuthenticated={isAuthenticated} />} />
-      <Route path="/Problemrd" element={<PrivateRoute element={<ProblemRaisorDashboard />} isAuthenticated={isAuthenticated} />} />
-      <Route path="/Superviser" element={<PrivateRoute element={<SupervisorDashboard />} isAuthenticated={isAuthenticated} />} />
-      <Route path="/Problemsol" element={<PrivateRoute element={<Problemsolver />} isAuthenticated={isAuthenticated} />} />
-      <Route path="/Maintain" element={<PrivateRoute element={<Maintainanceteam />} isAuthenticated={isAuthenticated} />} /> */}
