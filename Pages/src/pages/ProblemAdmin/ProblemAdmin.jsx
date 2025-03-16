@@ -22,7 +22,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-function Problemsolver() {
+function ProblemAdmin() {
   const [showFilter, setShowFilter] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState("All"); // State for active tab
   const [searchQuery, setSearchQuery] = React.useState(""); // State for search query
@@ -66,7 +66,7 @@ function Problemsolver() {
     },
     {
       title: "Productivity failure",
-      status: "Rejected",
+      status: "Resolved",
       description:
         "Productive failure is a learning design where individuals are allowed to fail in a managed...",
       date: "10/07/2025",
@@ -120,7 +120,7 @@ function Problemsolver() {
     },
     {
       title: "Productivity failure",
-      status: "New",
+      status: "Resolved",
       description:
         "Productive failure is a learning design where individuals are allowed to fail in a managed...",
       date: "10/07/2025",
@@ -165,7 +165,7 @@ function Problemsolver() {
     },
     {
       title: "Productivity failure",
-      status: "Need to verify",
+      status: "Resolved",
       description:
         "Productive failure is a learning design where individuals are allowed to fail in a managed...",
       date: "10/07/2025",
@@ -210,7 +210,7 @@ function Problemsolver() {
     },
     {
       title: "Productivity failure",
-      status: "Rejected",
+      status: "Resolved",
       description:
         "Productive failure is a learning design where individuals are allowed to fail in a managed...",
       date: "10/07/2025",
@@ -264,7 +264,7 @@ function Problemsolver() {
     },
     {
       title: "Productivity failure",
-      status: "New",
+      status: "Resolved",
       description:
         "Productive failure is a learning design where individuals are allowed to fail in a managed...",
       date: "10/07/2025",
@@ -334,7 +334,7 @@ function Problemsolver() {
         </div>
 
         {/* Grid of Cards */}
-        <div className="grid grid-cols-1 rounded-2xl p-4 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 rounded-2xl p-0 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredCards.map((card, index) => (
             <div key={index}>
               <Card
@@ -427,4 +427,4 @@ function Problemsolver() {
   );
 }
 
-export default Problemsolver;
+export default ProblemAdmin;
