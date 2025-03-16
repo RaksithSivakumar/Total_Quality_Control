@@ -288,7 +288,7 @@ const MaintenanceTeam = () => {
         onClick={toggleFilter}
       >
         <Tune className="w-4 h-4 mr-1" />
-        Filter BY
+        Filter By
       </button>
     </div>
   );
@@ -513,7 +513,7 @@ const MaintenanceTeam = () => {
           </List>
         </DialogContent>
         <DialogActions>
-          <div className="flex gap-4 p-4 w-full">
+          <div className="flex gap-4 p-4 w-84">
             <Button
               variant="outlined"
               fullWidth

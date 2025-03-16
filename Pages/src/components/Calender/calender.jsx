@@ -113,8 +113,8 @@ const Calendar = ({ days, dates, timeSlots, events, selectedDay, onDayClick }) =
             >
               <Plus className="h-4 w-4 text-orange-500" />
             </div>
-            <div className="absolute left-1/2 transform -translate-x-1/2 mt-4 text-gray-500 text-xs font-medium">
-              Click to create log
+            <div className="absolute left-1/2 transform -translate-x-1/2 mt-6 text-gray-500 text-xs font-medium">
+              Create log
             </div>
           </div>
         </div>
