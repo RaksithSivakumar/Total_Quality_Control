@@ -16,6 +16,8 @@ import LogCreation from "../../components/Popups/LogCreation";
 import Rejected from "../../components/Popups/Rejected";
 import Accepted from "../../components/Popups/Accepted";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify"; // Import ToastContainer and toast
+import "react-toastify/dist/ReactToastify.css"; // Import the CSS
 
 const FormDashboard = () => {
   const navigate = useNavigate();
@@ -38,11 +40,6 @@ const FormDashboard = () => {
   const [problemTitle, setProblemTitle] = useState("");
   const [description, setDescription] = useState("");
   const [questions, setQuestions] = useState(["", "", "", "", ""]);
-  const [activeStates, setActiveStates] = useState({
-    small: true,
-    medium: false,
-    large: false,
-  });
 
   const contentEditableRef = useRef(null);
   const scrollableRef = useRef(null);
@@ -114,6 +111,9 @@ const FormDashboard = () => {
     if (newCategoryName.trim() !== "") {
       setCategories([...categories, newCategoryName]);
       setNewCategoryName("");
+      toast.success("New category added successfully!"); // Toast notification
+    } else {
+      toast.error("Please enter a valid category name."); // Toast notification
     }
   };
 
@@ -125,6 +125,7 @@ const FormDashboard = () => {
 
     if (selectedFiles.length + files.length > 5) {
       setFileError("You can upload a maximum of 5 files.");
+      toast.error("You can upload a maximum of 5 files."); // Toast notification
       return;
     }
 
@@ -133,19 +134,20 @@ const FormDashboard = () => {
     );
 
     if (invalidFiles.length > 0) {
-      setFileError(
-        "Invalid file type or size. Only JPEG, PNG, and PDF files under 5MB are allowed."
-      );
+      setFileError("Invalid file type or size. Only JPEG, PNG, and PDF files under 5MB are allowed.");
+      toast.error("Invalid file type or size. Only JPEG, PNG, and PDF files under 5MB are allowed."); // Toast notification
       return;
     }
 
     setFileError("");
     setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
+    toast.success("Files uploaded successfully!"); // Toast notification
   };
 
   // Remove file
   const handleRemoveFile = (index) => {
     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+    toast.info("File removed."); // Toast notification
   };
 
   // Handle search input change
@@ -155,29 +157,32 @@ const FormDashboard = () => {
 
   // Handle back button click
   const handleBackClick = () => {
-    navigate("/Problemrd");
+    navigate(-1);
   };
 
-  // Handle form submission
   const handleCreate = async () => {
     if (!selectedCategory) {
-      alert("Please select a category.");
+      toast.error("Please select a category."); // Toast notification
       return;
     }
 
     const formData = new FormData();
     formData.append("Category", selectedCategory);
-    formData.append("Problem_Title", problemTitle);
+    formData.append("problem_title", problemTitle);
     formData.append("Description", description);
     files.forEach((file) => {
       formData.append("Media_Upload", file);
     });
-    formData.append("Questions", JSON.stringify(questions));
-    formData.append("created_by", "YourUser");
+    formData.append("Questions_1", questions[0]);
+    formData.append("Questions_2", questions[1]);
+    formData.append("Questions_3", questions[2]);
+    formData.append("Questions_4", questions[3]);
+    formData.append("Questions_5", questions[4]);
+    formData.append("created_by", "YourUser"); // Replace with actual user info
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/master_problem",
+        "http://localhost:4000/api/master_problem",
         formData,
         {
           headers: {
@@ -186,29 +191,14 @@ const FormDashboard = () => {
         }
       );
       console.log("Response:", response.data);
-      alert("Form submitted successfully!");
+      toast.success("Form submitted successfully!"); 
+      // Toast notification
+          // navigate("/Problemrd");
+
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("Error submitting form.");
+      toast.error("Error submitting form."); // Toast notification
     }
-  };
-
-  // Toggle active state for problem rating
-  const toggleActiveState = (buttonKey) => {
-    setActiveStates((prevStates) => ({
-      ...prevStates,
-      small: buttonKey === "small",
-      medium: buttonKey === "medium",
-      large: buttonKey === "large",
-    }));
-  };
-
-  // Get the current problem rating
-  const getProblemRating = () => {
-    if (activeStates.small) return "Small";
-    if (activeStates.medium) return "Medium";
-    if (activeStates.large) return "Large";
-    return "Not selected";
   };
 
   // Scroll to bottom when cardData changes
@@ -220,6 +210,19 @@ const FormDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 scrollbar-hide">
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+
       <div className="flex flex-col lg:flex-row h-screen justify-between w-full bg-white p-4 lg:p-6 border-b border-[#D3E4FF] scrollbar-hide">
         {/* Mobile Tab Navigation */}
         <div className="lg:hidden flex justify-around border-b border-gray-200 mb-4">
@@ -284,7 +287,7 @@ const FormDashboard = () => {
             <div className="w-full mt-4 flex flex-col lg:flex-row items-center">
               <input
                 type="text"
-                className="flex-1 px-3 py-2 text-sm rounded-md border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF7622] focus:border-[#FF7622] transition-colors mr-0 lg:mr-2 mb-2 lg:mb-0"
+                className="flex-1 px-3 py-2 text-sm rounded-md border border-[#FF7622] mr-0 lg:mr-2 mb-2 lg:mb-0"
                 placeholder="New Category Name"
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
@@ -325,28 +328,16 @@ const FormDashboard = () => {
               <button onClick={() => applyFormatting("bold")} aria-label="Bold">
                 <BiBold />
               </button>
-              <button
-                onClick={() => applyFormatting("italic")}
-                aria-label="Italic"
-              >
+              <button onClick={() => applyFormatting("italic")} aria-label="Italic">
                 <BiItalic />
               </button>
-              <button
-                onClick={() => applyFormatting("underline")}
-                aria-label="Underline"
-              >
+              <button onClick={() => applyFormatting("underline")} aria-label="Underline">
                 <BiUnderline />
               </button>
-              <button
-                onClick={() => applyFormatting("insertOrderedList")}
-                aria-label="Ordered List"
-              >
+              <button onClick={() => applyFormatting("insertOrderedList")} aria-label="Ordered List">
                 <BiListOl />
               </button>
-              <button
-                onClick={() => applyFormatting("insertUnorderedList")}
-                aria-label="Unordered List"
-              >
+              <button onClick={() => applyFormatting("insertUnorderedList")} aria-label="Unordered List">
                 <BiListUl />
               </button>
               <button
@@ -423,16 +414,13 @@ const FormDashboard = () => {
             {questions.map((question, index) => (
               <div key={index} className="mb-4">
                 <p className="text-sm mb-2">
-                  {index + 1}.{" "}
-                  {
-                    [
-                      "Have you tried to solve the problem?",
-                      "When did the problem arise?",
-                      "Venue of the problem arise?",
-                      "Specification of the problem?",
-                      "Problem arise time?",
-                    ][index]
-                  }
+                  {index + 1}. {[
+                    "Have you tried to solve the problem?",
+                    "When did the problem arise?",
+                    "Venue of the problem arise?",
+                    "Specification of the problem?",
+                    "Problem arise time?",
+                  ][index]}
                 </p>
                 <input
                   type="text"
@@ -448,53 +436,9 @@ const FormDashboard = () => {
               </div>
             ))}
           </div>
-          <div>
-            <h3 className="text-sm font-medium mb-2">Problem rating</h3>
-            <div className="flex flex-col space-y-3">
-              {/* Rating buttons */}
-              <div className="flex gap-4 p-4">
-                <button
-                  onClick={() => toggleActiveState("small")}
-                  className={`px-4 py-2 rounded-md ${
-                    activeStates.small
-                      ? "bg-[#FF7622] text-white"
-                      : "bg-white text-[#FF7622] border border-[#FF7622]"
-                  }`}
-                >
-                  Small
-                </button>
-                <button
-                  onClick={() => toggleActiveState("medium")}
-                  className={`px-4 py-2 rounded-md ${
-                    activeStates.medium
-                      ? "bg-[#FF7622] text-white"
-                      : "bg-white text-[#FF7622] border border-[#FF7622]"
-                  }`}
-                >
-                  Medium
-                </button>
-                <button
-                  onClick={() => toggleActiveState("large")}
-                  className={`px-4 py-2 rounded-md ${
-                    activeStates.large
-                      ? "bg-[#FF7622] text-white"
-                      : "bg-white text-[#FF7622] border border-[#FF7622]"
-                  }`}
-                >
-                  Large
-                </button>
-              </div>
 
-              {/* Current selection display */}
-              <div className="w-full border border-gray-200 rounded-lg pt-1 pb-20 p-2 sm:p-2">
-                <p className="text-center text-gray-600">
-                  {getProblemRating()}
-                </p>
-              </div>
-            </div>
-          </div>
           {/* Create button */}
-          <div className="bottom-6 bg-white pt-1 pb-20 m-2 sm:p-2">
+          <div className="bottom-6 bg-white pt-1 pb-20">
             <button
               className="w-full py-3 bg-orange-500 text-white rounded-md font-medium"
               onClick={handleCreate}
