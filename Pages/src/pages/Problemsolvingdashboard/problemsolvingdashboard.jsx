@@ -314,7 +314,7 @@ function Problemsolver() {
       {/* Main Content */}
       <div className="flex-1 p-4 h-screen">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-xl font-medium text-gray-600">Welcome Admin.</h1>
+          <h1 className="text-xl font-medium m-4 text-gray-600">Welcome Admin.</h1>
           <Button
             variant="outlined"
             startIcon={<Filter size={14} />}
@@ -334,7 +334,7 @@ function Problemsolver() {
         </div>
 
         {/* Grid of Cards */}
-        <div className="grid grid-cols-1 rounded-2xl p-4 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 rounded-2xl p-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredCards.map((card, index) => (
             <div key={index}>
               <Card
