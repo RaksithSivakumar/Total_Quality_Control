@@ -77,7 +77,7 @@ const ApprovalsPanel = ({ approvals, onCardClick }) => {
           </button>
           <button className="flex items-center text-orange-500 text-sm font-medium px-3 py-2 border border-orange-200 rounded-md hover:bg-orange-50 transition-colors" onClick={handleCreate}>
             <PlusCircle className="h-4 w-4 mr-1" />
-            Add New
+            Create New
           </button>
         </div>
       </div>

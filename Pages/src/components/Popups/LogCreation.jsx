@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, ChevronDown, Check } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp, Check, Trophy } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
@@ -11,41 +11,48 @@ import {
   Button,
   IconButton,
   Box,
+  TextField,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 
 const LogCreation = ({ open, onClose }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [status, setStatus] = useState("");
   const [remarks, setRemarks] = useState("");
   const [isActive, setIsActive] = useState(false);
-  const [questions, setQuestions] = useState(["", "", "", "", ""]); // State for questions
+  const [questions, setQuestions] = useState(["", "", "", "", ""]);
+  const [files, setFiles] = useState([]);
 
   const handleViewDetails = () => {
     setIsExpanded(!isExpanded);
   };
 
-  // Handle question input change
   const handleQuestionChange = (index, value) => {
     const newQuestions = [...questions];
     newQuestions[index] = value;
     setQuestions(newQuestions);
   };
 
-  // Combined handleSave function with all necessary logic
+  const handleFileUpload = (event) => {
+    const uploadedFiles = Array.from(event.target.files);
+    if (files.length + uploadedFiles.length > 5) {
+      alert("You can upload a maximum of 5 files.");
+      return;
+    }
+    setFiles([...files, ...uploadedFiles]);
+  };
+
   const handleSave = () => {
-    // Toggle active state for the category button
     setIsActive(!isActive);
 
-    // Validation for the save action
     if (!status && isExpanded) {
       toast.error("Please select a status.");
       return;
@@ -56,20 +63,18 @@ const LogCreation = ({ open, onClose }) => {
       return;
     }
 
-    // Your save logic here
     toast.success("Saved successfully!");
   };
 
-  // Handle closing the popup
+  // Simply call onClose without navigating
   const handleClose = () => {
-    onClose(); // Call the onClose function passed from the parent component
-    navigate("/"); // Navigate to the desired route (e.g., home page)
+    onClose();
   };
 
   return (
     <Dialog
       open={open}
-      onClose={handleClose} // Use handleClose here
+      onClose={handleClose}
       fullWidth
       maxWidth="md"
       fullScreen={isMobile}
@@ -96,7 +101,7 @@ const LogCreation = ({ open, onClose }) => {
                 <IconButton
                   edge="start"
                   color="inherit"
-                  onClick={handleClose} // Use handleClose here
+                  onClick={handleClose}
                   aria-label="close"
                   size={isMobile ? "small" : "medium"}
                 >
@@ -113,7 +118,7 @@ const LogCreation = ({ open, onClose }) => {
             </DialogTitle>
             <IconButton
               aria-label="close"
-              onClick={handleClose} // Use handleClose here
+              onClick={handleClose}
               size={isMobile ? "small" : "medium"}
             >
               <CloseIcon fontSize={isMobile ? "small" : "medium"} />
@@ -135,6 +140,7 @@ const LogCreation = ({ open, onClose }) => {
               Your problem is submitted. Waiting for the supervisor's approval
             </Typography>
 
+
             {/* View Details Button */}
             <Button
               variant="outlined"
@@ -144,11 +150,19 @@ const LogCreation = ({ open, onClose }) => {
               className="flex items-center justify-between p-3 sm:p-8 bg-gray-50 rounded-lg hover:bg-gray-100 mt-2 sm:mt-4 text-xs sm:text-sm"
             >
               <span className="text-gray-600">View details</span>
-              <ChevronDown
-                className={`h-4 w-4 sm:h-5 sm:w-5 text-gray-500 p-1 ml-auto transition-transform duration-200 ${
-                  isExpanded ? "rotate-180" : ""
-                }`}
-              />
+              {isExpanded ? (
+                <ChevronUp
+                  className={`h-4 w-4 sm:h-5 sm:w-5 text-gray-500 p-1 ml-auto transition-transform duration-200 ${
+                    isExpanded ? "rotate-180" : ""
+                  }`}
+                />
+              ) : (
+                <ChevronDown
+                  className={`h-4 w-4 sm:h-5 sm:w-5 text-gray-500 p-1 ml-auto transition-transform duration-200 ${
+                    isExpanded ? "rotate-180" : ""
+                  }`}
+                />
+              )}
             </Button>
           </div>
 
@@ -245,6 +259,13 @@ const LogCreation = ({ open, onClose }) => {
                     </div>
                   </div>
                 </div>
+                <input
+                  type="file"
+                  onChange={handleFileUpload}
+                  multiple
+                  accept=".pdf,.doc,.docx"
+                  style={{ marginTop: 8, width: "100%" }}
+                />
               </div>
 
               {/* Questions */}
@@ -333,7 +354,7 @@ const LogCreation = ({ open, onClose }) => {
               {/* Buttons Section */}
               <DialogActions className="mt-4 sm:mt-6 flex justify-end gap-2 sm:gap-4 p-0 sm:p-2">
                 <Button
-                  onClick={handleClose} // Use handleClose here
+                  onClick={handleClose}
                   color="primary"
                   size={isMobile ? "small" : "medium"}
                   sx={{
