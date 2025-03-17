@@ -486,7 +486,7 @@ const FormDashboard = () => {
               </div>
 
               {/* Current selection display */}
-              <div className="w-full border border-gray-200 rounded-lg pt-1 pb-20 p-2 sm:p-2">
+              <div className="w-full border border-gray-200 rounded-lg pt-1 p-2 sm:p-2">
                 <p className="text-center text-gray-600">
                   {getProblemRating()}
                 </p>

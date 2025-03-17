@@ -140,28 +140,6 @@ const LogCreation = ({ open, onClose }) => {
               Your problem is submitted. Waiting for the supervisor's approval
             </Typography>
 
-            {/* Points Provided */}
-            <Box mb={isMobile ? 2 : 3} px={isMobile ? 1 : 2}>
-              <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-                Points provided
-              </Typography>
-              <Box
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
-                p={isMobile ? 1 : 2}
-                bgcolor="grey.100"
-                borderRadius={1}
-                border={1}
-                borderColor="grey.300"
-                mt={1}
-              >
-                <Typography variant="body1" sx={{ color: "text.secondary" }}>
-                  500 points
-                </Typography>
-                <Trophy fontSize={isMobile ? "small" : "medium"} color="warning" />
-              </Box>
-            </Box>
 
             {/* View Details Button */}
             <Button

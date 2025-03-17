@@ -5,14 +5,15 @@ import ApprovalsPanel from "../../components/Approval/ApprovalsPanel"
 import LogCreation from "../../components/Popups/LogCreation";
 import Rejected from "../../components/Popups/Rejected";
 import Accepted from "../../components/Popups/Accepted";
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 
 
 function ProblemRaisorDashboard() {
   const [selectedTab, setSelectedTab] = useState("problem"); // Toggle between sections
   const navigate = useNavigate()
+  const location = useLocation()
   const [selectedDay, setSelectedDay] = useState(3) // Wednesday (index 3) selected by default
-  const [showFilter, setShowFilter] = useState(false) // State for filter popup visibility // State for filter popup visibility
+  const [showFilter, setShowFilter] = useState(false) // State for filter popup visibility
   
   // Added state variables for popups
   const [openLogCreation, setOpenLogCreation] = useState(false)
@@ -26,6 +27,32 @@ function ProblemRaisorDashboard() {
     accepted: false,
   }) // State for selected filters
 
+  // Handle popstate event to prevent default back button behavior
+  useEffect(() => {
+    const handlePopState = (event) => {
+      // If any popup is open, close it instead of navigating back
+      if (openLogCreation || openRejected || openAccepted || showFilter) {
+        event.preventDefault();
+        closeAllPopups();
+        // Push the same state to replace the history entry
+        window.history.pushState(null, document.title, location.pathname);
+        return;
+      }
+    };
+
+    // Add popstate event listener
+    window.addEventListener('popstate', handlePopState);
+
+    // Add history state when opening any popup
+    if (openLogCreation || openRejected || openAccepted || showFilter) {
+      window.history.pushState(null, document.title, location.pathname);
+    }
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [openLogCreation, openRejected, openAccepted, showFilter, location]);
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 900);
@@ -33,6 +60,13 @@ function ProblemRaisorDashboard() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const closeAllPopups = () => {
+    setOpenLogCreation(false);
+    setOpenRejected(false);
+    setOpenAccepted(false);
+    setShowFilter(false);
+  };
 
   const days = ["S", "M", "T", "W", "T", "F", "S"]
   const dates = ["21", "22", "23", "24", "25", "26", "27"]
@@ -148,11 +182,15 @@ function ProblemRaisorDashboard() {
     setSelectedDay(index)
   }
 
-  const toggleFilter = () => {
+  const toggleFilter = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setShowFilter(!showFilter)
   }
 
-  // Fixed handleCardClick to match the status strings in your data
+  // Modified handleCardClick to prevent navigation and use our custom close behavior
   const handleCardClick = (card) => {
     console.log("Card clicked:", card); // Debugging
     if (card.status === "inprogress") {
@@ -165,6 +203,31 @@ function ProblemRaisorDashboard() {
       console.log("Opening Accepted popup"); // Debugging
       setOpenAccepted(true); // Open Accepted popup
     }
+  };
+
+  // Modified close handlers to prevent default behavior
+  const handleCloseLogCreation = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setOpenLogCreation(false);
+  };
+
+  const handleCloseRejected = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setOpenRejected(false);
+  };
+
+  const handleCloseAccepted = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setOpenAccepted(false);
   };
 
   const handleFilterChange = (filter) => {
@@ -233,17 +296,17 @@ function ProblemRaisorDashboard() {
         {!isMobile || selectedTab === "problem" ? (
           <div className="w-full md:w-4/5 flex flex-col h-full overflow-hidden">
             <div className="p-4 md:p-6">
-              <Header username="Kiruthika..." onFilterClick={() => setShowFilter(true)} />
+              <Header username="Kiruthika..." onFilterClick={toggleFilter} />
             </div>
             <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-4 md:pb-6 scrollbar-hide">
               <Calender
-                            days={days}
-                            dates={dates}
-                            timeSlots={timeSlots}
-                            events={events}
-                            selectedDay={selectedDay}
-                            onDayClick={handleDayClick}
-                          />
+                days={days}
+                dates={dates}
+                timeSlots={timeSlots}
+                events={events}
+                selectedDay={selectedDay}
+                onDayClick={handleDayClick}
+              />
             </div>
           </div>
         ) : null}
@@ -254,33 +317,6 @@ function ProblemRaisorDashboard() {
             <div className="flex-1 overflow-y-auto p-4 md:p-6 scrollbar-hide">
               <ApprovalsPanel approvals={filteredApprovals} onCardClick={handleCardClick} />
             </div>
-
-            {/* Mobile Bottom Filter Bar */}
-            {isMobile && (
-              <div className="md:hidden flex justify-between items-center p-4 border-t">
-                <div className="flex space-x-4">
-                  {["accepted", "rejected", "inprogress"].map((status) => (
-                    <label key={status} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 mr-2"
-                        checked={filters[status]}
-                        onChange={() => handleFilterChange(status)}
-                      />
-                      <span className="text-sm capitalize">{status}</span>
-                    </label>
-                  ))}
-                </div>
-                <div className="flex space-x-2">
-                  <button className="px-4 py-1 border border-gray-300 rounded-md text-sm" onClick={handleClearFilters}>
-                    Clear
-                  </button>
-                  <button className="px-4 py-1 bg-orange-500 text-white rounded-md text-sm" onClick={handleApplyFilters}>
-                    Apply
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         ) : null}
       </div>
@@ -289,7 +325,7 @@ function ProblemRaisorDashboard() {
       {showFilter && (
         <div
           className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
-          onClick={() => setShowFilter(false)}
+          onClick={toggleFilter}
         >
           <div
             className="bg-white w-full md:w-auto md:min-w-[400px] rounded-lg p-6 z-50"
@@ -321,10 +357,10 @@ function ProblemRaisorDashboard() {
         </div>
       )}
 
-      {/* Popups */}
-      <LogCreation open={openLogCreation} onClick={() => setOpenLogCreation(false)} />
-      <Rejected open={openRejected} onClick={() => setOpenRejected(false)} />
-      <Accepted open={openAccepted} onClick={() => setOpenAccepted(false)} />
+      {/* Popups with updated handlers to prevent navigation */}
+      <LogCreation open={openLogCreation} onClick={handleCloseLogCreation} />
+      <Rejected open={openRejected} onClick={handleCloseRejected} />
+      <Accepted open={openAccepted} onClick={handleCloseAccepted} />
     </div>
   )
 }

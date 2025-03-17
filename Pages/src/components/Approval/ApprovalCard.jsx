@@ -18,7 +18,7 @@ const ApprovalCard = ({ approval }) => {
       case "inprogress":
         return {
           bg: "bg-purple-100",
-          text: "text-purple-600",
+          text: "bg-blue-100 text-purple-600 border-blue-600",
           label: "Inprogress",
         }
       default:
