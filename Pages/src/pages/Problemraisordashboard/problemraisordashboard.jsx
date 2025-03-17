@@ -5,6 +5,13 @@ import ApprovalsPanel from "../../components/Approval/ApprovalsPanel";
 import LogCreation from "../../components/Popups/LogCreation";
 import Rejected from "../../components/Popups/Rejected";
 import Accepted from "../../components/Popups/Accepted";
+  
+  // Added state variables for popups
+  const [openLogCreation, setOpenLogCreation] = useState(false)
+  const [openRejected, setOpenRejected] = useState(false)
+  const [openAccepted, setOpenAccepted] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
+
 import { useNavigate } from "react-router-dom";
 
 function ProblemRaisorDashboard() {
@@ -18,13 +25,56 @@ function ProblemRaisorDashboard() {
     inprogress: true,
     rejected: false,
     accepted: false,
+  }) // State for selected filters
+
+  // Handle popstate event to prevent default back button behavior
+  useEffect(() => {
+    const handlePopState = (event) => {
+      // If any popup is open, close it instead of navigating back
+      if (openLogCreation || openRejected || openAccepted || showFilter) {
+        event.preventDefault();
+        closeAllPopups();
+        // Push the same state to replace the history entry
+        window.history.pushState(null, document.title, location.pathname);
+        return;
+      }
+    };
+
+    // Add popstate event listener
+    window.addEventListener('popstate', handlePopState);
+
+    // Add history state when opening any popup
+    if (openLogCreation || openRejected || openAccepted || showFilter) {
+      window.history.pushState(null, document.title, location.pathname);
+    }
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [openLogCreation, openRejected, openAccepted, showFilter, location]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 900);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const closeAllPopups = () => {
+    setOpenLogCreation(false);
+    setOpenRejected(false);
+    setOpenAccepted(false);
+    setShowFilter(false);
+  };
+
+  const days = ["S", "M", "T", "W", "T", "F", "S"]
+  const dates = ["21", "22", "23", "24", "25", "26", "27"]
   });
   const [problems, setProblems] = useState([]); // State to store fetched problems
   const [username, setUsername] = useState(""); // Add state for username
 
-  // Define the missing arrays
-  const days = ["S", "M", "T", "W", "T", "F", "S"];
-  const dates = ["21", "22", "23", "24", "25", "26", "27"];
+ 
   const timeSlots = [
     { time: "8 am" },
     { time: "9 am" },
@@ -102,6 +152,9 @@ function ProblemRaisorDashboard() {
     setSelectedDay(index);
   };
 
+
+
+  // Modified handleCardClick to prevent navigation and use our custom close behavior
   const toggleFilter = () => {
     setShowFilter(!showFilter);
   };
@@ -115,6 +168,31 @@ function ProblemRaisorDashboard() {
     } else if (card.status === "accepted") {
       setOpenAccepted(true);
     }
+  };
+
+  // Modified close handlers to prevent default behavior
+  const handleCloseLogCreation = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setOpenLogCreation(false);
+  };
+
+  const handleCloseRejected = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setOpenRejected(false);
+  };
+
+  const handleCloseAccepted = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setOpenAccepted(false);
   };
 
   const handleFilterChange = (filter) => {
@@ -166,9 +244,25 @@ function ProblemRaisorDashboard() {
           </div>
         </div>
 
-        <div className="w-full md:w-2/5 bg-gray-50 flex flex-col h-full overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-4 md:p-6 scrollbar-hide">
-            <ApprovalsPanel approvals={filteredApprovals} onCardClick={handleCardClick} />
+      {/* Main Content Section */}
+      <div className={`flex ${isMobile ? "flex-col" : "flex-row"} h-full overflow-hidden`}>
+        {/* Problem Status Section - Shown in mobile only when selectedTab is "problem" */}
+        {!isMobile || selectedTab === "problem" ? (
+          <div className="w-full md:w-4/5 flex flex-col h-full overflow-hidden">
+            <div className="p-4 md:p-6">
+              <Header username="Kiruthika..." onFilterClick={toggleFilter} />
+            </div>
+            <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-4 md:pb-6 scrollbar-hide">
+              <Calender
+                days={days}
+                dates={dates}
+                timeSlots={timeSlots}
+                events={events}
+                selectedDay={selectedDay}
+                onDayClick={handleDayClick}
+              />
+            </div>
+
           </div>
 
           <div className="md:hidden flex justify-between items-center p-4 border-t">

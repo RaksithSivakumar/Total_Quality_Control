@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, ChevronDown, Check, X } from "lucide-react";
+import { ArrowLeft, ChevronDown, Check } from "lucide-react";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   IconButton,
+  Typography,
 } from "@mui/material";
 
 const Rejected = ({ open, onClose }) => {
@@ -71,8 +72,31 @@ const Rejected = ({ open, onClose }) => {
       </style>
 
       {/* Dialog Content with Scrollbar Hidden */}
-      <DialogContent dividers className="bg-white p-4 sm:p-6 overflow-y-auto scrollbar-hide">
+      <DialogContent
+        dividers
+        className="bg-white p-4 sm:p-6 overflow-y-auto scrollbar-hide"
+      >
         <div className="space-y-6">
+          <DialogTitle className="p-0 sm:p-2">
+            <div className="flex items-center">
+              <IconButton
+                edge="start"
+                color="inherit"
+                onClick={onClose}
+                aria-label="close"
+                size={isMobile ? "small" : "medium"}
+              >
+                <ArrowLeft size={isMobile ? 18 : 24} />
+              </IconButton>
+              <Typography
+                variant={isMobile ? "subtitle1" : "h6"}
+                component="h1"
+                className="flex justify-between items-center p-4"
+              >
+                Rejected
+              </Typography>
+            </div>
+          </DialogTitle>
           {/* Reason for rejected */}
           <div className="space-y-3">
             <h2 className="text-lg font-medium text-red-500">
@@ -136,8 +160,8 @@ const Rejected = ({ open, onClose }) => {
                   Description
                 </h2>
                 <p className="text-base text-gray-600 p-2 bg-gray-50 rounded-lg">
-                  Unintended escape of water from pipes, fixtures, or structures,
-                  leading to potential damage and waste in AS block.
+                  Unintended escape of water from pipes, fixtures, or
+                  structures, leading to potential damage and waste in AS block.
                 </p>
               </div>
 
