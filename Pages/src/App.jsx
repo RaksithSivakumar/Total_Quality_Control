@@ -148,6 +148,19 @@ const App = ({ image = "/placeholder.svg?height=60&width=60" }) => {
                 <IoNotificationsSharp size={20} color="#718EBF" />
               </button>
 
+              {/* Logout button */}
+              <button
+                className="bg-[#F5F7FA] p-2 rounded-full hover:bg-red-100 transition-all"
+                onClick={() => {
+                  localStorage.removeItem("user"); // Clear user data from local storage
+                  navigate("/login"); // Redirect to login page
+                }}
+              >
+                <span className="text-red-500 font-semibold text-sm px-3">
+                  Logout
+                </span>
+              </button>
+
               {/* Profile image */}
               <button
                 className="w-10 h-10 rounded-full border-4 border-gray-300 overflow-hidden hover:border-gray-500 transition-all duration-200"
