@@ -182,7 +182,7 @@ app.post("/api/login", async (req, res) => {
       const user = results[0];
       // Assuming you have a hashed password in the database
       if (user.password === password) { // Replace this with bcrypt comparison in production
-        res.status(200).json({ message: "Login successful", user: { email: user.email, role: user.role } });
+        res.status(200).json({ message: "Login successful", user: { userId: user.user_id, name: user.name, email: user.email, role: user.role } });
       } else {
         res.status(401).json({ message: "Invalid email or password" });
       }
