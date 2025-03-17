@@ -1,29 +1,44 @@
 import React from "react";
-import { Route, Routes } from "react-router-dom";
-import Login from "../pages/Login/Login"; // Ensure this file exists
-import SurveyCreation from "../pages/Problemraisordashboard/surveycreation"; // Ensure this file exists
-import ProblemRaisorDashboard from "../pages/Problemraisordashboard/problemraisordashboard"; // Ensure this file exists
-import SupervisorDashboard from "../pages/Superviserdashboard/superviserdashboard"; // Ensure this file exists
-import Problemsolver from "../pages/Problemsolvingdashboard/problemsolvingdashboard"; // Ensure this file exists
+import { Route, Routes, Navigate } from "react-router-dom";
+import Login from "../pages/Login/Login";
+import SurveyCreation from "../pages/Problemraisordashboard/surveycreation";
+import ProblemRaisorDashboard from "../pages/Problemraisordashboard/problemraisordashboard";
+import SupervisorDashboard from "../pages/Superviserdashboard/superviserdashboard";
+import Problemsolver from "../pages/Problemsolvingdashboard/problemsolvingdashboard";
 import Maintainanceteam from "../pages/Maintainanceteam/maintainanceteam";
 import ProblemAdmin from "../pages/ProblemAdmin/ProblemAdmin";
- export default function Routernav() {
+import CryptoJS from "crypto-js";
+
+const secretKey = "qwertyuiopasdfghjklzxcvbnm"; 
+
+const getUserRole = () => {
+  const encryptedUser = localStorage.getItem("user");
+  if (!encryptedUser) return null;
+
+  try {
+    const bytes = CryptoJS.AES.decrypt(encryptedUser, secretKey);
+    const user = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    return user?.role || null;
+  } catch {
+    return null;
+  }
+};
+
+const PrivateRoute = ({ children, allowedRoles }) => {
+  const userRole = getUserRole();
+  return allowedRoles.includes(userRole) ? children : <Navigate to="/login" />;
+};
+
+export default function Routernav() {
   return (
-    
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/survey" element={<SurveyCreation />} />
-      <Route path="/Problemrd" element={<ProblemRaisorDashboard />} />
-      <Route path="/Superviser" element={<SupervisorDashboard />} />
-      <Route path="/Problemsol" element={<Problemsolver />} />
-      <Route path="/Maintain" element={<Maintainanceteam />} />
-      <Route path="/ProblemAdmin" element={<ProblemAdmin />} />
-      </Routes>
+      <Route path="/survey" element={<PrivateRoute allowedRoles={["student"]}><SurveyCreation /></PrivateRoute>} />
+      <Route path="/Problemrd" element={<PrivateRoute allowedRoles={["student"]}><ProblemRaisorDashboard /></PrivateRoute>} />
+      <Route path="/Superviser" element={<PrivateRoute allowedRoles={["supervisor"]}><SupervisorDashboard /></PrivateRoute>} />
+      <Route path="/Problemsol" element={<PrivateRoute allowedRoles={["problem"]}><Problemsolver /></PrivateRoute>} />
+      <Route path="/Maintain" element={<PrivateRoute allowedRoles={["problemmaintenance"]}><Maintainanceteam /></PrivateRoute>} />
+      <Route path="/ProblemAdmin" element={<PrivateRoute allowedRoles={["problemsolver"]}><ProblemAdmin /></PrivateRoute>} />
+    </Routes>
   );
 }
-{/* <Route path="/login" element={<Login />} />
-      <Route path="/survey" element={<PrivateRoute element={<SurveyCreation />} isAuthenticated={isAuthenticated} />} />
-      <Route path="/Problemrd" element={<PrivateRoute element={<ProblemRaisorDashboard />} isAuthenticated={isAuthenticated} />} />
-      <Route path="/Superviser" element={<PrivateRoute element={<SupervisorDashboard />} isAuthenticated={isAuthenticated} />} />
-      <Route path="/Problemsol" element={<PrivateRoute element={<Problemsolver />} isAuthenticated={isAuthenticated} />} />
-      <Route path="/Maintain" element={<PrivateRoute element={<Maintainanceteam />} isAuthenticated={isAuthenticated} />} /> */}

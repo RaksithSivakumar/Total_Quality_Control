@@ -32,7 +32,7 @@ const Calendar = ({ days, dates, timeSlots, events, selectedDay, onDayClick }) =
 
   useEffect(() => {
     updateCurrentTime();
-    const interval = setInterval(updateCurrentTime, 60000);
+    const interval = setInterval(updateCurrentTime, 40000);
     return () => clearInterval(interval);
   }, [updateCurrentTime]);
 

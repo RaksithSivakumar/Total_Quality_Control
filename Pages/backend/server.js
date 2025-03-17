@@ -4,8 +4,9 @@ const cors = require("cors");
 const config = require('./src/config/config.js').development;
 const fs = require("fs");
 const { OAuth2Client } = require('google-auth-library');
-
+const multer = require("multer");
 const app = express();
+const path = require("path"); // Add this line
 
 // Enhanced CORS configuration
 app.use(cors({
@@ -16,6 +17,8 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Middleware to handle x-www-form-urlencoded data
+app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve static files
 
 // Debug middleware
 app.use((req, res, next) => {
@@ -33,6 +36,38 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0
 });
+
+// Multer configuration for file uploads
+const storage = multer.diskStorage({
+  destination: "./uploads/",
+  filename: function (req, file, cb) {
+    cb(
+      null,
+      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+    );
+  },
+});
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: function (req, file, cb) {
+    checkFileType(file, cb);
+  },
+}).array("Media_Upload", 5); // Allow up to 5 files
+
+// Check file type function
+function checkFileType(file, cb) {
+  const filetypes = /jpeg|jpg|png|pdf/;
+  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = filetypes.test(file.mimetype);
+
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb("Error: Images and PDFs only!");
+  }
+}
+
 // Google OAuth client
 const client = new OAuth2Client('275309862189-naca865pd0dri3lh5h76ng3m2m6vqh4q.apps.googleusercontent.com');
 
@@ -129,126 +164,149 @@ app.post('/api/google-login', async (req, res) => {
   }
 });
 
-// Problem Raiser API
-app.get('/api/problem_raiser', async (req, res) => {
+// Regular login route
+app.post("/api/login", async (req, res) => {
+  const { email, password } = req.body;
+  
+  // Validate input
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required." });
+  }
+  
   try {
-    const [results] = await pool.query('SELECT * FROM problem_raiser');
+    // Query to find the user
+    const [results] = await pool.query("SELECT * FROM master_login WHERE email = ?", [email]);
+    
+    // Check if user exists
+    if (results.length > 0) {
+      const user = results[0];
+      // Assuming you have a hashed password in the database
+      if (user.password === password) { // Replace this with bcrypt comparison in production
+        res.status(200).json({ message: "Login successful", user: { userId: user.user_id, name: user.name, email: user.email, role: user.role } });
+      } else {
+        res.status(401).json({ message: "Invalid email or password" });
+      }
+    } else {
+      res.status(401).json({ message: "Invalid email or password" });
+    }
+  } catch (err) {
+    console.error("Error during login: ", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// GET API to retrieve all records from master_login table
+app.get("/api/login", async (req, res) => {
+  try {
+    const [results] = await pool.query("SELECT * FROM master_login");
     res.status(200).json(results);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error fetching data: ", err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
-app.post('/api/problem_raiser', async (req, res) => {
-  const { category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, created_at, created_by } = req.body;
+app.post("/api/master_problem", (req, res) => {
+  upload(req, res, async (err) => {
+    if (err) {
+      console.error("Multer error:", err);
+      return res.status(400).json({ error: err.message });
+    }
+
+    const {
+      Category,
+      problem_title,
+      Description,
+      Questions_1,
+      Questions_2,
+      Questions_3,
+      Questions_4,
+      Questions_5,
+      created_by,
+    } = req.body;
+
+    // Validate input data
+    if (!Category || !problem_title || !Description || !Questions_1 || !Questions_2 || !Questions_3 || !Questions_4 || !Questions_5 || !created_by) {
+      return res.status(400).json({ error: "All fields are required." });
+    }
+
+    // Generate file links
+    const mediaUploads = req.files
+      .map((file) => `http://localhost:4000/uploads/${file.filename}`)
+      .join(",");
+
+    // Insert into database
+    const query = `
+      INSERT INTO master_problem 
+      (Category, problem_title, Description, Media_Upload, Questions_1, Questions_2, Questions_3, Questions_4, Questions_5, created_by) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    try {
+      // Get a connection from the pool
+      const connection = await pool.getConnection();
+      
+      // Execute the query
+      await connection.query(query, [
+        Category,
+        problem_title,
+        Description,
+        mediaUploads,
+        Questions_1,
+        Questions_2,
+        Questions_3,
+        Questions_4,
+        Questions_5,
+        created_by,
+      ]);
+
+      // Release the connection back to the pool
+      connection.release();
+      
+      res.status(201).json({ message: "Problem submitted successfully" });
+    } catch (error) {
+      console.error("Database error:", error);
+      res.status(500).json({ error: "Failed to insert problem data" });
+    }
+  });
+});
+app.get("/api/master_problem", async (req, res) => {
   try {
-    const [results] = await pool.query('INSERT INTO problem_raiser (category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, created_at, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-    [category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, created_at, created_by]);
-    res.status(201).json({ message: 'Problem Raiser added successfully', id: results.insertId });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    // Get a connection from the pool
+    const connection = await pool.getConnection();
+
+    // Query to fetch all problems from the database
+    const query = `
+      SELECT * FROM master_problem
+    `;
+
+    // Execute the query
+    const [results] = await connection.query(query);
+
+    // Release the connection back to the pool
+    connection.release();
+
+    // Format the results (e.g., split Media_Upload into an array of links)
+    const formattedResults = results.map((problem) => ({
+      ...problem,
+      Media_Upload: problem.Media_Upload ? problem.Media_Upload.split(",") : [], // Convert comma-separated links to an array
+    }));
+
+    // Send the response
+    res.status(200).json({ data: formattedResults });
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ error: "Failed to fetch problem data" });
   }
 });
 
-// Superviser API
-app.get('/api/superviser', async (req, res) => {
-  try {
-    const [results] = await pool.query('SELECT * FROM superviser');
-    res.status(200).json(results);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+// Server test route
+app.get('/', (req, res) => {
+  res.send('Server is running');
 });
 
-app.post('/api/superviser', async (req, res) => {
-  const { category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, problem_severity, status, Remarks, updated_at, updated_by } = req.body;
-  try {
-    const [results] = await pool.query('INSERT INTO superviser (category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, problem_severity, status, Remarks, updated_at, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-    [category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, problem_severity, status, Remarks, updated_at, updated_by]);
-    res.status(201).json({ message: 'Superviser added successfully', id: results.insertId });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// PR Bank API
-app.get('/api/pr_bank', async (req, res) => {
-  try {
-    const [results] = await pool.query('SELECT * FROM pr_bank');
-    res.status(200).json(results);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/pr_bank', async (req, res) => {
-  const { category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, problem_severity, status, Remarks, Deadline, rp, assign_to, assign_by, maintainance, created_at, created_by, updated_at, updated_by } = req.body;
-  try {
-    const [results] = await pool.query('INSERT INTO pr_bank (category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, problem_severity, status, Remarks, Deadline, rp, assign_to, assign_by, maintainance, created_at, created_by, updated_at, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-    [category, problem_tilte, description, media_upload, question1, question2, question3, question4, question5, problem_severity, status, Remarks, Deadline, rp, assign_to, assign_by, maintainance, created_at, created_by, updated_at, updated_by]);
-    res.status(201).json({ message: 'PR Bank added successfully', id: results.insertId });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Master Maintain API
-app.get('/api/master_maintain', async (req, res) => {
-  try {
-    const [results] = await pool.query('SELECT * FROM master_maintain');
-    res.status(200).json(results);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/master_maintain', async (req, res) => {
-  const { name, email, created_on, created_by, status } = req.body;
-  try {
-    const [results] = await pool.query('INSERT INTO master_maintain (name, email, created_on, created_by, status) VALUES (?, ?, ?, ?, ?)', 
-    [name, email, created_on, created_by, status]);
-    res.status(201).json({ message: 'Master Maintain added successfully', id: results.insertId });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Master Login API
-app.get('/api/master_login', async (req, res) => {
-  try {
-    const [results] = await pool.query('SELECT * FROM master_login');
-    res.status(200).json(results);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/master_login', async (req, res) => {
-  const { name, email, role } = req.body;
-  try {
-    const [results] = await pool.query('INSERT INTO master_login (name, email, role) VALUES (?, ?, ?)', 
-    [name, email, role]);
-    res.status(201).json({ message: 'Master Login added successfully', id: results.insertId });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Questions API
-app.get('/api/questions', async (req, res) => {
-  try {
-    const [results] = await pool.query('SELECT * FROM questions');
-    res.status(200).json(results);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
- 
-
-// Start server
-const PORT = 5000;
+// Start the server
+const PORT = 4000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
