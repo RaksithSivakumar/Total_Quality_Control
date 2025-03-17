@@ -15,337 +15,339 @@ import {
   useTheme,
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
-
-// ------------------ LogCreation Popup Component ------------------
-const LogCreation = ({ open, onClose, storedProblemTitle }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [status, setStatus] = useState("");
-  const [remarks, setRemarks] = useState("");
-  const [isActive, setIsActive] = useState(false);
-  const [problem, setProblem] = useState(null);
-
-  // Fetch problem details when the dialog opens
-  useEffect(() => {
+  // ------------------ LogCreation Popup Component ------------------
+  const LogCreation = ({ open, onClose, storedProblemTitle }) => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [status, setStatus] = useState("");
+    const [remarks, setRemarks] = useState("");
+    const [isActive, setIsActive] = useState(false);
+    const [problem, setProblem] = useState(null);
+    const [problemTitle, setProblemTitle] = useState(storedProblemTitle); // Initialize with storedProblemTitle
+    // Fetch problem details when the dialog opens
+    useEffect(() => {
     if (open) {
-      fetch("http://localhost:4000/api/master_problem")
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-          }
-          return response.json();
-        })
-        .then((response) => {
-          console.log("API Response:", response); // Log the API response
-          const problems = response.data; // Access the `data` key
-          const matchedProblem = problems.find(
-            (item) =>
-              item["Problem Title"].toLowerCase() ===
-              storedProblemTitle.toLowerCase()
-          );
-          if (matchedProblem) {
-            setProblem(matchedProblem);
-          } else {
-            console.warn(
-              "No matching problem found for title:",
-              storedProblemTitle
-            );
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching problem details:", error);
-        });
+    fetch("http://localhost:4000/api/master_problem")
+    .then((response) => {
+    if (!response.ok) {
+    throw new Error("Network response was not ok");
     }
-  }, [open, storedProblemTitle]);
-
-  const handleViewDetails = () => {
+    return response.json();
+    })
+    .then((response) => {
+    console.log("API Response:", response);
+    const problems = response.data;
+    console.log("Problems:", problems);
+    if (!storedProblemTitle) {
+    console.warn("storedProblemTitle is undefined or null");
+    return;
+    }
+    const matchedProblem = problems.find(
+    (item) =>
+    item["problem_title"] &&
+    item["problem_title"].toLowerCase() === storedProblemTitle.toLowerCase()
+    );
+    if (matchedProblem) {
+    setProblem(matchedProblem);
+    setProblemTitle(matchedProblem.problem_title); // Set problemTitle from fetched data
+    } else {
+    console.warn(
+    "No matching problem found for title:",
+    storedProblemTitle
+    );
+    }
+    })
+    .catch((error) => {
+    console.error("Error fetching problem details:", error);
+    });
+    }
+    }, [open, storedProblemTitle]);
+    const handleViewDetails = () => {
     setIsExpanded(!isExpanded);
-  };
-
-  const handleSave = () => {
-    const data = {
-      Category: problem ? problem.Category : "Default Category",
-      Problem_Title: problem ? problem["Problem Title"] : storedProblemTitle,
-      status: status,
-      Remarks: remarks,
     };
-    console.log("Data being sent to the server:", data);
-
+    const handleSave = () => {
+    const data = {
+    Category: problem ? problem.Category : "Default Category",
+    Problem_Title: problemTitle, // Use problemTitle directly
+    status: status,
+    Remarks: remarks,
+    };
+    console.log("Data being sent to the server: ", data);
     // Send POST request to the backend
     fetch("http://localhost:4000/api/supervisor", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
+    method: "POST",
+    headers: {
+    "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
     })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        alert(data.message); // Show success message
-        onClose(); // Close the dialog
-      })
-      .catch((error) => {
-        console.error("Error saving data:", error);
-        alert("Failed to save data.");
-      });
-  };
-
-  // Prepare the questions array
-  const defaultQuestions = [
+    .then((response) => {
+    if (!response.ok) {
+    throw new Error("Network response was not ok");
+    }
+    return response.json();
+    })
+    .then((data) => {
+    alert(data.message);
+    onClose();
+    })
+    .catch((error) => {
+    console.error("Error saving data:", error);
+    alert("Failed to save data.");
+    });
+    };
+    // Prepare the questions array
+    const defaultQuestions = [
     "HAVE YOU TRIED TO SOLVE THE PROBLEM?",
     "WHEN DID THE PROBLEM ARISE?",
     "VENUE OF THE PROBLEM ARISE?",
     "SPECIFICATION OF THE PROBLEM?",
     "PROBLEM ARISE TIME?",
-  ];
-  const questions = problem
+    ];
+    const questions = problem
     ? [
-        problem["Questions 1"],
-        problem["Questions 2"],
-        problem["Questions 3"],
-        problem["Questions 4"],
-        problem["Questions 5"],
-      ]
+    problem["Questions_1"], // Corrected keys
+    problem["Questions_2"],
+    problem["Questions_3"],
+    problem["Questions_4"],
+    problem["Questions_5"],
+    ]
     : defaultQuestions;
-
-  return (
+    return (
     <Dialog
-      open={open}
-      onClose={onClose}
-      fullWidth
-      maxWidth="md"
-      fullScreen={isMobile}
-      PaperProps={{
-        sx: {
-          borderRadius: isMobile ? 0 : "12px",
-          margin: isMobile ? 0 : "32px",
-          height: isMobile ? "100%" : "auto",
-          maxHeight: isMobile ? "100%" : "90vh",
-        },
-      }}
+    open={open}
+    onClose={onClose}
+    fullWidth
+    maxWidth="md"
+    fullScreen={isMobile}
+    PaperProps={{
+    sx: {
+    borderRadius: isMobile ? 0 : "12px",
+    margin: isMobile ? 0 : "32px",
+    height: isMobile ? "100%" : "auto",
+    maxHeight: isMobile ? "100%" : "90vh",
+    },
+    }}
     >
-      <DialogContent className="bg-white p-3 sm:p-6 overflow-y-auto scrollbar-hide">
-        <div className="overflow-y-auto scrollbar-hide">
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <DialogTitle className="p-0 sm:p-2">
-              <div className="flex items-center">
-                <IconButton
-                  edge="start"
-                  color="inherit"
-                  onClick={onClose}
-                  aria-label="close"
-                  size={isMobile ? "small" : "medium"}
-                >
-                  <ArrowLeft size={isMobile ? 18 : 24} />
-                </IconButton>
-                <Typography
-                  variant={isMobile ? "subtitle1" : "h6"}
-                  component="h1"
-                  className="flex items-center p-4"
-                >
-                  Log creation
-                </Typography>
-              </div>
-            </DialogTitle>
-            <IconButton
-              aria-label="close"
-              onClick={onClose}
-              size={isMobile ? "small" : "medium"}
-            >
-              <CloseIcon fontSize={isMobile ? "small" : "medium"} />
-            </IconButton>
-          </Box>
-          {/* Status message */}
-          <div className="space-y-2 sm:space-y-4 mb-4 sm:mb-6">
-            <Typography
-              variant={isMobile ? "subtitle1" : "h6"}
-              className="text-blue-500 font-semibold"
-            >
-              Problem submitted
-            </Typography>
-            <Typography
-              variant="body1"
-              className="text-gray-600 p-1 sm:p-2 text-sm sm:text-base"
-            >
-              Your problem is submitted. Waiting for the supervisor's approval.
-            </Typography>
-            {/* View Details Button */}
-            <Button
-              variant="outlined"
-              fullWidth
-              onClick={handleViewDetails}
-              aria-expanded={isExpanded}
-              className="flex items-center justify-between p-3 sm:p-8 bg-gray-50 rounded-lg hover:bg-gray-100 mt-2 sm:mt-4 text-xs sm:text-sm"
-            >
-              <span className="text-gray-600">View details</span>
-              <ChevronDown
-                className={`h-4 w-4 sm:h-5 sm:w-5 text-gray-500 p-1 ml-auto transition-transform duration-200 ${
-                  isExpanded ? "rotate-180" : ""
-                }`}
-              />
-            </Button>
-          </div>
-          {/* Render the full form if expanded */}
-          {isExpanded && (
-            <div className="space-y-4 sm:space-y-6">
-              {/* Category */}
-              <div>
-                <Typography variant={isMobile ? "subtitle1" : "h6"} className="text-gray-700 font-medium mb-2 p-1 sm:p-3 text-sm sm:text-base">
-                  Category
-                </Typography>
-                <Button
-                  onClick={() => setIsActive(!isActive)}
-                  variant={isActive ? "contained" : "outlined"}
-                  size={isMobile ? "small" : "medium"}
-                  sx={{
-                    color: isActive ? "white" : "#FF7622",
-                    backgroundColor: isActive ? "#FF7622" : "transparent",
-                    borderColor: "#FF7622",
-                    fontSize: isMobile ? "0.75rem" : "0.875rem",
-                    padding: isMobile ? "4px 10px" : "6px 16px",
-                    "&:hover": {
-                      borderColor: "#E56A1E",
-                      backgroundColor: isActive ? "#E56A1E" : "rgba(255, 118, 34, 0.04)",
-                    },
-                  }}
-                >
-                  {problem ? problem.Category : "Productivity failure"}
-                </Button>
-              </div>
-              {/* Problem Title */}
-              <div>
-                <Typography variant={isMobile ? "subtitle1" : "h6"} className="text-gray-700 font-medium mb-1 sm:mb-2 text-sm sm:text-base">
-                  Problem Title
-                </Typography>
-                <Typography variant="body1" className="text-gray-600 p-2 sm:p-4 text-sm sm:text-base">
-                  {problem ? problem["Problem Title"] : storedProblemTitle}
-                </Typography>
-              </div>
-              {/* Description */}
-              <div>
-                <Typography variant={isMobile ? "subtitle1" : "h6"} className="text-gray-700 font-medium mb-1 sm:mb-2 text-sm sm:text-base">
-                  Description
-                </Typography>
-                <Typography variant="body1" className="text-gray-600 p-1 sm:p-2 text-sm sm:text-base">
-                  {problem
-                    ? problem.Description
-                    : "Unintended escape of water from pipes, fixtures, or structures, leading to potential damage and waste in AS block."}
-                </Typography>
-              </div>
-              {/* Media Upload */}
-              <div>
-                <Typography variant={isMobile ? "subtitle1" : "h6"} className="text-gray-700 font-medium mb-1 sm:mb-2 text-sm sm:text-base">
-                  Media Upload
-                </Typography>
-                <Typography variant="body2" className="text-gray-500 p-1 sm:p-2 mb-2 sm:mb-3 text-xs sm:text-sm">
-                  Add your documents here, and you can upload up to 5 files max
-                </Typography>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-2 sm:p-3 bg-gray-100 rounded-lg">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-0">
-                    {problem ? problem.Media_Upload : "phoenix-document.pdf"}
-                  </span>
-                  <div className="flex items-center">
-                    <span className="text-blue-500 mr-2 text-xs sm:text-sm">Upload complete</span>
-                    <div className="bg-green-500 rounded-full p-1">
-                      <Check className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {/* Questions */}
-              <div className="mb-6">
-                <h3 className="text-sm font-medium mb-3">Questions</h3>
-                {questions.map((question, index) => (
-                  <div key={index} className="mb-4">
-                    <p className="text-sm mb-2">{index + 1}. {question}</p>
-                    <input
-                      type="text"
-                      placeholder="Type your answer"
-                      className="w-full p-3 bg-gray-100 rounded-md border-none outline-none"
-                    />
-                  </div>
-                ))}
-              </div>
-              {/* Status Section */}
-              <div className="mt-4 sm:mt-6">
-                <Typography variant="subtitle2" className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">
-                  Status
-                </Typography>
-                <div className="flex gap-3 sm:gap-4 p-2 sm:p-4 flex-wrap">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="status"
-                      value="Accepted"
-                      className="mr-1 sm:mr-2"
-                      checked={status === "Accepted"}
-                      onChange={(e) => setStatus(e.target.value)}
-                    />
-                    <span className="text-xs sm:text-sm">Accepted</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="status"
-                      value="Rejected"
-                      className="mr-1 sm:mr-2"
-                      checked={status === "Rejected"}
-                      onChange={(e) => setStatus(e.target.value)}
-                    />
-                    <span className="text-xs sm:text-sm">Rejected</span>
-                  </label>
-                </div>
-              </div>
-              {/* Remarks Section */}
-              <div className="mt-4 sm:mt-6">
-                <Typography variant="subtitle2" className="text-xs sm:text-sm font-medium mb-2 sm:mb-4">
-                  Remarks
-                </Typography>
-                <textarea
-                  placeholder="Your text goes here"
-                  className="w-full p-2 sm:p-3 bg-gray-100 rounded-md border-none outline-none min-h-[80px] sm:min-h-[100px] text-xs sm:text-sm"
-                  value={remarks}
-                  onChange={(e) => setRemarks(e.target.value)}
-                  aria-label="Remarks"
-                />
-              </div>
-              <DialogActions className="mt-4 sm:mt-6 flex justify-end gap-2 sm:gap-4 p-0 sm:p-2">
-                <Button
-                  onClick={onClose}
-                  color="primary"
-                  size={isMobile ? "small" : "medium"}
-                  sx={{ fontSize: isMobile ? "0.75rem" : "0.875rem" }}
-                >
-                  Back
-                </Button>
-                <Button
-                  onClick={handleSave}
-                  variant="contained"
-                  size={isMobile ? "small" : "medium"}
-                  sx={{
-                    backgroundColor: "#FF7622",
-                    fontSize: isMobile ? "0.75rem" : "0.875rem",
-                    "&:hover": {
-                      backgroundColor: "#E56A1E",
-                    },
-                  }}
-                >
-                  Save
-                </Button>
-              </DialogActions>
-            </div>
-          )}
-        </div>
-      </DialogContent>
+    <DialogContent className="bg-white p-3 sm:p-6 overflow-y-auto scrollbar-hide">
+    <div className="overflow-y-auto scrollbar-hide">
+    <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+    <DialogTitle className="p-0 sm:p-2">
+    <div className="flex items-center">
+    <IconButton
+    edge="start"
+    color="inherit"
+    onClick={onClose}
+    aria-label="close"
+    size={isMobile ? "small" : "medium"}
+    >
+    <ArrowLeft size={isMobile ? 18 : 24} />
+    </IconButton>
+    <Typography
+    variant={isMobile ? "subtitle1" : "h6"}
+    component="h1"
+    className="flex items-center p-4"
+    >
+    Log creation
+    </Typography>
+    </div>
+    </DialogTitle>
+    <IconButton
+    aria-label="close"
+    onClick={onClose}
+    size={isMobile ? "small" : "medium"}
+    >
+    <CloseIcon fontSize={isMobile ? "small" : "medium"} />
+    </IconButton>
+    </Box>
+    {/* Status message */}
+    <div className="space-y-2 sm:space-y-4 mb-4 sm:mb-6">
+    <Typography
+    variant={isMobile ? "subtitle1" : "h6"}
+    className="text-blue-500 font-semibold"
+    >
+    Problem
+    </Typography>
+    <Typography
+    variant="body1"
+    className="text-gray-600 p-1 sm:p-2 text-sm sm:text-base"
+    >
+    {/* Your problem is submitted. Waiting for the supervisor's approval. */}
+    </Typography>
+    {/* View Details Button */}
+    <Button
+    variant="outlined"
+    fullWidth
+    onClick={handleViewDetails}
+    aria-expanded={isExpanded}
+    className="flex items-center justify-between p-3 sm:p-8 bg-gray-50 rounded-lg hover:bg-gray-100 mt-2 sm:mt-4 text-xs sm:text-sm"
+    >
+    <span className="text-gray-600">View details</span>
+    <ChevronDown
+    className={`h-4 w-4 sm:h-5 sm:w-5 text-gray-500 p-1 ml-auto transition-transform duration-200 ${
+    isExpanded ? "rotate-180" : ""
+    }`}
+    />
+    </Button>
+    </div>
+    {/* Render the full form if expanded */}
+    {isExpanded && (
+    <div className="space-y-4 sm:space-y-6">
+    {/* Category */}
+    <div>
+    <Typography variant={isMobile ? "subtitle1" : "h6"} className="text-gray-700 font-medium mb-2 p-1 sm:p-3 text-sm sm:text-base">
+    Category
+    </Typography>
+    <Button
+    onClick={() => setIsActive(!isActive)}
+    variant={isActive ? "contained" : "outlined"}
+    size={isMobile ? "small" : "medium"}
+    sx={{
+    color: isActive ? "white" : "#FF7622",
+    backgroundColor: isActive ? "#FF7622" : "transparent",
+    borderColor: "#FF7622",
+    fontSize: isMobile ? "0.75rem" : "0.875rem",
+    padding: isMobile ? "4px 10px" : "6px 16px",
+    "&:hover": {
+    borderColor: "#E56A1E",
+    backgroundColor: isActive ? "#E56A1E" : "rgba(255, 118, 34, 0.04)",
+    },
+    }}
+    >
+    {problem ? problem.Category : "Productivity failure"}
+    </Button>
+    </div>
+    {/* Problem Title */}
+    <div>
+    <Typography variant={isMobile ? "subtitle1" : "h6"} className="text-gray-700 font-medium mb-1 sm:mb-2 text-sm sm:text-base">
+    Problem Title
+    </Typography>
+    <Typography variant="body1" className="text-gray-600 p-2 sm:p-4 text-sm sm:text-base">
+    {problemTitle} {/* Display problemTitle */}
+    </Typography>
+    </div>
+    {/* Description */}
+    <div>
+    <Typography variant={isMobile ? "subtitle1" : "h6"} className="text-gray-700 font-medium mb-1 sm:mb-2 text-sm sm:text-base">
+    Description
+    </Typography>
+    <Typography variant="body1" className="text-gray-600 p-1 sm:p-2 text-sm sm:text-base">
+    {problem
+    ? problem.Description
+    : "Unintended escape of water from pipes, fixtures, or structures, leading to potential damage and waste in AS block."}
+    </Typography>
+    </div>
+    {/* Media Upload */}
+    <div>
+    <Typography variant={isMobile ? "subtitle1" : "h6"} className="text-gray-700 font-medium mb-1 sm:mb-2 text-sm sm:text-base">
+    Media Upload
+    </Typography>
+    <Typography variant="body2" className="text-gray-500 p-1 sm:p-2 mb-2 sm:mb-3 text-xs sm:text-sm">
+    Add your documents here, and you can upload up to 5 files max
+    </Typography>
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-2 sm:p-3 bg-gray-100 rounded-lg">
+    <span className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-0">
+    {problem ? problem.Media_Upload : "phoenix-document.pdf"}
+    </span>
+    <div className="flex items-center">
+    <span className="text-blue-500 mr-2 text-xs sm:text-sm">Upload complete</span>
+    <div className="bg-green-500 rounded-full p-1">
+    <Check className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+    </div>
+    </div>
+    </div>
+    </div>
+     {/* Questions */}
+ <div className="mb-6">
+  <h3 className="text-sm font-medium mb-3">Questions</h3>
+  {questions.map((question, index) => (
+  <div key={index} className="mb-4">
+  <p className="text-sm mb-2">{index + 1}</p>
+   
+  <Typography variant="body2" className="text-gray-600 p-1 sm:p-2 text-sm sm:text-base">
+  {question}
+  </Typography>
+  </div>
+  ))}
+ </div>
+
+    {/* Status Section */}
+    <div className="mt-4 sm:mt-6">
+    <Typography variant="subtitle2" className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">
+    Status
+    </Typography>
+    <div className="flex gap-3 sm:gap-4 p-2 sm:p-4 flex-wrap">
+    <label className="flex items-center">
+    <input
+    type="radio"
+    name="status"
+    value="Accepted"
+    className="mr-1 sm:mr-2"
+    checked={status === "Accepted"}
+    onChange={(e) => setStatus(e.target.value)}
+    />
+    <span className="text-xs sm:text-sm">Accepted</span>
+    </label>
+    <label className="flex items-center">
+    <input
+    type="radio"
+    name="status"
+    value="Rejected"
+    className="mr-1 sm:mr-2"
+    checked={status === "Rejected"}
+    onChange={(e) => setStatus(e.target.value)}
+    />
+    <span className="text-xs sm:text-sm">Rejected</span>
+    </label>
+    </div>
+    </div>
+    {/* Remarks Section */}
+    <div className="mt-4 sm:mt-6">
+    <Typography variant="subtitle2" className="text-xs sm:text-sm font-medium mb-2 sm:mb-4">
+    Remarks
+    </Typography>
+    <textarea
+    placeholder="Your text goes here"
+    className="w-full p-2 sm:p-3 bg-gray-100 rounded-md border-none outline-none min-h-[80px] sm:min-h-[100px] text-xs sm:text-sm"
+    value={remarks}
+    onChange={(e) => setRemarks(e.target.value)}
+    aria-label="Remarks"
+    />
+    </div>
+    <DialogActions className="mt-4 sm:mt-6 flex justify-end gap-2 sm:gap-4 p-0 sm:p-2">
+    <Button
+    onClick={onClose}
+    color="primary"
+    size={isMobile ? "small" : "medium"}
+    sx={{ fontSize: isMobile ? "0.75rem" : "0.875rem" }}
+    >
+    Back
+    </Button>
+    <Button
+    onClick={handleSave}
+    variant="contained"
+    size={isMobile ? "small" : "medium"}
+    sx={{
+    backgroundColor: "#FF7622",
+    fontSize: isMobile ? "0.75rem" : "0.875rem",
+    "&:hover": {
+    backgroundColor: "#E56A1E",
+    },
+    }}
+    >
+    Save
+    </Button>
+    </DialogActions>
+    </div>
+    )}
+    </div>
+    </DialogContent>
     </Dialog>
-  );
-};
+    );
+   };
+  
+
 
 // ------------------ Dummy Rejected & Accepted Components ------------------
 const Rejected = ({ open, onClose }) => {
@@ -377,7 +379,7 @@ const StatusBadge = ({ status }) => {
   };
   return (
     <span className={`px-3 py-1 text-sm font-medium ${badgeColors[status]}`}>
-      {status}
+      {status}  
     </span>
   );
 };
@@ -420,7 +422,7 @@ const SupervisorDashboard = () => {
 
   const handleCardClick = (card) => {
     if (card.status === "New") {
-      setSelectedProblemTitle(card["Problem Title"]);
+      setSelectedProblemTitle(card.problem_title); // Ensure this matches the API response
       setOpenLogCreation(true);
     } else if (card.status === "Rejected") {
       setOpenRejected(true);
@@ -497,10 +499,10 @@ const SupervisorDashboard = () => {
       </div>
       {/* Popups */}
       <LogCreation
-        open={openLogCreation}
-        onClose={() => setOpenLogCreation(false)}
-        storedProblemTitle={selectedProblemTitle}
-      />
+  open={openLogCreation}
+  onClose={() => setOpenLogCreation(false)}
+  storedProblemTitle={selectedProblemTitle} // Pass the selected problem title
+/>
       <Rejected open={openRejected} onClose={() => setOpenRejected(false)} />
       <Accepted open={openAccepted} onClose={() => setOpenAccepted(false)} />
       <ToastContainer />
