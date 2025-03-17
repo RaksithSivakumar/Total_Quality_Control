@@ -305,6 +305,53 @@ app.get('/', (req, res) => {
   res.send('Server is running');
 });
 
+app.post('/api/master_superviser', (req, res) => {
+  const {
+    Category,
+    problem_title,
+    Description,
+    Media_Upload,
+    Questions_1,
+    Questions_2,
+    Questions_3,
+    Questions_4,
+    Questions_5,
+    status,
+    Remarks,
+    created_by
+  } = req.body;
+
+  // SQL query to insert data into the `master_superviser` table
+  const query = `
+    INSERT INTO master_superviser (Category, problem_title, Description, Media_Upload, 
+    Questions_1, Questions_2, Questions_3, Questions_4, Questions_5, status, Remarks, created_by)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+  // Execute the query
+  db.execute(query, [
+    Category,
+    problem_title,
+    Description,
+    Media_Upload,
+    Questions_1,
+    Questions_2,
+    Questions_3,
+    Questions_4,
+    Questions_5,
+    status,
+    Remarks,
+    created_by
+  ], (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error', details: err.message });
+    }
+    res.status(201).json({
+      message: 'Data inserted successfully',
+      insertedId: result.insertId
+    });
+  });
+});
+
 // Start the server
 const PORT = 4000;
 app.listen(PORT, () => {
