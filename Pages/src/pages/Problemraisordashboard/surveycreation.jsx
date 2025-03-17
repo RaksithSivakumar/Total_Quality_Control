@@ -16,8 +16,8 @@ import LogCreation from "../../components/Popups/LogCreation";
 import Rejected from "../../components/Popups/Rejected";
 import Accepted from "../../components/Popups/Accepted";
 import axios from "axios";
-import { ToastContainer, toast } from "react-toastify"; // Import ToastContainer and toast
-import "react-toastify/dist/ReactToastify.css"; // Import the CSS
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const FormDashboard = () => {
   const navigate = useNavigate();
@@ -111,9 +111,9 @@ const FormDashboard = () => {
     if (newCategoryName.trim() !== "") {
       setCategories([...categories, newCategoryName]);
       setNewCategoryName("");
-      toast.success("New category added successfully!"); // Toast notification
+      toast.success("New category added successfully!");
     } else {
-      toast.error("Please enter a valid category name."); // Toast notification
+      toast.error("Please enter a valid category name.");
     }
   };
 
@@ -125,7 +125,7 @@ const FormDashboard = () => {
 
     if (selectedFiles.length + files.length > 5) {
       setFileError("You can upload a maximum of 5 files.");
-      toast.error("You can upload a maximum of 5 files."); // Toast notification
+      toast.error("You can upload a maximum of 5 files.");
       return;
     }
 
@@ -135,19 +135,19 @@ const FormDashboard = () => {
 
     if (invalidFiles.length > 0) {
       setFileError("Invalid file type or size. Only JPEG, PNG, and PDF files under 5MB are allowed.");
-      toast.error("Invalid file type or size. Only JPEG, PNG, and PDF files under 5MB are allowed."); // Toast notification
+      toast.error("Invalid file type or size. Only JPEG, PNG, and PDF files under 5MB are allowed.");
       return;
     }
 
     setFileError("");
     setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
-    toast.success("Files uploaded successfully!"); // Toast notification
+    toast.success("Files uploaded successfully!");
   };
 
   // Remove file
   const handleRemoveFile = (index) => {
     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
-    toast.info("File removed."); // Toast notification
+    toast.info("File removed.");
   };
 
   // Handle search input change
@@ -157,12 +157,13 @@ const FormDashboard = () => {
 
   // Handle back button click
   const handleBackClick = () => {
-    navigate(-1);
+    navigate("/Problemrd");
   };
 
+  // Handle form submission
   const handleCreate = async () => {
     if (!selectedCategory) {
-      toast.error("Please select a category."); // Toast notification
+      toast.error("Please select a category.");
       return;
     }
 
@@ -191,14 +192,16 @@ const FormDashboard = () => {
         }
       );
       console.log("Response:", response.data);
-      toast.success("Form submitted successfully!"); 
-      // Toast notification
-          // navigate("/Problemrd");
-
+      toast.success("Form submitted successfully!");
     } catch (error) {
       console.error("Error submitting form:", error);
-      toast.error("Error submitting form."); // Toast notification
+      toast.error("Error submitting form.");
     }
+  };
+
+  // Get problem rating (placeholder function)
+  const getProblemRating = () => {
+    return "Current selection: " + (selectedCategory || "None");
   };
 
   // Scroll to bottom when cardData changes
@@ -437,14 +440,13 @@ const FormDashboard = () => {
             ))}
           </div>
 
-              {/* Current selection display */}
-              <div className="w-full border border-gray-200 rounded-lg pt-1 p-2 sm:p-2">
-                <p className="text-center text-gray-600">
-                  {getProblemRating()}
-                </p>
-              </div>
-            </div>
+          {/* Current selection display */}
+          <div className="w-full border border-gray-200 rounded-lg pt-1 p-2 sm:p-2">
+            <p className="text-center text-gray-600">
+              {getProblemRating()}
+            </p>
           </div>
+
           {/* Create button */}
           <div className="bottom-6 bg-white pt-1 pb-20">
             <button
