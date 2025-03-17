@@ -88,8 +88,11 @@ const LoginPage = () => {
         case "problem":
           navigate("/Problemsol");
           break;
-        case "maintainanace":
+        case "problemmaintenance":
           navigate("/Maintain");
+          break;
+        case "problemsolver":
+          navigate("/ProblemAdmin");
           break;
         default:
           toast.error("Invalid role or login failed.");
