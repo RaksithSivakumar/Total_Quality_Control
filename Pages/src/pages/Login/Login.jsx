@@ -104,7 +104,7 @@ const LoginPage = () => {
                 className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#FF7622] focus:border-[#FF7622] transition-colors"
               />
             </div>
-            <button className="w-full px-3 py-2 bg-[#FF7622] rounded-md text-white" disabled={loading}>
+            <button className="font-bold w-full px-3 py-2 bg-[#FF7622] rounded-md text-white" disabled={loading}>
               {loading ? "Logging in..." : "Login"}
             </button>
 
