@@ -351,56 +351,79 @@ app.post('/api/master_superviser', (req, res) => {
     });
   });
 });
+
+
+// app.put('/api/master_problem/:id', async (req, res) => {
+//   const { id } = req.params;
+//   const {
+//     Category,
+//     problem_title,
+//     Description,
+//     Media_Upload,
+//     Questions_1,
+//     Questions_2,
+//     Questions_3,
+//     Questions_4,
+//     Questions_5,
+//     created_by,
+//     status,
+//     remarks
+//   } = req.body;
+
+//   // SQL query to update the record
+//   const query = `
+//     UPDATE master_problem 
+//     SET 
+//       Category = ?, 
+//       problem_title = ?, 
+//       Description = ?, 
+//       Media_Upload = ?, 
+//       Questions_1 = ?, 
+//       Questions_2 = ?, 
+//       Questions_3 = ?, 
+//       Questions_4 = ?, 
+//       Questions_5 = ?, 
+//       created_by = ?, 
+//       status = ?, 
+//       remarks = ?
+//     WHERE id = ?
+//   `;
+
+//   try {
+//     // Get a connection from the pool
+//     const connection = await pool.getConnection();
+
+//     // Execute the update query
+//     const [result] = await connection.query(query, [
+//       Category, problem_title, Description, Media_Upload,
+//       Questions_1, Questions_2, Questions_3, Questions_4, Questions_5,
+//       created_by, status, remarks, id
+//     ]);
+
+//     connection.release();  // Don't forget to release the connection
+
+//     // Check if any rows were updated
+//     if (result.affectedRows === 0) {
+//       return res.status(404).json({ error: 'Problem not found' });
+//     }
+
+//     res.json({ message: 'Problem updated successfully' });
+//   } catch (error) {
+//     console.error('Error updating problem:', error);
+//     res.status(500).json({ error: 'Error updating problem', details: error.message });
+//   }
+// });
+
 app.put('/api/master_problem/:id', async (req, res) => {
   const { id } = req.params;
-  const {
-    Category,
-    problem_title,
-    Description,
-    Media_Upload,
-    Questions_1,
-    Questions_2,
-    Questions_3,
-    Questions_4,
-    Questions_5,
-    created_by,
-    status,
-    remarks
-  } = req.body;
-
-  // SQL query to update the record
-  const query = `
-    UPDATE master_problem 
-    SET 
-      Category = ?, 
-      problem_title = ?, 
-      Description = ?, 
-      Media_Upload = ?, 
-      Questions_1 = ?, 
-      Questions_2 = ?, 
-      Questions_3 = ?, 
-      Questions_4 = ?, 
-      Questions_5 = ?, 
-      created_by = ?, 
-      status = ?, 
-      remarks = ?
-    WHERE id = ?
-  `;
+  const { status, remarks } = req.body;
 
   try {
-    // Get a connection from the pool
     const connection = await pool.getConnection();
+    const query = `UPDATE master_problem SET status = ?, remarks = ? WHERE id = ?`;
+    const [result] = await connection.query(query, [status, remarks, id]);
+    connection.release();
 
-    // Execute the update query
-    const [result] = await connection.query(query, [
-      Category, problem_title, Description, Media_Upload,
-      Questions_1, Questions_2, Questions_3, Questions_4, Questions_5,
-      created_by, status, remarks, id
-    ]);
-
-    connection.release();  // Don't forget to release the connection
-
-    // Check if any rows were updated
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Problem not found' });
     }
@@ -411,6 +434,7 @@ app.put('/api/master_problem/:id', async (req, res) => {
     res.status(500).json({ error: 'Error updating problem', details: error.message });
   }
 });
+
 
 // Start the server
 const PORT = 4000;
