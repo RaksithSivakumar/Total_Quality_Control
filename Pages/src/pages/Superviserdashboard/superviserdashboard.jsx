@@ -75,106 +75,104 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
     setIsExpanded(!isExpanded);
   };
 
-  const handleSave = () => {
-    // Store the current status and remarks into temporary state variables
-    setTempStatus(status);
-    setTempRemarks(remarks);
-
-    // Prepare data to send to the server
-    const data = {
-      Category: problem ? problem.Category : "Default Category",
-      Problem_Title: problemTitle,
-      status: status,
-      Remarks: remarks,
-    };
-
-    // Fetch existing problems to check if the problem_title exists
-    fetch("http://localhost:4000/api/master_problem")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((response) => {
-        const problems = response.data;
-        const matchedProblem = problems.find(
-          (item) =>
-            item.problem_title &&
-            item.problem_title.toLowerCase() === problemTitle.toLowerCase()
+  const handleSave = async () => {
+    try {
+      // Store the current status and remarks into temporary state variables
+      setTempStatus(status);
+      setTempRemarks(remarks);
+  
+      // Prepare data to send to the server
+      const data = {
+        Category: problem ? problem.Category : "Default Category",
+        problem_title: problemTitle,
+        status: status || null, // Ensure it's null-safe
+        remarks: remarks || "", // Ensure it's always a string
+      };
+  
+      // Fetch existing problems to check if the problem_title exists
+      const response = await fetch("http://localhost:4000/api/master_problem");
+      if (!response.ok) throw new Error("Network response was not ok");
+  
+      const responseData = await response.json();
+      const problems = responseData.data;
+  
+      // Check if the problem already exists
+      const matchedProblem = problems.find(
+        (item) =>
+          item.problem_title &&
+          item.problem_title.toLowerCase() === problemTitle.toLowerCase()
+      );
+  
+      let saveResponse;
+      if (matchedProblem) {
+        // If the problem exists, update it
+        const updatedData = {
+          ...matchedProblem, // Keep existing data
+          status: status, // Update status
+          remarks: remarks, // Update remarks
+        };
+  
+        saveResponse = await fetch(
+          `http://localhost:4000/api/master_problem/${matchedProblem.id}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedData),
+          }
         );
-        if (matchedProblem) {
-          // If the problem exists, update the existing problem
-          const updatedData = {
-            ...matchedProblem, // Copy existing data
-            status: status, // Update status
-            Remarks: remarks, // Update remarks
-          };
-
-          // Send PUT request to update the existing problem entry
-          return fetch(
-            `http://localhost:4000/api/master_problem/${matchedProblem.id}`,
-            {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(updatedData),
-            }
-          );
-        } else {
-          // If the problem doesn't exist, create a new one
-          const newProblemData = {
-            Category: problem ? problem.Category : "Default Category",
-            problem_title: problemTitle,
-            Description: "Description for new problem",
-            Media_Upload: [],
-            Questions_1: "Default question 1",
-            Questions_2: "Default question 2",
-            Questions_3: "Default question 3",
-            Questions_4: "Default question 4",
-            Questions_5: "Default question 5",
-            created_at: new Date().toISOString(),
-            created_by: "YourUser", // Replace with the actual user if needed
-            status: status,
-            remarks: remarks,
-          };
-
-          // Send POST request to add a new problem entry
-          return fetch("http://localhost:4000/api/master_problem", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(newProblemData),
-          });
-        }
-      })
-      .then((response) => response.json())
-      .then((data) => {
-        toast.success(data.message);
-        onClose(); // Close the modal or handle further actions
-      })
-      .catch((error) => {
-        console.error("Error saving data:", error);
-        toast.error("Failed to save data.");
-      });
-  };
+      } else {
+        // If the problem doesn't exist, create a new one
+        const newProblemData = {
+          Category: problem ? problem.Category : "Default Category",
+          problem_title: problemTitle,
+          Description: "Description for new problem",
+          Media_Upload: "",
+          Questions_1: "Default question 1",
+          Questions_2: "Default question 2",
+          Questions_3: "Default question 3",
+          Questions_4: "Default question 4",
+          Questions_5: "Default question 5",
+          created_at: new Date().toISOString(),
+          created_by: "YourUser", // Replace with actual user
+          status: status || null,
+          remarks: remarks || "",
+        };
+  
+        saveResponse = await fetch("http://localhost:4000/api/master_problem", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newProblemData),
+        });
+      }
+  
+      const saveData = await saveResponse.json();
+      if (saveResponse.ok) {
+        toast.success(saveData.message);
+        onClose(); // Close modal
+      } else {
+        throw new Error("Error saving data.");
+      }
+    } catch (error) {
+      console.error("Error saving data:", error);
+      toast.error("Failed to save data.");
+    }
+  };  
 
   const defaultQuestions = [
-    "HAVE YOU TRIED TO SOLVE THE PROBLEM?",
-    "WHEN DID THE PROBLEM ARISE?",
-    "VENUE OF THE PROBLEM ARISE?",
-    "SPECIFICATION OF THE PROBLEM?",
-    "PROBLEM ARISE TIME?",
+    "Have you tried to solve the Problem?",
+    "When did the problem arise?",
+    "Venue of the problem arise?",
+    "Specifications of the problem?",
+    "Problem arise time?",
   ];
+
   const questions = problem
     ? [
-        problem["Questions_1"], // Corrected keys
-        problem["Questions_2"],
-        problem["Questions_3"],
-        problem["Questions_4"],
-        problem["Questions_5"],
+        problem["Questions_1"] || defaultQuestions[0],
+        problem["Questions_2"] || defaultQuestions[1],
+        problem["Questions_3"] || defaultQuestions[2],
+        problem["Questions_4"] || defaultQuestions[3],
+        problem["Questions_5"] || defaultQuestions[4],
       ]
     : defaultQuestions;
 
@@ -360,16 +358,22 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
               </div>
 
               {/* Questions */}
+              {/* Questions */}
               <div className="mb-6">
                 <h3 className="text-sm font-medium mb-3">Questions</h3>
-                {questions.map((question, index) => (
+                {questions.map((answer, index) => (
                   <div key={index} className="mb-4">
-                    <p className="text-sm mb-2">{index + 1}</p>
+                    {/* Question */}
+                    <p className="text-sm font-medium mb-1">
+                      {index + 1}. {defaultQuestions[index]}
+                    </p>
+
+                    {/* Answer */}
                     <Typography
                       variant="body2"
                       className="text-gray-600 p-1 sm:p-2 text-sm sm:text-base"
                     >
-                      {question}
+                      {answer ? answer : "No answer provided"}
                     </Typography>
                   </div>
                 ))}
