@@ -171,16 +171,18 @@ function ProblemRaisorDashboard() {
   };
 
   const filteredApprovals = mappedApprovals.filter((approval) => {
-    if (!filters.inprogress && !filters.rejected && !filters.accepted) {
-      return true;
-    }
-    
-    return (
-      (filters.inprogress && approval.status === "inprogress") ||
-      (filters.rejected && approval.status === "rejected") ||
-      (filters.accepted && approval.status === "accepted")
-    );
-  });
+  // If no specific filters are set, show all
+  if (!filters.inprogress && !filters.rejected && !filters.accepted) {
+    return true; // Display all approvals
+  }
+  // Apply specific filter logic
+  return (
+    (filters.inprogress && approval.status === "inprogress") ||
+    (filters.rejected && approval.status === "rejected") ||
+    (filters.accepted && approval.status === "accepted")
+  );
+});
+
 
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden">
@@ -298,4 +300,7 @@ function ProblemRaisorDashboard() {
   );
 }
 
+ 
+ 
 export default ProblemRaisorDashboard;
+ 

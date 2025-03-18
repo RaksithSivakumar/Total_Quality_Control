@@ -348,7 +348,7 @@ const FormDashboard = () => {
                 description={card.Description}
                 date={new Date(card.created_at).toLocaleDateString()}
                 author={card.created_by}
-                imageUrl={card.Media_Upload[0]} // Assuming first upload is the image to display
+                imageUrl={"https://bitlinks.bitsathy.ac.in/static/media/user.900505a2e95287f7e05c.jpg"} // Assuming first upload is the image to display
                 onClick={() => handleCardClick(card)}
               />
             ))}
@@ -359,6 +359,7 @@ const FormDashboard = () => {
       {/* Popups */}
       {activePopup === "LogCreation" && <LogCreation open onClose={() => setActivePopup(null)} />}
       {activePopup === "Rejected" && <Rejected open onClose={() => setActivePopup(null)} />}
+ 
       {activePopup === "Accepted" && <Accepted open onClose={() => setActivePopup(null)} />}
     </div>
   );
