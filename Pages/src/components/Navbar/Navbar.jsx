@@ -1,10 +1,92 @@
-import React from "react";
-import Routernav from "./router/Routernav";
+import React, { useEffect, useState } from "react";
+import {
+  IoNotificationsSharp,
+  IoSettingsOutline,
+  IoSearchOutline,
+  IoMenu,
+  IoClose,
+  IoChevronBackOutline, // Back button icon
+} from "react-icons/io5";
+import { useLocation, useNavigate } from "react-router-dom";
+import ProjectLogo from "../../assets/ProjectLogo.jsx";
+import { Avatar } from "@mui/material";
+import PointSummary from "../../components/Popups/PointSummary";
 
-  function App() {
-    return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col">
-      <Routernav />
+// Mock card data for filtering
+const cardData = [
+  {
+    title: "Productivity failure",
+    status: "Need to verify",
+    description:
+      "Productive failure is a learning design where individuals are allowed to fail in a managed...",
+    date: "10/07/2025",
+    author: "J. David",
+    imageUrl: "https://example.com/image1.png",
+  },
+  // Add more cards as needed
+];
+
+const Navbar = ({ image = "/placeholder.svg?height=60&width=60" }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isLoginPage = location.pathname === "/login";
+  const isSurveyCreationPage = location.pathname === "/survey"; // Check if the current page is the survey creation page
+  const [openPointsSummary, setOpenPointsSummary] = useState(false); // For Points Summary popup
+  const [profileAnchorEl, setProfileAnchorEl] = useState(null); // For positioning the Points Summary popup
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // State for mobile menu
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth); // Track window width
+
+  // Update window width when resized
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      if (window.innerWidth >= 1024) {
+        setIsMenuOpen(false); // Close mobile menu on larger screens
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (location.pathname === "/") {
+      navigate("/login");
+    }
+  }, [location, navigate]);
+
+  // Handle profile image click
+  const handleProfileClick = (event) => {
+    setProfileAnchorEl(event.currentTarget);
+    setOpenPointsSummary(true);
+  };
+
+  // Handle search input change
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
+  // Toggle mobile menu
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  // Filter cards based on search query
+  const filteredCards = cardData.filter(
+    (card) =>
+      card.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      card.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      card.author.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Handle back button click
+  // const handleBackClick = () => {
+  //   navigate(-1); // Navigate back to the previous page
+  // };
+
+  return (
+    <div className="fixed w-screen overflow-hidden flex flex-col">
       {/* Header - Only show if not on login page */}
       {!isLoginPage && (
         <>
@@ -72,8 +154,7 @@ import Routernav from "./router/Routernav";
                   navigate("/login"); // Redirect to login page
                 }}
               >
-                 <span className="text-[#FF7622] font-semibold text-sm px-3">
- 
+                <span className="text-[#FF7622] font-semibold text-sm px-3">
                   Logout
                 </span>
               </button>
@@ -152,6 +233,8 @@ import Routernav from "./router/Routernav";
                     </Avatar>
                     <span className="text-[#5E5E5E] font-medium">Profile</span>
                   </button>
+
+                  {/* Logout button */}
                   <button
                     className="bg-[#F5F7FA] p-2 rounded-full hover:bg-red-100 transition-all"
                     onClick={() => {
@@ -178,17 +261,8 @@ import Routernav from "./router/Routernav";
           anchorEl={profileAnchorEl}
         />
       )}
-
-      {/* Main content area - Full height on login page */}
-      <div
-        className={`${
-          isLoginPage ? "h-full" : "flex-1"
-        } overflow-y-auto scrollbar-hidden`}
-      >
-        <Routernav />
-      </div>
     </div>
   );
-  }
+};
 
-export default App;
+export default Navbar;

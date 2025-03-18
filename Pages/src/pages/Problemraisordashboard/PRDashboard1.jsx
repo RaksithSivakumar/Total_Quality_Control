@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import Header from "../../components/Header/Header";
 import Calender from "../../components/Calender/calender";
+import ApprovalsPanel from "../../components/Approval/ApprovalsPanel";
+import LogCreation from "../../components/Popups/LogCreation";
+import Rejected from "../../components/Popups/Rejected";
+import Accepted from "../../components/Popups/Accepted";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Filter, PlusCircle, Clock } from "lucide-react";
 import Input from "../../components/input/Input";
 import { IoSearchOutline } from "react-icons/io5";
-import LogCreation from "./InProgress";
-import Rejected from "./Rejected";
-import Accepted from "./Accepted";
 
 function ProblemRaisorDashboard() {
   const navigate = useNavigate();
@@ -254,7 +255,6 @@ function ProblemRaisorDashboard() {
       (filters.accepted && approval.status === "Accepted")
     );
   });
-
 
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden">
@@ -556,7 +556,4 @@ function ProblemRaisorDashboard() {
   );
 }
 
- 
- 
 export default ProblemRaisorDashboard;
- 

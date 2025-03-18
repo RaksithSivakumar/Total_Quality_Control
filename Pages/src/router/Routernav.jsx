@@ -1,5 +1,6 @@
 import React from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Login from "../pages/Login/Login";
 import SurveyCreation from "../pages/Problemraisordashboard/surveycreation";
 import ProblemRaisorDashboard from "../pages/Problemraisordashboard/problemraisordashboard";
@@ -8,8 +9,9 @@ import Problemsolver from "../pages/Problemsolvingdashboard/problemsolvingdashbo
 import Maintainanceteam from "../pages/Maintainanceteam/maintainanceteam";
 import ProblemAdmin from "../pages/ProblemAdmin/ProblemAdmin";
 import CryptoJS from "crypto-js";
+import Navbar from "../components/Navbar/Navbar";
 
-const secretKey = "qwertyuiopasdfghjklzxcvbnm"; 
+const secretKey = "qwertyuiopasdfghjklzxcvbnm";
 
 const getUserRole = () => {
   const encryptedUser = localStorage.getItem("user");
@@ -30,15 +32,65 @@ const PrivateRoute = ({ children, allowedRoles }) => {
 };
 
 export default function Routernav() {
+  const location = useLocation();
+  const isLoginPage = location.pathname === "/login";
+
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/survey" element={<PrivateRoute allowedRoles={["student"]}><SurveyCreation /></PrivateRoute>} />
-      <Route path="/Problemrd" element={<PrivateRoute allowedRoles={["student"]}><ProblemRaisorDashboard /></PrivateRoute>} />
-      <Route path="/Superviser" element={<PrivateRoute allowedRoles={["supervisor"]}><SupervisorDashboard /></PrivateRoute>} />
-      <Route path="/Problemsol" element={<PrivateRoute allowedRoles={["problem"]}><Problemsolver /></PrivateRoute>} />
-      <Route path="/Maintain" element={<PrivateRoute allowedRoles={["problemmaintenance"]}><Maintainanceteam /></PrivateRoute>} />
-      <Route path="/ProblemAdmin" element={<PrivateRoute allowedRoles={["problemsolver"]}><ProblemAdmin /></PrivateRoute>} />
-    </Routes>
+    <div>
+      <Navbar />
+      <div style={{ marginTop: isLoginPage ? "0px" : "80px" }}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/survey"
+            element={
+              <PrivateRoute allowedRoles={["student"]}>
+                <SurveyCreation />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/Problemrd"
+            element={
+              <PrivateRoute allowedRoles={["student"]}>
+                <ProblemRaisorDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/Superviser"
+            element={
+              <PrivateRoute allowedRoles={["supervisor"]}>
+                <SupervisorDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/Problemsol"
+            element={
+              <PrivateRoute allowedRoles={["problem"]}>
+                <Problemsolver />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/Maintain"
+            element={
+              <PrivateRoute allowedRoles={["problemmaintenance"]}>
+                <Maintainanceteam />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/ProblemAdmin"
+            element={
+              <PrivateRoute allowedRoles={["problemsolver"]}>
+                <ProblemAdmin />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </div>
+    </div>
   );
 }
