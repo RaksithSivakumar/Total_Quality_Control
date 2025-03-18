@@ -156,7 +156,7 @@ const App = ({ image = "/placeholder.svg?height=60&width=60" }) => {
                   navigate("/login"); // Redirect to login page
                 }}
               >
-                <span className="text-red-500 font-semibold text-sm px-3">
+                <span className="text-[#FF7622] font-semibold text-sm px-3">
                   Logout
                 </span>
               </button>
@@ -234,6 +234,17 @@ const App = ({ image = "/placeholder.svg?height=60&width=60" }) => {
                       RS
                     </Avatar>
                     <span className="text-[#5E5E5E] font-medium">Profile</span>
+                  </button>
+                  <button
+                    className="bg-[#F5F7FA] p-2 rounded-full hover:bg-red-100 transition-all"
+                    onClick={() => {
+                      localStorage.removeItem("user"); // Clear user data from local storage
+                      navigate("/login"); // Redirect to login page
+                    }}
+                  >
+                    <span className="text-[#FF7622] font-semibold text-sm px-3">
+                      Logout
+                    </span>
                   </button>
                 </div>
               </div>

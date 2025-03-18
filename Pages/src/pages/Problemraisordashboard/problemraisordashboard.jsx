@@ -243,40 +243,13 @@ function ProblemRaisorDashboard() {
             <div className="flex-1 overflow-y-auto p-4 md:p-6 scrollbar-hide">
               <ApprovalsPanel approvals={filteredApprovals} onCardClick={handleCardClick} />
             </div>
-
-            {/* Mobile Bottom Filter Bar */}
-            {isMobile && (
-              <div className="md:hidden flex justify-between items-center p-4 border-t">
-                <div className="flex space-x-4">
-                  {["accepted", "rejected", "inprogress"].map((status) => (
-                    <label key={status} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 mr-2"
-                        checked={filters[status]}
-                        onChange={() => handleFilterChange(status)}
-                      />
-                      <span className="text-sm capitalize">{status}</span>
-                    </label>
-                  ))}
-                </div>
-                <div className="flex space-x-2">
-                  <button className="px-4 py-1 border border-gray-300 rounded-md text-sm" onClick={handleClearFilters}>
-                    Clear
-                  </button>
-                  <button className="px-4 py-1 bg-orange-500 text-white rounded-md text-sm" onClick={handleApplyFilters}>
-                    Apply
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         ) : null}
       </div>
 
       {/* Filter Popup for Desktop */}
       {showFilter && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50" onClick={toggleFilter}>
+        <div className="relative inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50" onClick={toggleFilter}>
           <div className="bg-white w-full md:w-auto md:min-w-[400px] rounded-lg p-6 z-50" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-semibold mb-4">Filters</h2>
             <div className="space-y-3">
