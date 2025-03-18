@@ -10,9 +10,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 function ProblemRaisorDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [selectedTab, setSelectedTab] = useState("problem"); // Toggle between sections
-  const [selectedDay, setSelectedDay] = useState(3); // Wednesday (index 3) selected by default
-  const [showFilter, setShowFilter] = useState(false); // State for filter popup visibility
+
+  const [selectedTab, setSelectedTab] = useState("problem");
+  const [selectedDay, setSelectedDay] = useState(3); // Wednesday selected by default
+  const [showFilter, setShowFilter] = useState(false);
   const [openLogCreation, setOpenLogCreation] = useState(false);
   const [openRejected, setOpenRejected] = useState(false);
   const [openAccepted, setOpenAccepted] = useState(false);
@@ -22,9 +23,9 @@ function ProblemRaisorDashboard() {
     rejected: false,
     accepted: false,
   });
-  const [problems, setProblems] = useState([]); // State to store fetched problems
+  const [problems, setProblems] = useState([]);
 
-  // Handle popstate event to prevent default back button behavior
+  // Handle popstate event for back button behavior
   useEffect(() => {
     const handlePopState = (event) => {
       if (openLogCreation || openRejected || openAccepted || showFilter) {
@@ -45,11 +46,14 @@ function ProblemRaisorDashboard() {
     };
   }, [openLogCreation, openRejected, openAccepted, showFilter, location]);
 
+  // Handle screen resize
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 900);
     };
+    
     window.addEventListener("resize", handleResize);
+    
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -74,29 +78,6 @@ function ProblemRaisorDashboard() {
     { time: "4 pm" },
   ];
 
-  const events = [
-    {
-      id: 1,
-      title: "Learnt SQL",
-      category: "Personal",
-      location: "IT101",
-      startTime: "9:00",
-      endTime: "10:00",
-      timePosition: 1,
-      profileImage: null,
-    },
-    {
-      id: 2,
-      title: "DSA QP verification",
-      category: "QP",
-      location: "IT lab101",
-      startTime: "10:00",
-      endTime: "11:00",
-      timePosition: 2,
-      profileImage: "/placeholder.svg?height=40&width=40",
-    },
-  ];
-
   // Fetch problems from the API
   useEffect(() => {
     const fetchProblems = async () => {
@@ -105,6 +86,7 @@ function ProblemRaisorDashboard() {
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
+
         const result = await response.json();
         const data = result.data;
 
@@ -123,13 +105,14 @@ function ProblemRaisorDashboard() {
     fetchProblems();
   }, []);
 
-  // Map problems to approvals format
+  // Map problems to approvals format based on the provided API structure
   const mappedApprovals = problems.map((problem) => ({
     id: problem.id,
     title: problem.problem_title,
     description: problem.Description,
-    date: new Date(problem.created_at).toLocaleDateString(),
-    status: "inprogress", // Default status
+    createdAt: new Date(problem.created_at).toLocaleDateString(),
+    mediaUpload: problem.Media_Upload, // Store media uploads
+    status: problem.status || "inprogress", // Use the actual status from the API
   }));
 
   const handleDayClick = (index) => {
@@ -141,12 +124,18 @@ function ProblemRaisorDashboard() {
   };
 
   const handleCardClick = (card) => {
-    if (card.status === "inprogress") {
-      setOpenLogCreation(true);
-    } else if (card.status === "rejected") {
-      setOpenRejected(true);
-    } else if (card.status === "accepted") {
-      setOpenAccepted(true);
+    switch (card.status) {
+      case "inprogress":
+        setOpenLogCreation(true);
+        break;
+      case "rejected":
+        setOpenRejected(true);
+        break;
+      case "accepted":
+        setOpenAccepted(true);
+        break;
+      default:
+        break;
     }
   };
 
@@ -185,6 +174,7 @@ function ProblemRaisorDashboard() {
     if (!filters.inprogress && !filters.rejected && !filters.accepted) {
       return true;
     }
+    
     return (
       (filters.inprogress && approval.status === "inprogress") ||
       (filters.rejected && approval.status === "rejected") ||
@@ -198,17 +188,13 @@ function ProblemRaisorDashboard() {
       {isMobile && (
         <div className="flex justify-start p-4 space-x-4">
           <button
-            className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-              selectedTab === "problem" ? "bg-[#FF7622] text-white" : "bg-gray-100 text-gray-600"
-            }`}
+            className={`px-4 py-2 rounded-lg font-semibold transition-all ${selectedTab === "problem" ? "bg-[#FF7622] text-white" : "bg-gray-100 text-gray-600"}`}
             onClick={() => setSelectedTab("problem")}
           >
             Problem status
           </button>
           <button
-            className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-              selectedTab === "resource" ? "bg-[#FF7622] text-white" : "bg-gray-100 text-gray-600"
-            }`}
+            className={`px-4 py-2 rounded-lg font-semibold transition-all ${selectedTab === "resource" ? "bg-[#FF7622] text-white" : "bg-gray-100 text-gray-600"}`}
             onClick={() => setSelectedTab("resource")}
           >
             Resource status
@@ -229,7 +215,7 @@ function ProblemRaisorDashboard() {
                 days={days}
                 dates={dates}
                 timeSlots={timeSlots}
-                events={events}
+                events={mappedApprovals}
                 selectedDay={selectedDay}
                 onDayClick={handleDayClick}
               />
