@@ -10,11 +10,14 @@ import {
   BiLink,
 } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
+
+// Assuming these components are correctly implemented and available
 import Input from "../../components/input/Input";
 import Card from "../../components/problem/Card";
 import LogCreation from "../../components/Popups/LogCreation";
 import Rejected from "../../components/Popups/Rejected";
 import Accepted from "../../components/Popups/Accepted";
+
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -35,7 +38,8 @@ const FormDashboard = () => {
   const [problemTitle, setProblemTitle] = useState("");
   const [description, setDescription] = useState("");
   const [questions, setQuestions] = useState(["", "", "", "", ""]);
-  const [cardData, setCardData] = useState([]); // For storing fetched problems
+
+   const [cardData, setCardData] = useState([]); // For storing fetched problems
   const contentEditableRef = useRef(null);
   const scrollableRef = useRef(null);
 
@@ -64,7 +68,7 @@ const FormDashboard = () => {
         toast.error("Failed to fetch problems.");
       }
     };
-
+ 
     fetchProblems();
   }, []);
 
@@ -88,7 +92,12 @@ const FormDashboard = () => {
 
   // Toggle category selection
   const toggleCategory = (category) => {
-    setSelectedCategory(category === selectedCategory ? null : category);
+    setSelectedCategory(category);
+  };
+
+  // Set problem rating
+  const setRating = (rating) => {
+    setProblemRating(rating);
   };
 
   // Add new category
@@ -119,8 +128,12 @@ const FormDashboard = () => {
     );
 
     if (invalidFiles.length > 0) {
-      setFileError("Invalid file type or size. Only JPEG, PNG, and PDF files under 5MB are allowed.");
-      toast.error("Invalid file type or size. Only JPEG, PNG, and PDF files under 5MB are allowed.");
+      setFileError(
+        "Invalid file type or size. Only JPEG, PNG, and PDF files under 5MB are allowed."
+      );
+      toast.error(
+        "Invalid file type or size. Only JPEG, PNG, and PDF files under 5MB are allowed."
+      );
       return;
     }
 
@@ -164,6 +177,7 @@ const FormDashboard = () => {
     formData.append("Questions_4", questions[3]);
     formData.append("Questions_5", questions[4]);
     formData.append("created_by", "YourUser"); // Replace with actual user info
+    formData.append("Problem_Rating", problemRating); // Add problem rating
 
     try {
       const response = await axios.post("http://localhost:4000/api/master_problem", formData, {
@@ -179,6 +193,15 @@ const FormDashboard = () => {
     }
   };
 
+   // Get problem rating text
+  const getProblemRatingText = () => {
+    if (problemRating === "Small") return "Small";
+    if (problemRating === "Medium") return "Medium";
+    if (problemRating === "Large") return "Large";
+    return "Not selected";
+  };
+
+ 
   // Scroll to bottom when cardData changes
   useEffect(() => {
     if (scrollableRef.current) {
@@ -257,12 +280,43 @@ const FormDashboard = () => {
             </div>
             {/* Formatting Buttons */}
             <div className="flex gap-2 text-gray-500">
-              <button onClick={() => applyFormatting("bold")} aria-label="Bold"><BiBold /></button>
-              <button onClick={() => applyFormatting("italic")} aria-label="Italic"><BiItalic /></button>
-              <button onClick={() => applyFormatting("underline")} aria-label="Underline"><BiUnderline /></button>
-              <button onClick={() => applyFormatting("insertOrderedList")} aria-label="Ordered List"><BiListOl /></button>
-              <button onClick={() => applyFormatting("insertUnorderedList")} aria-label="Unordered List"><BiListUl /></button>
-              <button onClick={() => { const url = prompt("Enter the URL:"); if (url) applyFormatting("createLink", url); }} aria-label="Insert Link"><BiLink /></button>
+               <button onClick={() => applyFormatting("bold")} aria-label="Bold">
+                <BiBold />
+              </button>
+              <button
+                onClick={() => applyFormatting("italic")}
+                aria-label="Italic"
+              >
+                <BiItalic />
+              </button>
+              <button
+                onClick={() => applyFormatting("underline")}
+                aria-label="Underline"
+              >
+                <BiUnderline />
+              </button>
+              <button
+                onClick={() => applyFormatting("insertOrderedList")}
+                aria-label="Ordered List"
+              >
+                <BiListOl />
+              </button>
+              <button
+                onClick={() => applyFormatting("insertUnorderedList")}
+                aria-label="Unordered List"
+              >
+                <BiListUl />
+              </button>
+              <button
+                onClick={() => {
+                  const url = prompt("Enter the URL:");
+                  if (url) applyFormatting("createLink", url);
+                }}
+                aria-label="Insert Link"
+              >
+                <BiLink />
+              </button>
+ 
             </div>
           </div>
 
@@ -298,7 +352,19 @@ const FormDashboard = () => {
             <h3 className="text-sm font-medium mb-3">Questions</h3>
             {questions.map((question, index) => (
               <div key={index} className="mb-4">
-                <p className="text-sm mb-2">{index + 1}. Have you tried to solve the problem?</p>
+                 <p className="text-sm mb-2">
+                  {index + 1}.{" "}
+                  {
+                    [
+                      "Have you tried to solve the problem?",
+                      "When did the problem arise?",
+                      "Venue of the problem arise?",
+                      "Specification of the problem?",
+                      "Problem arise time?",
+                    ][index]
+                  }
+                </p>
+ 
                 <input
                   type="text"
                   placeholder="Type your answer"
@@ -313,7 +379,53 @@ const FormDashboard = () => {
               </div>
             ))}
           </div>
-          
+ 
+          {/* Problem Rating */}
+          <div className="mb-6">
+            <h3 className="text-sm font-medium mb-2">Problem Rating</h3>
+            <div className="flex gap-4 mb-3">
+              <button
+                className={`px-4 py-2 rounded-md ${
+                  problemRating === "Small"
+                    ? "bg-[#FF7622] text-white"
+                    : "bg-white text-[#FF7622] border border-[#FF7622]"
+                }`}
+                onClick={() => setRating("Small")}
+              >
+                Small
+              </button>
+              <button
+                className={`px-4 py-2 rounded-md ${
+                  problemRating === "Medium"
+                    ? "bg-[#FF7622] text-white"
+                    : "bg-white text-[#FF7622] border border-[#FF7622]"
+                }`}
+                onClick={() => setRating("Medium")}
+              >
+                Medium
+              </button>
+              <button
+                className={`px-4 py-2 rounded-md ${
+                  problemRating === "Large"
+                    ? "bg-[#FF7622] text-white"
+                    : "bg-white text-[#FF7622] border border-[#FF7622]"
+                }`}
+                onClick={() => setRating("Large")}
+              >
+                Large
+              </button>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium mb-2">Problem rating</h3>
+              <div className="w-full border border-gray-200 rounded-lg pt-1 p-2 sm:p-2">
+                <p className="text-center text-gray-600">
+                  Current selection: {getProblemRatingText()}
+                </p>
+              </div>
+            </div>
+          </div>
+
+ 
           {/* Create button */}
           <div className="bottom-6 bg-white pt-1 pb-20">
             <button className="w-full py-3 bg-orange-500 text-white rounded-md font-medium" onClick={handleCreate}>
