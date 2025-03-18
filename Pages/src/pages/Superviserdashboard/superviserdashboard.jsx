@@ -80,7 +80,7 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
       // Store the current status and remarks into temporary state variables
       setTempStatus(status);
       setTempRemarks(remarks);
-  
+
       // Prepare data to send to the server
       const data = {
         Category: problem ? problem.Category : "Default Category",
@@ -88,21 +88,21 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
         status: status || null, // Ensure it's null-safe
         remarks: remarks || "", // Ensure it's always a string
       };
-  
+
       // Fetch existing problems to check if the problem_title exists
       const response = await fetch("http://localhost:4000/api/master_problem");
       if (!response.ok) throw new Error("Network response was not ok");
-  
+
       const responseData = await response.json();
       const problems = responseData.data;
-  
+
       // Check if the problem already exists
       const matchedProblem = problems.find(
         (item) =>
           item.problem_title &&
           item.problem_title.toLowerCase() === problemTitle.toLowerCase()
       );
-  
+
       let saveResponse;
       if (matchedProblem) {
         // If the problem exists, update it
@@ -111,7 +111,7 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
           status: status, // Update status
           remarks: remarks, // Update remarks
         };
-  
+
         saveResponse = await fetch(
           `http://localhost:4000/api/master_problem/${matchedProblem.id}`,
           {
@@ -137,14 +137,14 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
           status: status || null,
           remarks: remarks || "",
         };
-  
+
         saveResponse = await fetch("http://localhost:4000/api/master_problem", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newProblemData),
         });
       }
-  
+
       const saveData = await saveResponse.json();
       if (saveResponse.ok) {
         toast.success(saveData.message);
@@ -156,7 +156,7 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
       console.error("Error saving data:", error);
       toast.error("Failed to save data.");
     }
-  };  
+  };
 
   const defaultQuestions = [
     "Have you tried to solve the Problem?",
@@ -548,7 +548,7 @@ const SupervisorDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-white p-6 ">
       <h2 className="text-2xl font-semibold mb-4">Welcome Supervisor...</h2>
       {/* Tabs */}
       <div className="flex space-x-6 mb-6 text-lg font-medium bg-gray-100 p-2 rounded-lg">
@@ -590,7 +590,22 @@ const SupervisorDashboard = () => {
         </span>
       </div>
       {/* Grid Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 overflow-y-auto"
+        style={{
+          scrollbarWidth: "none" /* Firefox */,
+          msOverflowStyle: "none" /* IE and Edge */,
+          maxHeight: "70vh" /* Set a maximum height to enable scrolling */,
+        }}
+      >
+        {/* Add a style tag to hide WebKit scrollbars */}
+        <style>
+          {`
+      .grid::-webkit-scrollbar {
+        display: none;
+      }
+    `}
+        </style>
         {filteredProblems.map((item, index) => (
           <div
             key={item.id || index}
@@ -621,7 +636,6 @@ const SupervisorDashboard = () => {
           </div>
         ))}
       </div>
-
       {/* Popups */}
       <LogCreation
         open={openLogCreation}
