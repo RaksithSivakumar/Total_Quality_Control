@@ -156,7 +156,8 @@ const App = ({ image = "/placeholder.svg?height=60&width=60" }) => {
                   navigate("/login"); // Redirect to login page
                 }}
               >
-                <span className="text-[#FF7622] font-semibold text-sm px-3">
+                 <span className="text-[#FF7622] font-semibold text-sm px-3">
+ 
                   Logout
                 </span>
               </button>
