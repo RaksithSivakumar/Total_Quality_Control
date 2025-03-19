@@ -42,6 +42,7 @@ const FormDashboard = () => {
   const scrollableRef = useRef(null);
   const newCardRef = useRef(null);
 
+
   // Fetch categories (including predefined ones)
   useEffect(() => {
     setCategories([
@@ -192,6 +193,37 @@ const FormDashboard = () => {
   const handleBackClick = () => {
     navigate("/Problemrd");
   };
+  const handleDescriptionChange = (event) => {
+    setDescription(event.target.value); // Update the state with the new value
+  };
+
+  // Put this in your component
+  useEffect(() => {
+    // Only set the content if the ref exists and the value is different
+    if (
+      contentEditableRef.current &&
+      contentEditableRef.current.innerText !== description
+    ) {
+      const selection = window.getSelection();
+      const range = selection.getRangeAt(0);
+      const cursorPosition = range.startOffset;
+
+      contentEditableRef.current.innerText = description;
+
+      // Restore cursor position
+      if (selection.rangeCount > 0) {
+        const newRange = document.createRange();
+        newRange.setStart(
+          contentEditableRef.current.childNodes[0] ||
+            contentEditableRef.current,
+          Math.min(cursorPosition, description.length)
+        );
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+      }
+    }
+  }, [description]);
 
   // Validate form inputs
   const validateForm = () => {
@@ -381,49 +413,48 @@ const FormDashboard = () => {
           {/* Description */}
           <div className="mb-6">
             <h3 className="text-sm font-medium mb-3">Description</h3>
-            <div
-              ref={contentEditableRef}
-              contentEditable
-                placeholder="Describe the issue..."
-               className="w-full p-3 bg-gray-100 rounded-md border-none outline-none min-h-[100px] mb-2"
-              onInput={(e) => setDescription(e.target.innerText)}
-            >
-              {description}
-            </div>
-            {/* Formatting Buttons */}
-            <div className="flex gap-2 text-gray-500">
-              <button onClick={() => applyFormatting("bold")} aria-label="Bold">
+ 
+            <textarea
+              // ref={contentEditableRef} // If you still need a ref
+              value={description} // Controlled component
+              onChange={(e) => setDescription(e.target.value)} // Handle input changes
+              className="w-full p-3 bg-gray-100 rounded-md border-none outline-none min-h-[100px] mb-2"
+              placeholder="Enter your description..."
+            />
+            {/* Formatting Buttons (disabled for textarea) */}
+             <div className="flex gap-2 text-gray-500">
+              <button
+                onClick={() => alert("Formatting not supported in textarea")}
+                aria-label="Bold"
+              >
                 <BiBold />
               </button>
               <button
-                onClick={() => applyFormatting("italic")}
+                onClick={() => alert("Formatting not supported in textarea")}
                 aria-label="Italic"
               >
                 <BiItalic />
               </button>
               <button
-                onClick={() => applyFormatting("underline")}
+                onClick={() => alert("Formatting not supported in textarea")}
                 aria-label="Underline"
               >
                 <BiUnderline />
               </button>
               <button
-                onClick={() => applyFormatting("insertOrderedList")}
+                onClick={() => alert("Formatting not supported in textarea")}
                 aria-label="Ordered List"
               >
                 <BiListOl />
               </button>
               <button
-                onClick={() => applyFormatting("insertUnorderedList")}
+                onClick={() => alert("Formatting not supported in textarea")}
                 aria-label="Unordered List"
               >
                 <BiListUl />
               </button>
               <button
-                onClick={() => {
-                  const url = prompt("Enter the URL:");
-                  if (url) applyFormatting("createLink", url);
-                }}
+                onClick={() => alert("Formatting not supported in textarea")}
                 aria-label="Insert Link"
               >
                 <BiLink />

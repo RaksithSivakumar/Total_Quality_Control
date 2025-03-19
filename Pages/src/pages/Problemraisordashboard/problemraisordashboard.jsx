@@ -21,26 +21,57 @@ function ProblemRaisorDashboard() {
   const [openAccepted, setOpenAccepted] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
   const [problems, setProblems] = useState([]);
-  
-  // Approval panel states integrated directly
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterButtonRef = useRef(null);
+  const filterPopupRef = useRef(null);
   const scrollableRef = useRef(null);
 
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-  };
+  // Handle click outside filter popup
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        isFilterOpen &&
+        filterPopupRef.current &&
+        !filterPopupRef.current.contains(event.target) &&
+        filterButtonRef.current &&
+        !filterButtonRef.current.contains(event.target)
+      ) {
+        setIsFilterOpen(false);
+      }
+    }
 
-  const filters = {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isFilterOpen]);
+
+   const filters = {
     inprogress: statusFilter.includes("inprogress"),
     rejected: statusFilter.includes("rejected"),
     accepted: statusFilter.includes("accepted"),
-  };
+ 
+  // Calculate filter position
+  const [filterPosition, setFilterPosition] = useState({ top: 0, right: 0 });
+  
+  useEffect(() => {
+    if (isFilterOpen && filterButtonRef.current) {
+      const rect = filterButtonRef.current.getBoundingClientRect();
+      setFilterPosition({
+        top: rect.bottom + window.scrollY + 8,
+        right: window.innerWidth - rect.right - window.scrollX
+      });
+    }
+  }, [isFilterOpen]);
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+   };
 
   const handleFilterChange = (status) => {
-    // Toggle selection in statusFilter (array)
     setStatusFilter((prev) =>
       prev.includes(status)
         ? prev.filter((s) => s !== status)
@@ -100,18 +131,26 @@ function ProblemRaisorDashboard() {
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 900);
+      if (isFilterOpen && filterButtonRef.current) {
+        const rect = filterButtonRef.current.getBoundingClientRect();
+        setFilterPosition({
+          top: rect.bottom + window.scrollY + 8,
+          right: window.innerWidth - rect.right - window.scrollX
+        });
+      }
     };
 
     window.addEventListener("resize", handleResize);
 
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [isFilterOpen]);
 
   const closeAllPopups = () => {
     setOpenLogCreation(false);
     setOpenRejected(false);
     setOpenAccepted(false);
     setShowFilter(false);
+    setIsFilterOpen(false);
   };
 
   const days = ["S", "M", "T", "W", "T", "F", "S"];
@@ -132,9 +171,7 @@ function ProblemRaisorDashboard() {
   useEffect(() => {
     const fetchProblems = async () => {
       try {
-        const response = await fetch(
-          "http://localhost:4000/api/master_problem"
-        );
+        const response = await fetch("http://localhost:4000/api/master_problem");
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
@@ -160,11 +197,12 @@ function ProblemRaisorDashboard() {
   // Map problems to approvals format based on the provided API structure
   const mappedApprovals = problems.map((problem) => ({
     id: problem.id,
-    title: problem.problem_title,
+     title: problem.problem_title,
     description: problem.Description,
     date: new Date(problem.created_at).toLocaleDateString(),
     mediaUpload: problem.Media_Upload, // Store media uploads
     status: problem.status?.toLowerCase() || "inprogress", // Use the actual status from the API and normalize case
+ 
   }));
 
   const handleDayClick = (index) => {
@@ -213,7 +251,7 @@ function ProblemRaisorDashboard() {
     toggleFilter();
   };
 
- // Updated search filter logic
+  // Updated search filter logic
 const filteredApprovals = mappedApprovals.filter((approval) => {
   // Convert both the search term and strings to compare to lowercase for case-insensitive matching
   const searchLower = searchTerm.toLowerCase().trim();
@@ -238,9 +276,10 @@ const filteredApprovals = mappedApprovals.filter((approval) => {
   // Return true only if both search and status filters are matched
   return matchesSearch && matchesStatus;
 });
+ 
 
   return (
-    <div className="flex flex-col h-screen bg-white overflow-hidden">
+    <div className="flex flex-col h-screen bg-white">
       {/* Toggle Buttons - Visible only on small screens */}
       {isMobile && (
         <div className="flex justify-start p-4 space-x-4">
@@ -268,14 +307,10 @@ const filteredApprovals = mappedApprovals.filter((approval) => {
       )}
 
       {/* Main Content Section */}
-      <div
-        className={`flex ${
-          isMobile ? "flex-col" : "flex-row"
-        } h-full overflow-hidden`}
-      >
+      <div className={`flex ${isMobile ? "flex-col" : "flex-row"} h-full`}>
         {/* Problem Status Section */}
         {!isMobile || selectedTab === "problem" ? (
-          <div className="w-full md:w-4/5 flex flex-col h-full overflow-hidden">
+          <div className="w-full md:w-4/5 flex flex-col h-full">
             <div className="p-4 md:p-6">
               <Header username="Kiruthika..." onFilterClick={toggleFilter} />
             </div>
@@ -409,7 +444,7 @@ const filteredApprovals = mappedApprovals.filter((approval) => {
               <div 
                 ref={scrollableRef}
                 id="scrollable-container"
-                className="space-y-3 pb-4 overflow-y-auto"
+
                 style={{
                   overflow: "auto",
                   msOverflowStyle: "none",
@@ -423,6 +458,7 @@ const filteredApprovals = mappedApprovals.filter((approval) => {
                       display: none;
                     }
                   `}
+
                 </style>
                 
                 {filteredApprovals.length > 0 ? (
@@ -451,7 +487,7 @@ const filteredApprovals = mappedApprovals.filter((approval) => {
                       <div className="flex justify-between items-center">
                         <div className="text-xs text-gray-500 flex items-center">
                           <Clock className="h-3 w-3 mr-1" />
-                          {approval.date}
+                          {approval.createdAt}
                         </div>
                         {/* Show points badge for accepted items */}
                         {approval.status === "accepted" && (
@@ -518,10 +554,57 @@ const filteredApprovals = mappedApprovals.filter((approval) => {
         ) : null}
       </div>
 
-         {/* Filter Popup for Desktop */}
+          {/* Filter Popup for Desktop */}
          {showFilter && (
+ 
+      {/* Filter Popup for Inline Filter */}
+      {isFilterOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+          className="fixed shadow-lg rounded-lg bg-white p-6 w-64 z-50"
+          ref={filterPopupRef}
+          style={{
+            top: filterPosition.top,
+            right: filterPosition.right,
+          }}
+        >
+          <h3 className="text-lg font-semibold mb-4">Filter Approvals</h3>
+          <div className="space-y-3">
+            {["accepted", "rejected", "inprogress"].map((status) => (
+              <div key={status} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={status}
+                  className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                  checked={statusFilter.includes(status)}
+                  onChange={() => handleFilterChange(status)}
+                />
+                <label htmlFor={status} className="ml-2 text-sm">
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </label>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-4 mt-6">
+            <button
+              className="flex-1 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition-colors"
+              onClick={handleClear}
+            >
+              Clear
+            </button>
+            <button
+              className="flex-1 py-2 bg-orange-500 text-white rounded-md text-sm hover:bg-orange-600 transition-colors"
+              onClick={() => setIsFilterOpen(false)}
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Filter Popup for Desktop */}
+      {showFilter && (
+         <div
+          className="inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
           onClick={toggleFilter}
         >
           <div
@@ -530,12 +613,12 @@ const filteredApprovals = mappedApprovals.filter((approval) => {
           >
             <h2 className="text-lg font-semibold mb-4">Filters</h2>
             <div className="space-y-3">
-              {["Accepted", "Rejected", "Inprogress"].map((status) => (
+              {["accepted", "rejected", "inprogress"].map((status) => (
                 <label key={status} className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     className="w-4 h-4 rounded"
-                    checked={filters[status]}
+                    checked={statusFilter.includes(status)}
                     onChange={() => handleFilterChange(status)}
                   />
                   <span className="text-sm capitalize">{status}</span>
