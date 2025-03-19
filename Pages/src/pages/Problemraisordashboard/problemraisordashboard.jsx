@@ -20,14 +20,9 @@ function ProblemRaisorDashboard() {
   const [openRejected, setOpenRejected] = useState(false);
   const [openAccepted, setOpenAccepted] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
-  // const [filters, setFilters] = useState({
-  //   inprogress: true,
-  //   rejected: false,
-  //   accepted: false,
-  // });
   const [problems, setProblems] = useState([]);
-  const [approvals, setApprovals] = useState([]); // Ensure it's initialized
-
+  
+  // Approval panel states integrated directly
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -37,12 +32,6 @@ function ProblemRaisorDashboard() {
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
-
-  // const handleFilterChange = (status) => {
-  //   setStatusFilter((prev) =>
-  //     prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status]
-  //   );
-  // };
 
   const filters = {
     inprogress: statusFilter.includes("inprogress"),
@@ -59,19 +48,6 @@ function ProblemRaisorDashboard() {
     );
   };
 
-  // const handleFilterChange = (status) => {
-  //   setStatusFilter((prev) =>
-  //     prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status]
-  //   );
-  // };
-
-  // const handleFilterChange = (filter) => {
-  //   setFilters((prevFilters) => ({
-  //     ...prevFilters,
-  //     [filter]: !prevFilters[filter],
-  //   }));
-  // };
-
   const handleCreate = () => {
     console.log("Create event");
     navigate("/survey");
@@ -82,12 +58,16 @@ function ProblemRaisorDashboard() {
     setStatusFilter([]);
   };
 
+  // Status badge styling helper
   const getStatusStyles = (status) => {
     switch (status) {
+      case "inprogress":
       case "Inprogress":
         return "bg-blue-100 text-blue-700";
+      case "rejected":
       case "Rejected":
         return "bg-red-100 text-red-700";
+      case "accepted":
       case "Accepted":
         return "bg-green-100 text-green-700";
       default:
@@ -182,9 +162,9 @@ function ProblemRaisorDashboard() {
     id: problem.id,
     title: problem.problem_title,
     description: problem.Description,
-    createdAt: new Date(problem.created_at).toLocaleDateString(),
+    date: new Date(problem.created_at).toLocaleDateString(),
     mediaUpload: problem.Media_Upload, // Store media uploads
-    status: problem.status || "Inprogress", // Use the actual status from the API
+    status: problem.status?.toLowerCase() || "inprogress", // Use the actual status from the API and normalize case
   }));
 
   const handleDayClick = (index) => {
@@ -196,14 +176,15 @@ function ProblemRaisorDashboard() {
   };
 
   const handleCardClick = (card) => {
-    switch (card.status) {
-      case "Inprogress":
+    const normalizedStatus = card.status.toLowerCase();
+    switch (normalizedStatus) {
+      case "inprogress":
         setOpenLogCreation(true);
         break;
-      case "Rejected":
+      case "rejected":
         setOpenRejected(true);
         break;
-      case "Accepted":
+      case "accepted":
         setOpenAccepted(true);
         break;
       default:
@@ -224,38 +205,39 @@ function ProblemRaisorDashboard() {
   };
 
   const handleClearFilters = () => {
-    setFilters({
-      inprogress: false,
-      rejected: false,
-      accepted: false,
-    });
+    setStatusFilter([]);
   };
 
   const handleApplyFilters = () => {
+    setIsFilterOpen(false);
     toggleFilter();
   };
 
-  // const filteredApprovals = approvals.filter((approval) => {
-  //   const matchesSearch = approval.title
-  //     .toLowerCase()
-  //     .includes(searchTerm.toLowerCase());
-  //   const matchesStatus =
-  //     statusFilter.length === 0 || statusFilter.includes(approval.status);
-
-  // });
-
-  const filteredApprovals = mappedApprovals.filter((approval) => {
-    if (!filters.inprogress && !filters.rejected && !filters.accepted) {
-      return true;
-    }
-
-    return (
-      (filters.inprogress && approval.status === "Inprogress") ||
-      (filters.rejected && approval.status === "Rejected") ||
-      (filters.accepted && approval.status === "Accepted")
-    );
-  });
+ // Updated search filter logic
+const filteredApprovals = mappedApprovals.filter((approval) => {
+  // Convert both the search term and strings to compare to lowercase for case-insensitive matching
+  const searchLower = searchTerm.toLowerCase().trim();
   
+  // Check if search term is empty - return all results when no search term
+  if (!searchLower) {
+    // Only apply status filter if there are any selected statuses
+    return statusFilter.length === 0 || statusFilter.includes(approval.status.toLowerCase());
+  }
+  
+  // Search in multiple fields - title, description, and date
+  const matchesTitle = approval.title?.toLowerCase().includes(searchLower);
+  const matchesDescription = approval.description?.toLowerCase().includes(searchLower);
+  const matchesDate = approval.date?.toLowerCase().includes(searchLower);
+  
+  // Combined search results across multiple fields
+  const matchesSearch = matchesTitle || matchesDescription || matchesDate;
+  
+  // Apply status filter if there are any selected statuses
+  const matchesStatus = statusFilter.length === 0 || statusFilter.includes(approval.status.toLowerCase());
+  
+  // Return true only if both search and status filters are matched
+  return matchesSearch && matchesStatus;
+});
 
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden">
@@ -315,47 +297,44 @@ function ProblemRaisorDashboard() {
           <div className="w-full md:w-2/5 bg-gray-50 flex flex-col h-full">
             <div className="flex-1 p-4 md:p-6">
               {/* Header */}
-              <div className=" flex flex-col mb-6">
-                {/* Header row with title and buttons */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center">
-                    <h2 className="text-lg font-semibold">Approvals</h2>
-                    <span className="ml-2 bg-gray-200 text-gray-700 px-2 py-1 rounded-md text-sm">
-                      {approvals.length}
-                    </span>
-                  </div>
-                  <div className="flex gap-3">
-                    <button
-                      ref={filterButtonRef}
-                      className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors relative"
-                      onClick={() => setIsFilterOpen(!isFilterOpen)}
-                    >
-                      <Filter className="h-4 w-4" />
-                      Filter
-                    </button>
-                    <button
-                      className="flex items-center text-orange-500 text-sm font-medium px-3 py-2 border border-orange-200 rounded-md hover:bg-orange-50 transition-colors"
-                      onClick={handleCreate}
-                    >
-                      <PlusCircle className="h-4 w-4 mr-1" />
-                      Create New
-                    </button>
-                  </div>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center">
+                  <h2 className="text-lg font-semibold">Approvals</h2>
+                  <span className="ml-2 bg-gray-200 text-gray-700 px-2 py-1 rounded-md text-sm">
+                    {mappedApprovals.length}
+                  </span>
                 </div>
-
-                {/* Search Bar - now positioned below the header row */}
-                <div className="bg-white mb-4">
-                  <Input
-                    type="text"
-                    placeholder="Search any problem"
-                    icon={<IoSearchOutline className="text-gray-400" />}
-                    value={searchTerm}
-                    onChange={handleSearch}
-                    className="rounded-full pl-10 border-gray-300 focus:ring-2 focus:ring-orange-500"
-                  />
+                <div className="flex gap-3">
+                  <button
+                    ref={filterButtonRef}
+                    className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors relative"
+                    onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  >
+                    <Filter className="h-4 w-4" />
+                    Filter
+                  </button>
+                  <button
+                    className="flex items-center text-orange-500 text-sm font-medium px-3 py-2 border border-orange-200 rounded-md hover:bg-orange-50 transition-colors"
+                    onClick={handleCreate}
+                  >
+                    <PlusCircle className="h-4 w-4 mr-1" />
+                    Create New
+                  </button>
                 </div>
               </div>
 
+              {/* Search Bar */}
+              <div className="sticky top-0 bg-white z-40 mb-4">
+                <Input
+                  type="text"
+                  placeholder="Search any problems"
+                  icon={<IoSearchOutline className="text-gray-400" />}
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  className="rounded-full pl-10 border-gray-300 focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+              
               {/* Filter Popup */}
               {isFilterOpen && (
                 <div
@@ -369,9 +348,7 @@ function ProblemRaisorDashboard() {
                     right: filterButtonRef.current ? 20 : 0,
                   }}
                 >
-                  <h3 className="text-lg font-semibold mb-4">
-                    Filter Approvals
-                  </h3>
+                  <h3 className="text-lg font-semibold mb-4">Filter Approvals</h3>
                   <div className="space-y-3">
                     <div className="flex items-center">
                       <input
@@ -393,7 +370,7 @@ function ProblemRaisorDashboard() {
                         checked={statusFilter.includes("rejected")}
                         onChange={() => handleFilterChange("rejected")}
                       />
-                      <label htmlFor="Rejected" className="ml-2 text-sm">
+                      <label htmlFor="rejected" className="ml-2 text-sm">
                         Rejected
                       </label>
                     </div>
@@ -429,25 +406,25 @@ function ProblemRaisorDashboard() {
               )}
 
               {/* Approval List */}
-              <div
+              <div 
                 ref={scrollableRef}
-                id="scrollable-container" // Added id to match the CSS selector
-                className="flex-1 overflow-y-auto p-4 space-y-4"
+                id="scrollable-container"
+                className="space-y-3 pb-4 overflow-y-auto"
                 style={{
                   overflow: "auto",
-                  msOverflowStyle: "none" /* IE and Edge */,
-                  scrollbarWidth: "none" /* Firefox */,
-                  maxHeight: "70vh",
+                  msOverflowStyle: "none",
+                  scrollbarWidth: "none",
+                  maxHeight: "calc(100vh - 220px)"
                 }}
               >
                 <style>
                   {`
-      #scrollable-container::-webkit-scrollbar {
-        display: none;
-      }
-    `}
+                    #scrollable-container::-webkit-scrollbar {
+                      display: none;
+                    }
+                  `}
                 </style>
-
+                
                 {filteredApprovals.length > 0 ? (
                   filteredApprovals.map((approval) => (
                     <div
@@ -462,7 +439,7 @@ function ProblemRaisorDashboard() {
                             approval.status
                           )}`}
                         >
-                          {approval.status === "Inprogress"
+                          {approval.status === "inprogress"
                             ? "In Progress"
                             : approval.status.charAt(0).toUpperCase() +
                               approval.status.slice(1)}
@@ -476,9 +453,22 @@ function ProblemRaisorDashboard() {
                           <Clock className="h-3 w-3 mr-1" />
                           {approval.date}
                         </div>
-                        {approval.status === "Accepted" && (
+                        {/* Show points badge for accepted items */}
+                        {approval.status === "accepted" && (
                           <div className="flex items-center text-green-600 text-xs font-medium px-2 py-1 bg-green-50 rounded-full">
-                            
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-3 w-3 mr-1"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            +150 points
                           </div>
                         )}
                       </div>
@@ -496,12 +486,12 @@ function ProblemRaisorDashboard() {
             {isMobile && (
               <div className="md:hidden flex justify-between items-center p-4 border-t">
                 <div className="flex space-x-4">
-                  {["Accepted", "Rejected", "Inprogress"].map((status) => (
+                  {["accepted", "rejected", "inprogress"].map((status) => (
                     <label key={status} className="flex items-center">
                       <input
                         type="checkbox"
                         className="w-4 h-4 mr-2"
-                        checked={filters[status]}
+                        checked={statusFilter.includes(status)}
                         onChange={() => handleFilterChange(status)}
                       />
                       <span className="text-sm capitalize">{status}</span>
@@ -511,13 +501,13 @@ function ProblemRaisorDashboard() {
                 <div className="flex space-x-2">
                   <button
                     className="px-4 py-1 border border-gray-300 rounded-md text-sm"
-                    onClick={handleClearFilters}
+                    onClick={handleClear}
                   >
                     Clear
                   </button>
                   <button
                     className="px-4 py-1 bg-orange-500 text-white rounded-md text-sm"
-                    onClick={handleApplyFilters}
+                    onClick={() => setIsFilterOpen(false)}
                   >
                     Apply
                   </button>
@@ -528,8 +518,8 @@ function ProblemRaisorDashboard() {
         ) : null}
       </div>
 
-      {/* Filter Popup for Desktop */}
-      {showFilter && (
+         {/* Filter Popup for Desktop */}
+         {showFilter && (
         <div
           className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
           onClick={toggleFilter}

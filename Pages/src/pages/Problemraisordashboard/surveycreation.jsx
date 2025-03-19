@@ -19,7 +19,6 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
 const FormDashboard = () => {
   const navigate = useNavigate();
 
@@ -37,8 +36,11 @@ const FormDashboard = () => {
   const [description, setDescription] = useState("");
   const [questions, setQuestions] = useState(["", "", "", "", ""]);
   const [cardData, setCardData] = useState([]); // For storing fetched problems
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newProblemId, setNewProblemId] = useState(null); // Track newly created problem
   const contentEditableRef = useRef(null);
   const scrollableRef = useRef(null);
+  const newCardRef = useRef(null);
 
   // Fetch categories (including predefined ones)
   useEffect(() => {
@@ -50,26 +52,53 @@ const FormDashboard = () => {
     ]);
   }, []);
 
-  // Fetch problem data from the API
-  useEffect(() => {
-    const fetchProblems = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:4000/api/master_problem"
-        );
-        if (response.data && Array.isArray(response.data.data)) {
-          setCardData(response.data.data);
-        } else {
-          console.error("API response data is not an array:", response.data);
-        }
-      } catch (error) {
-        console.error("Error fetching problems:", error);
-        toast.error("Failed to fetch problems.");
+  // Function to fetch problem data from the API
+  const fetchProblems = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:4000/api/master_problem"
+      );
+      if (response.data && Array.isArray(response.data.data)) {
+        // Sort the data with newest first (based on created_at)
+        const sortedData = [...response.data.data].sort((a, b) => {
+          return new Date(b.created_at) - new Date(a.created_at);
+        });
+        setCardData(sortedData);
+      } else {
+        console.error("API response data is not an array:", response.data);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching problems:", error);
+      toast.error("Failed to fetch problems.");
+    }
+  };
 
+  // Fetch problems on initial load
+  useEffect(() => {
     fetchProblems();
   }, []);
+
+  // Scroll to the newly created problem when it's available
+  useEffect(() => {
+    if (newProblemId && newCardRef.current) {
+      newCardRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      
+      // Highlight the new card briefly
+      if (newCardRef.current) {
+        newCardRef.current.classList.add("animate-pulse", "bg-orange-50");
+        setTimeout(() => {
+          if (newCardRef.current) {
+            newCardRef.current.classList.remove("animate-pulse", "bg-orange-50");
+          }
+        }, 3000);
+      }
+      
+      // Clear the newProblemId after scrolling
+      setTimeout(() => {
+        setNewProblemId(null);
+      }, 5000);
+    }
+  }, [cardData, newProblemId, activeTab]);
 
   // Handle card click
   const handleCardClick = (card) => {
@@ -79,6 +108,18 @@ const FormDashboard = () => {
       setActivePopup("Rejected");
     } else if (card.status === "Accepted") {
       setActivePopup("Accepted");
+    }
+  };
+
+  // Reset form to initial state
+  const resetForm = () => {
+    setProblemTitle("");
+    setDescription("");
+    setSelectedCategory(null);
+    setFiles([]);
+    setQuestions(["", "", "", "", ""]);
+    if (contentEditableRef.current) {
+      contentEditableRef.current.innerHTML = "";
     }
   };
 
@@ -152,12 +193,33 @@ const FormDashboard = () => {
     navigate("/Problemrd");
   };
 
-  // Handle form submission
-  const handleCreate = async () => {
+  // Validate form inputs
+  const validateForm = () => {
     if (!selectedCategory) {
       toast.error("Please select a category.");
-      return;
+      return false;
     }
+    if (!problemTitle.trim()) {
+      toast.error("Please enter a problem title.");
+      return false;
+    }
+    if (!description.trim()) {
+      toast.error("Please provide a description.");
+      return false;
+    }
+    // Check if at least one question is answered
+    if (!questions.some(q => q.trim())) {
+      toast.error("Please answer at least one question.");
+      return false;
+    }
+    return true;
+  };
+
+  // Handle form submission
+  const handleCreate = async () => {
+    if (!validateForm()) return;
+    
+    setIsSubmitting(true);
     const formData = new FormData();
     formData.append("Category", selectedCategory);
     formData.append("problem_title", problemTitle);
@@ -183,19 +245,28 @@ const FormDashboard = () => {
         }
       );
       console.log("Response:", response.data);
-      toast.success("Form submitted successfully!");
+      toast.success("Problem created successfully!");
+      
+      // Store the ID of the newly created problem
+      if (response.data && response.data.data && response.data.data._id) {
+        setNewProblemId(response.data.data._id);
+      }
+      
+      // Reset form after successful submission
+      resetForm();
+      
+      // Refetch problems to update the list
+      await fetchProblems();
+      
+      // Switch to problem bank tab
+      setActiveTab("problemBank");
     } catch (error) {
       console.error("Error submitting form:", error);
-      toast.error("Error submitting form.");
+      toast.error(error.response?.data?.message || "Error submitting form.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
-  // Scroll to bottom when cardData changes
-  useEffect(() => {
-    if (scrollableRef.current) {
-      scrollableRef.current.scrollTop = scrollableRef.current.scrollHeight;
-    }
-  }, [cardData.length]);
 
   // Filter cards based on search query
   const filteredCards = cardData.filter(
@@ -313,8 +384,8 @@ const FormDashboard = () => {
             <div
               ref={contentEditableRef}
               contentEditable
-              placeholder="Describe the issue..."
-              className="w-full p-3 bg-gray-100 rounded-md border-none outline-none min-h-[100px] mb-2"
+                placeholder="Describe the issue..."
+               className="w-full p-3 bg-gray-100 rounded-md border-none outline-none min-h-[100px] mb-2"
               onInput={(e) => setDescription(e.target.innerText)}
             >
               {description}
@@ -442,10 +513,11 @@ const FormDashboard = () => {
           {/* Create button */}
           <div className="bottom-6 bg-white pt-1 pb-20">
             <button
-              className="w-full py-3 bg-orange-500 text-white rounded-md font-medium"
+              className={`w-full py-3 ${isSubmitting ? 'bg-gray-400' : 'bg-orange-500'} text-white rounded-md font-medium`}
               onClick={handleCreate}
+              disabled={isSubmitting}
             >
-              Create
+              {isSubmitting ? "Submitting..." : "Create"}
             </button>
           </div>
         </div>
@@ -478,31 +550,50 @@ const FormDashboard = () => {
               overflow: "auto",
               msOverflowStyle: "none" /* IE and Edge */,
               scrollbarWidth: "none" /* Firefox */,
-              maxHeight: "70vh",
+              maxHeight: "80vh",
             }}
           >
-            <style>
-              {`
-            #scrollable-container::-webkit-scrollbar {
-              display: none;
-            }
-          `}
-            </style>
+            <style jsx>{`
+              #scrollable-container::-webkit-scrollbar {
+                display: none;
+              }
+              
+              @keyframes highlight-card {
+                0% { background-color: #FFEDD5; }
+                50% { background-color: #FED7AA; }
+                100% { background-color: #FFEDD5; }
+              }
+              
+              .highlight-new-card {
+                animation: highlight-card 2s ease-in-out;
+              }
+            `}</style>
 
-            {filteredCards.map((card, index) => (
-              <Card
-                key={index}
-                title={card.problem_title}
-                status={card.status}
-                description={card.Description}
-                date={new Date(card.created_at).toLocaleDateString()}
-                author={card.created_by}
-                imageUrl={
-                  "https://bitlinks.bitsathy.ac.in/static/media/user.900505a2e95287f7e05c.jpg"
-                }
-                onClick={() => handleCardClick(card)}
-              />
-            ))}
+            {filteredCards.length > 0 ? (
+              filteredCards.map((card, index) => (
+                <div 
+                  key={index}
+                  ref={card._id === newProblemId ? newCardRef : null}
+                  className={`transition-all duration-500 ${card._id === newProblemId ? 'highlight-new-card border-l-4 border-orange-500' : ''}`}
+                >
+                  <Card
+                    title={card.problem_title}
+                    status={card.status || "New"}
+                    description={card.Description}
+                    date={new Date(card.created_at).toLocaleDateString()}
+                    author={card.created_by}
+                    imageUrl={
+                      "https://bitlinks.bitsathy.ac.in/static/media/user.900505a2e95287f7e05c.jpg"
+                    }
+                    onClick={() => handleCardClick(card)}
+                  />
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-10 text-gray-500">
+                No problems found. Try a different search or create a new problem.
+              </div>
+            )}
           </div>
         </div>
       </div>
