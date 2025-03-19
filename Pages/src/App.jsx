@@ -3,7 +3,7 @@ import Routernav from "./router/Routernav";
 
   function App() {
     return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col">
+    <div className="min-h-[100vh] overflow-hidden flex flex-col">
       <Routernav />
     </div>
   );
