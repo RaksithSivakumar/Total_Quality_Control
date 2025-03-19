@@ -477,7 +477,7 @@ const FormDashboard = () => {
               overflow: "auto",
               msOverflowStyle: "none" /* IE and Edge */,
               scrollbarWidth: "none" /* Firefox */,
-              maxHeight: "80vh",
+              maxHeight: "70vh",
             }}
           >
             <style>
