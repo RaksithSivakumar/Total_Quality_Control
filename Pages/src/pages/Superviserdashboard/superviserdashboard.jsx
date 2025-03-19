@@ -567,11 +567,11 @@ const SupervisorDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white p-6">
+     <div className="min-h-screen bg-white p-6">
       <h2 className="text-2xl font-semibold mb-4 text-[#868686]">
         Welcome {userName} ...
       </h2>
-      {/* Tabs */}
+       {/* Tabs */}
       <div className="flex space-x-8 mb-2 text-base font-medium p-2 rounded-lg">
         {[
           { label: "All", status: "All", count: problems.length },
