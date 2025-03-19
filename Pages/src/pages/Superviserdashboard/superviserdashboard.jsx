@@ -84,6 +84,7 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
       setTempStatus(status);
       setTempRemarks(remarks);
 
+
       // Prepare data to send to the server
       const data = {
         Category: problem ? problem.Category : "Default Category",
@@ -566,8 +567,7 @@ const SupervisorDashboard = () => {
   };
 
   return (
- 
-    <div className="min-h-screen bg-white p-6">
+     <div className="min-h-screen bg-white p-6">
       <h2 className="text-2xl font-semibold mb-4 text-[#868686]">
         Welcome {userName} ...
       </h2>
