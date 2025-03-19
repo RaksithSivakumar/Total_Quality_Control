@@ -12,9 +12,9 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import Checkbox from "@mui/material/Checkbox";
 import Slide from "@mui/material/Slide";
-import Rejected from "../../components/Popups/Rejected";
-import Accepted from "../../components/Popups/Accepted";
-import Solver from "../../components/Popups/Solver";
+// import Rejected from "../../components/Popups/Rejected";
+// import Accepted from "../../components/Popups/Accepted";
+// import Solver from "../../components/Popups/Solver";
 import {
     ArrowLeft,
     ChevronDown,
@@ -32,6 +32,11 @@ import {
     useTheme,
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
+import LogCreation from "./LogCreation";
+import Rejected from "./Rejected";
+import Accepted from "./Accepted";
+import Solver from "./Solver";
+
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
