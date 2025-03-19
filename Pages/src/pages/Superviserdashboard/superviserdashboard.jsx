@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, ChevronDown, Check } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
@@ -14,7 +14,10 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { Close as CloseIcon } from "@mui/icons-material";
+import CryptoJS from "crypto-js";
+import { Close as CloseIcon, KeyboardArrowLeftRounded } from "@mui/icons-material";
+
+const secretKey = "qwertyuiopasdfghjklzxcvbnm";
 
 // ------------------ LogCreation Popup Component ------------------
 const LogCreation = ({ open, onClose, storedProblemTitle }) => {
@@ -209,14 +212,14 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
                   aria-label="close"
                   size={isMobile ? "small" : "medium"}
                 >
-                  <ArrowLeft size={isMobile ? 18 : 24} />
+                  <KeyboardArrowLeftRounded size={isMobile ? 16 : 20} />
                 </IconButton>
                 <Typography
                   variant={isMobile ? "subtitle1" : "h6"}
                   component="h1"
-                  className="flex items-center p-4"
+                  className="flex items-center font-bold text-[#303030]"
                 >
-                  Log creation
+                  Problem Log
                 </Typography>
               </div>
             </DialogTitle>
@@ -508,6 +511,21 @@ const SupervisorDashboard = () => {
   const [openAccepted, setOpenAccepted] = useState(false);
   const [selectedProblemTitle, setSelectedProblemTitle] = useState("");
 
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const encryptedUser = localStorage.getItem("user");
+    if (encryptedUser) {
+      try {
+        const bytes = CryptoJS.AES.decrypt(encryptedUser, secretKey);
+        const user = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+        setUserName(user?.name || "User"); // Default to "User" if name is not found
+      } catch (error) {
+        console.error("Error decrypting user data:", error);
+      }
+    }
+  }, []);
+
   // Fetch the problems when the dashboard mounts
   useEffect(() => {
     fetch("http://localhost:4000/api/master_problem")
@@ -548,47 +566,55 @@ const SupervisorDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white p-6 ">
-      <h2 className="text-2xl font-semibold mb-4">Welcome Supervisor...</h2>
-      {/* Tabs */}
-      <div className="flex space-x-6 mb-6 text-lg font-medium bg-gray-100 p-2 rounded-lg">
-        <span
-          className={`cursor-pointer pb-1 ${
-            activeTab === "All"
-              ? "text-orange-500 border-b-2 border-orange-500"
-              : "text-gray-500"
-          }`}
-          onClick={() => setActiveTab("All")}
-        >
-          All <span className="text-gray-500 text-sm">({problems.length})</span>
-        </span>
-        <span
-          className={`cursor-pointer pb-1 ${
-            activeTab === "Accepted"
-              ? "text-orange-500 border-b-2 border-orange-500"
-              : "text-gray-500"
-          }`}
-          onClick={() => setActiveTab("Accepted")}
-        >
-          Accepted
-          <span className="text-gray-500 text-sm">
-            ({problems.filter((p) => p.status === "Accepted").length})
-          </span>
-        </span>
-        <span
-          className={`cursor-pointer pb-1 ${
-            activeTab === "Rejected"
-              ? "text-orange-500 border-b-2 border-orange-500"
-              : "text-gray-500"
-          }`}
-          onClick={() => setActiveTab("Rejected")}
-        >
-          Rejected
-          <span className="text-gray-500 text-sm">
-            ({problems.filter((p) => p.status === "Rejected").length})
-          </span>
-        </span>
+ 
+    <div className="min-h-screen bg-white p-6">
+      <h2 className="text-2xl font-semibold mb-4 text-[#868686]">
+        Welcome {userName} ...
+      </h2>
+       {/* Tabs */}
+      <div className="flex space-x-8 mb-2 text-base font-medium p-2 rounded-lg">
+        {[
+          { label: "All", status: "All", count: problems.length },
+          {
+            label: "Accepted",
+            status: "Accepted",
+            count: problems.filter((p) => p.status === "Accepted").length,
+          },
+          {
+            label: "Rejected",
+            status: "Rejected",
+            count: problems.filter((p) => p.status === "Rejected").length,
+          },
+        ].map(({ label, status, count }) => (
+          <div
+            key={status}
+            className="flex flex-col items-center cursor-pointer pb-2"
+            onClick={() => setActiveTab(status)}
+          >
+            <div className="flex items-center space-x-2">
+              <span
+                className={`pb-1 ${
+                  activeTab === status
+                    ? "text-orange-500 font-bold"
+                    : "text-gray-500"
+                }`}
+              >
+                {label}
+              </span>
+              <span className="px-2 py-1 text-xs text-gray-700 bg-gray-200 rounded-full">
+                {count}
+              </span>
+            </div>
+            {/* Underline */}
+            <span
+              className={`w-full h-0.5 rounded-full transition-all duration-300 ${
+                activeTab === status ? "bg-orange-500" : "bg-transparent"
+              }`}
+            ></span>
+          </div>
+        ))}
       </div>
+
       {/* Grid Layout */}
       <div
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 overflow-y-auto"
@@ -609,14 +635,31 @@ const SupervisorDashboard = () => {
         {filteredProblems.map((item, index) => (
           <div
             key={item.id || index}
-            className="bg-gray-50 rounded-2xl p-4 shadow-md cursor-pointer"
+            className="bg-[#F0F4F8] rounded-2xl p-4 shadow-md cursor-pointer"
             onClick={() => handleCardClick(item)}
           >
             <div className="flex justify-between items-center mb-2">
-              <h3 className="text-lg font-semibold">{item["problem_title"]}</h3>
-              <StatusBadge status={item.status} />
+              <h3 className="text-base font-bold text-[#3D3B3B]">
+                {item["problem_title"]}
+              </h3>
+
+              {/* Status Badge with Border */}
+              <span
+                className={`px-2 py-1 text-xs font-bold rounded-md ${
+                  item.status === "New"
+                    ? "text-purple-500 border border-purple-500 bg-[#F3F2FF]"
+                    : item.status === "Rejected"
+                    ? "text-red-500 border border-red-500 bg-[#FFEBED]"
+                    : item.status === "Accepted"
+                    ? "text-[#1FC16B] border border-[#1FC16B] bg-[#E6FFF1]"
+                    : "text-gray-500 border border-gray-300"
+                }`}
+              >
+                {item.status}
+              </span>
             </div>
-            <div className="text-gray-500 text-xs mb-1">
+
+            <div className="text-gray-500 text-xs font-bold mb-1">
               Category: {item.Category}
             </div>
             <p className="text-gray-600 text-sm">{item.Description}</p>
@@ -624,7 +667,7 @@ const SupervisorDashboard = () => {
               {new Date(item.created_at).toLocaleDateString()}
             </div>
             <div className="flex items-center mt-2">
-              <span className="text-sm text-gray-700 ml-2 flex items-center">
+              <span className="text-xs text-gray-700 flex items-center">
                 <img
                   src="https://bitlinks.bitsathy.ac.in/static/media/user.900505a2e95287f7e05c.jpg"
                   alt="Avatar"
