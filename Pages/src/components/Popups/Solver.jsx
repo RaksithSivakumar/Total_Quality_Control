@@ -5,7 +5,14 @@ import { DateRange } from "react-date-range";
 import { format, differenceInDays } from "date-fns";
 import "react-date-range/dist/styles.css"; // Main CSS
 import "react-date-range/dist/theme/default.css"; // Theme CSS
-import { ArrowLeft, ChevronDown, Check, Calendar, Trophy, User } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronDown,
+  Check,
+  Calendar,
+  Trophy,
+  User,
+} from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify"; // Import toast
 import { createTheme, ThemeProvider } from "@mui/material/styles";
@@ -96,9 +103,13 @@ const Solver = ({ open, onClose }) => {
   }, []);
 
   const handlePointsChange = (event) => {
-    setPoints(event.target.value === "" ? 0 : Number(event.target.value));
-  };
+    const value = parseInt(event.target.value, 10);
 
+    // Only update the state if the value is between 100 and 1000
+    if (!isNaN(value) && value >= 100 && value <= 1000) {
+      setPoints(value);
+    }
+  };
   const handleSliderChange = (event, newValue) => {
     setPoints(newValue);
   };
@@ -156,11 +167,11 @@ const Solver = ({ open, onClose }) => {
 
   const formatDateRange = () => {
     if (!dateRange.startDate || !dateRange.endDate) return "Select deadline";
-    
+
     const start = format(dateRange.startDate, "MMM dd");
     const end = format(dateRange.endDate, "MMM dd");
     const days = differenceInDays(dateRange.endDate, dateRange.startDate) + 1;
-    
+
     return `${start} - ${end} (${days} days)`;
   };
 
@@ -587,7 +598,10 @@ const Solver = ({ open, onClose }) => {
                           <div
                             ref={calendarRef}
                             className="absolute mt-2 z-50 bg-white p-3 shadow-lg rounded-lg border border-gray-200"
-                            style={{ width: isMobile ? "100%" : "auto", minWidth: "300px" }}
+                            style={{
+                              width: isMobile ? "100%" : "auto",
+                              minWidth: "300px",
+                            }}
                           >
                             <DateRange
                               ranges={[
@@ -605,7 +619,7 @@ const Solver = ({ open, onClose }) => {
                               direction="vertical"
                             />
                             <div className="flex justify-end mt-2">
-                              <Button 
+                              <Button
                                 onClick={() => setShowCalendar(false)}
                                 variant="contained"
                                 sx={{
@@ -644,7 +658,7 @@ const Solver = ({ open, onClose }) => {
                                   </InputAdornment>
                                 ),
                                 disableUnderline: true,
-                                inputProps: { min: 0 },
+                                inputProps: { min: 100, max: 1000 }, // Enforces min/max for arrow controls
                               }}
                               sx={{
                                 width: "100%",
