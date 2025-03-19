@@ -456,7 +456,7 @@ function ProblemRaisorDashboard() {
                         </div>
                         {approval.status === "Accepted" && (
                           <div className="flex items-center text-green-600 text-xs font-medium px-2 py-1 bg-green-50 rounded-full">
-                            +150 points
+                            
                           </div>
                         )}
                       </div>
