@@ -566,11 +566,12 @@ const SupervisorDashboard = () => {
   };
 
   return (
+ 
     <div className="min-h-screen bg-white p-6">
       <h2 className="text-2xl font-semibold mb-4 text-[#868686]">
         Welcome {userName} ...
       </h2>
-      {/* Tabs */}
+       {/* Tabs */}
       <div className="flex space-x-8 mb-2 text-base font-medium p-2 rounded-lg">
         {[
           { label: "All", status: "All", count: problems.length },
@@ -615,7 +616,22 @@ const SupervisorDashboard = () => {
       </div>
 
       {/* Grid Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 overflow-y-auto"
+        style={{
+          scrollbarWidth: "none" /* Firefox */,
+          msOverflowStyle: "none" /* IE and Edge */,
+          maxHeight: "70vh" /* Set a maximum height to enable scrolling */,
+        }}
+      >
+        {/* Add a style tag to hide WebKit scrollbars */}
+        <style>
+          {`
+      .grid::-webkit-scrollbar {
+        display: none;
+      }
+    `}
+        </style>
         {filteredProblems.map((item, index) => (
           <div
             key={item.id || index}
@@ -663,7 +679,6 @@ const SupervisorDashboard = () => {
           </div>
         ))}
       </div>
-
       {/* Popups */}
       <LogCreation
         open={openLogCreation}

@@ -32,6 +32,7 @@ function ProblemRaisorDashboard() {
   const [statusFilter, setStatusFilter] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterButtonRef = useRef(null);
+  const scrollableRef = useRef(null);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
@@ -254,7 +255,7 @@ function ProblemRaisorDashboard() {
       (filters.accepted && approval.status === "Accepted")
     );
   });
-
+  
 
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden">
@@ -311,45 +312,48 @@ function ProblemRaisorDashboard() {
 
         {/* Resource Status Section */}
         {!isMobile || selectedTab === "resource" ? (
-          <div className="w-full md:w-2/5 bg-gray-50 flex flex-col h-full overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 scrollbar-hide">
+          <div className="w-full md:w-2/5 bg-gray-50 flex flex-col h-full">
+            <div className="flex-1 p-4 md:p-6">
               {/* Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center">
-                  <h2 className="text-lg font-semibold">Approvals</h2>
-                  <span className="ml-2 bg-gray-200 text-gray-700 px-2 py-1 rounded-md text-sm">
-                    {approvals.length}
-                  </span>
+              <div className=" flex flex-col mb-6">
+                {/* Header row with title and buttons */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <h2 className="text-lg font-semibold">Approvals</h2>
+                    <span className="ml-2 bg-gray-200 text-gray-700 px-2 py-1 rounded-md text-sm">
+                      {approvals.length}
+                    </span>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      ref={filterButtonRef}
+                      className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors relative"
+                      onClick={() => setIsFilterOpen(!isFilterOpen)}
+                    >
+                      <Filter className="h-4 w-4" />
+                      Filter
+                    </button>
+                    <button
+                      className="flex items-center text-orange-500 text-sm font-medium px-3 py-2 border border-orange-200 rounded-md hover:bg-orange-50 transition-colors"
+                      onClick={handleCreate}
+                    >
+                      <PlusCircle className="h-4 w-4 mr-1" />
+                      Create New
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-3">
-                  <button
-                    ref={filterButtonRef}
-                    className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors relative"
-                    onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  >
-                    <Filter className="h-4 w-4" />
-                    Filter
-                  </button>
-                  <button
-                    className="flex items-center text-orange-500 text-sm font-medium px-3 py-2 border border-orange-200 rounded-md hover:bg-orange-50 transition-colors"
-                    onClick={handleCreate}
-                  >
-                    <PlusCircle className="h-4 w-4 mr-1" />
-                    Create New
-                  </button>
-                </div>
-              </div>
 
-              {/* Search Bar */}
-              <div className="sticky top-0 bg-white z-10 mb-4">
-                <Input
-                  type="text"
-                  placeholder="Search any problem"
-                  icon={<IoSearchOutline className="text-gray-400" />}
-                  value={searchTerm}
-                  onChange={handleSearch}
-                  className="rounded-full pl-10 border-gray-300 focus:ring-2 focus:ring-orange-500"
-                />
+                {/* Search Bar - now positioned below the header row */}
+                <div className="bg-white mb-4">
+                  <Input
+                    type="text"
+                    placeholder="Search any problem"
+                    icon={<IoSearchOutline className="text-gray-400" />}
+                    value={searchTerm}
+                    onChange={handleSearch}
+                    className="rounded-full pl-10 border-gray-300 focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
               </div>
 
               {/* Filter Popup */}
@@ -425,13 +429,31 @@ function ProblemRaisorDashboard() {
               )}
 
               {/* Approval List */}
-              <div className="space-y-3 pb-4">
+              <div
+                ref={scrollableRef}
+                id="scrollable-container" // Added id to match the CSS selector
+                className="flex-1 overflow-y-auto p-4 space-y-4"
+                style={{
+                  overflow: "auto",
+                  msOverflowStyle: "none" /* IE and Edge */,
+                  scrollbarWidth: "none" /* Firefox */,
+                  maxHeight: "70vh",
+                }}
+              >
+                <style>
+                  {`
+      #scrollable-container::-webkit-scrollbar {
+        display: none;
+      }
+    `}
+                </style>
+
                 {filteredApprovals.length > 0 ? (
                   filteredApprovals.map((approval) => (
                     <div
                       key={approval.id}
                       className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors"
-                      onClick={() => handleCardClick(approval)} // ✅ Added click handler
+                      onClick={() => handleCardClick(approval)}
                     >
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="font-medium">{approval.title}</h3>
@@ -556,7 +578,4 @@ function ProblemRaisorDashboard() {
   );
 }
 
- 
- 
 export default ProblemRaisorDashboard;
- 
