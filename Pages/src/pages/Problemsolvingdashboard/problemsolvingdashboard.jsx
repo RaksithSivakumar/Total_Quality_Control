@@ -1,675 +1,213 @@
-import * as React from "react";
-import { Search, Filter } from "lucide-react";
-import Card from "../../components/problem/Card";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
-import Checkbox from "@mui/material/Checkbox";
-import Slide from "@mui/material/Slide";
-// import Rejected from "../../components/Popups/Rejected";
-// import Accepted from "../../components/Popups/Accepted";
-// import Solver from "../../components/Popups/Solver";
-import {
-    ArrowLeft,
-    ChevronDown,
-    ChevronUp,
-    Check,
-    Trophy,
-} from "lucide-react";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import {
-    IconButton,
-    Box,
-    Typography,
-    useMediaQuery,
-    useTheme,
-} from "@mui/material";
-import { Close as CloseIcon } from "@mui/icons-material";
-import LogCreation from "./LogCreation";
+ import { useState, useEffect, useRef } from "react";
+import Header from "../../components/Header/Header";
+import Calender from "../../components/Calender/calender";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Filter, PlusCircle, Clock } from "lucide-react";
+import Input from "../../components/input/Input";
+import { IoSearchOutline } from "react-icons/io5";
+import LogCreation from "./InProgress";
 import Rejected from "./Rejected";
 import Accepted from "./Accepted";
-import Solver from "./Solver";
 
-const Transition = React.forwardRef(function Transition(props, ref) {
-    return <Slide direction="up" ref={ref} {...props} />;
-});
+function ProblemRaisorDashboard() {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const MAX_FILE_SIZE_MB = 5;
+  const [selectedTab, setSelectedTab] = useState("problem");
+  const [selectedDay, setSelectedDay] = useState(3); // Wednesday selected by default
+  const [showFilter, setShowFilter] = useState(false);
+  const [openLogCreation, setOpenLogCreation] = useState(false);
+  const [openRejected, setOpenRejected] = useState(false);
+  const [openAccepted, setOpenAccepted] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
+  const [problems, setProblems] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterButtonRef = useRef(null);
+  const filterPopupRef = useRef(null);
+  const scrollableRef = useRef(null);
 
-function Problemsolver() {
-    const [showFilter, setShowFilter] = React.useState(false);
-    const [activeTab, setActiveTab] = React.useState("All");
-    const [searchQuery, setSearchQuery] = React.useState("");
-    const [cardsData, setCardsData] = React.useState([]);
-    const [openLogCreation, setOpenLogCreation] = React.useState(false);
-    const [openRejected, setOpenRejected] = React.useState(false);
-    const [openAccepted, setOpenAccepted] = React.useState(false);
-    const [openSolver, setOpenSolver] = React.useState(false);
-    const defaultImageUrl = "https://bitlinks.bitsathy.ac.in/static/media/user.900505a2e95287f7e05c.jpg";
+  // Handle click outside filter popup
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        isFilterOpen &&
+        filterPopupRef.current &&
+        !filterPopupRef.current.contains(event.target) &&
+        filterButtonRef.current &&
+        !filterButtonRef.current.contains(event.target)
+      ) {
+        setIsFilterOpen(false);
+      }
+    }
 
-    // LogCreation Component State
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-    const [isLogExpanded, setIsLogExpanded] = React.useState(false);
-    const [logStatus, setLogStatus] = React.useState("");
-    const [logRemarks, setLogRemarks] = React.useState("");
-    const [logIsActive, setLogIsActive] = React.useState(false);
-    const [logQuestions, setLogQuestions] = React.useState(["", "", "", "", ""]);
-    const [logFiles, setLogFiles] = React.useState([]);
-
-    const toggleFilter = () => {
-        setShowFilter(!showFilter);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
     };
+  }, [isFilterOpen]);
 
-    const handleCardClick = (card) => {
-        console.log("Card clicked:", card);
-        if (card.status === "Need to verify") {
-            setOpenLogCreation(true);
-        } else if (card.status === "New") {
-            setOpenSolver(true);
-        } else if (card.status === "Rejected") {
-            setOpenRejected(true);
-        } else if (card.status === "Accepted") {
-            setOpenAccepted(true);
-        }
-    };
+  // Calculate filter position
+  const [filterPosition, setFilterPosition] = useState({ top: 0, right: 0 });
+  
+  useEffect(() => {
+    if (isFilterOpen && filterButtonRef.current) {
+      const rect = filterButtonRef.current.getBoundingClientRect();
+      setFilterPosition({
+        top: rect.bottom + window.scrollY + 8,
+        right: window.innerWidth - rect.right - window.scrollX
+      });
+    }
+  }, [isFilterOpen]);
 
-    // Fetch card data from the API
-    React.useEffect(() => {
-        const fetchCardsData = async () => {
-            try {
-                const response = await fetch("http://localhost:4000/api/master_problem");
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                console.log("API Response Data:", data);
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
 
-                // Check if data.data is an array before attempting to map
-                if (Array.isArray(data.data)) {
-                    // Filter cards with "Accepted" status and map to change status to "New"
-                    const modifiedData = data.data
-                        .filter((item) => item.status === "Accepted")
-                        .map((item) => ({
-                            ...item,
-                            status: "New", // Change status to "New" for display purposes
-                        }));
-                    console.log("Filtered Cards Data:", modifiedData); // Log modified data
-                    setCardsData(modifiedData);
-                } else {
-                    console.error("Data.data is not an array:", data.data);
-                    setCardsData([]); // Set to empty array to avoid further errors
-                }
-            } catch (error) {
-                console.error("Failed to fetch cards data:", error);
-            }
-        };
-
-        fetchCardsData();
-    }, []);
-
-    // Filter cards based on active tab and search query
-    const filteredCards = cardsData.filter((card) => {
-        const matchesTab = activeTab === "All" || card.status === activeTab;
-        const matchesSearch =
-            card.problem_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            card.Description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            card.created_by?.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesTab && matchesSearch;
-    });
-
-    const handleFilterChange = (tab) => {
-        console.log("Filter changed to:", tab);
-        setActiveTab(tab);
-    };
-
-    const handleClearFilters = () => {
-        setActiveTab("All");
-        setSearchQuery(""); // Clear search query as well
-    };
-
-    // LogCreation Handlers
-    const handleLogViewDetails = () => {
-        setIsLogExpanded(!isLogExpanded);
-    };
-
-    const handleLogQuestionChange = (index, value) => {
-        const newQuestions = [...logQuestions];
-        newQuestions[index] = value;
-        setLogQuestions(newQuestions);
-    };
-
-    const handleLogFileUpload = (event) => {
-        const uploadedFiles = Array.from(event.target.files);
-
-        for (let i = 0; i < uploadedFiles.length; i++) {
-            if (uploadedFiles[i].size > MAX_FILE_SIZE) {
-                toast.error(`File ${uploadedFiles[i].name} is too large. Maximum size is ${MAX_FILE_SIZE_MB}MB.`);
-                return;
-            }
-        }
-
-        if (logFiles.length + uploadedFiles.length > 5) {
-            toast.error("You can upload a maximum of 5 files.");
-            return;
-        }
-
-        setLogFiles([...logFiles, ...uploadedFiles]);
-    };
-
-    const handleLogSave = () => {
-        setLogIsActive(!logIsActive);
-
-        if (!logStatus && isLogExpanded) {
-            toast.error("Please select a status.");
-            return;
-        }
-
-        if (!logRemarks.trim()) {
-            toast.error("Please add remarks.");
-            return;
-        }
-
-        // In a real application, you would send the data to an API here
-        console.log("Saving data:", {
-            status: logStatus,
-            remarks: logRemarks,
-            questions: logQuestions,
-            files: logFiles.map(file => file.name), // just send file names
-        });
-
-        toast.success("Saved successfully!");
-    };
-
-    const handleLogClose = () => {
-        setOpenLogCreation(false);
-    };
-
-    return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Sidebar - Mobile Search */}
-            <div className="p-4 md:hidden">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                    <input
-                        type="text"
-                        placeholder="Search for log"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="bg-gray-100 rounded-md py-2 pl-10 pr-4 text-sm w-full focus:outline-none"
-                    />
-                </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="flex-1 p-4 h-screen overflow-y-auto">
-                <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-xl font-medium m-4 text-gray-600">Welcome Admin.</h1>
-                    <Button
-                        variant="outlined"
-                        startIcon={<Filter size={14} />}
-                        onClick={toggleFilter}
-                        className="hidden md:flex"
-                        sx={{
-                            borderColor: "black",
-                            color: "black",
-                            "&:hover": {
-                                borderColor: "black",
-                                backgroundColor: "rgba(0, 0, 0, 0.04)",
-                            },
-                        }}
-                    >
-                        Filter BY
-                    </Button>
-                </div>
-
-                {/* Grid of Cards */}
-                <div className="grid grid-cols-1 rounded-2xl p-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredCards.length === 0 ? (
-                        <div>No cards available based on current filters.</div>
-                    ) : (
-                        filteredCards.map((card, index) => (
-                            <div key={index}>
-                                <Card
-                                    title={card.problem_title}
-                                    status={card.status}
-                                    description={card.Description}
-                                    date={card.created_at}
-                                    author={card.created_by}
-                                    imageUrl={defaultImageUrl} // Always use the specified image URL
-                                    onClick={() => handleCardClick(card)}
-                                />
-                            </div>
-                        ))
-                    )}
-                </div>
-            </div>
-
-            {/* Filter Popup (Material-UI Dialog) */}
-            <Dialog
-                onClose={toggleFilter}
-                open={showFilter}
-                keepMounted
-                aria-describedby="filter-dialog-description"
-            >
-                <DialogTitle>Filter Approvals</DialogTitle>
-                <DialogContent>
-                    <List>
-                        {[
-                            { label: "All", value: "All" },
-                            { label: "Need to verify", value: "Need to verify" },
-                            { label: "Rejected", value: "Rejected" },
-                            { label: "Accepted", value: "Accepted" },
-                            { label: "New", value: "New" },
-                        ].map((filter) => (
-                            <ListItem key={filter.value} disablePadding>
-                                <ListItemButton onClick={() => handleFilterChange(filter.value)} selected={activeTab === filter.value}>
-                                    <Checkbox edge="start" checked={activeTab === filter.value} tabIndex={-1} disableRipple />
-                                    <ListItemText primary={filter.label} />
-                                </ListItemButton>
-                            </ListItem>
-                        ))}
-                    </List>
-                </DialogContent>
-                <DialogActions>
-                    <div className="flex gap-4 p-4 w-84">
-                        <Button
-                            variant="outlined"
-                            fullWidth
-                            onClick={handleClearFilters}
-                            sx={{
-                                borderColor: "black",
-                                color: "black",
-                                "&:hover": {
-                                    borderColor: "black",
-                                    backgroundColor: "rgba(0, 0, 0, 0.04)",
-                                },
-                            }}
-                        >
-                            Clear
-                        </Button>
-                        <Button
-                            variant="contained"
-                            fullWidth
-                            onClick={toggleFilter}
-                            sx={{
-                                backgroundColor: "#FF7622",
-                                color: "white",
-                                "&:hover": {
-                                    backgroundColor: "#FF5722",
-                                },
-                            }}
-                        >
-                            Apply
-                        </Button>
-                    </div>
-                </DialogActions>
-            </Dialog>
-
-            {/* LogCreation Dialog (Inline) */}
-            <Dialog
-                open={openLogCreation}
-                onClose={handleLogClose}
-                fullWidth
-                maxWidth="md"
-                fullScreen={isMobile}
-                PaperProps={{
-                    sx: {
-                        borderRadius: isMobile ? 0 : "12px",
-                        margin: isMobile ? 0 : "32px",
-                        height: isMobile ? "100%" : "auto",
-                        maxHeight: isMobile ? "100%" : "90vh",
-                    },
-                }}
-            >
-                <DialogContent className="bg-white p-3 sm:p-6 overflow-y-auto scrollbar-hide">
-                    <div className="overflow-y-auto scrollbar-hide">
-                        <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            mb={2}
-                            flexDirection={isMobile ? "row" : "row"}
-                        >
-                            <DialogTitle className="p-0 sm:p-2">
-                                <div className="flex items-center">
-                                    <IconButton
-                                        edge="start"
-                                        color="inherit"
-                                        onClick={handleLogClose}
-                                        aria-label="close"
-                                        size={isMobile ? "small" : "medium"}
-                                    >
-                                        <ArrowLeft size={isMobile ? 18 : 24} />
-                                    </IconButton>
-                                    <Typography
-                                        variant={isMobile ? "subtitle1" : "h6"}
-                                        component="h1"
-                                        className="flex justify-between items-center p-4"
-                                    >
-                                        Log creation
-                                    </Typography>
-                                </div>
-                            </DialogTitle>
-                            <IconButton
-                                aria-label="close"
-                                onClick={handleLogClose}
-                                size={isMobile ? "small" : "medium"}
-                            >
-                                <CloseIcon fontSize={isMobile ? "small" : "medium"} />
-                            </IconButton>
-                        </Box>
-
-                        {/* Status */}
-                        <div className="space-y-2 sm:space-y-4 mb-4 sm:mb-6">
-                            <Typography
-                                variant={isMobile ? "subtitle1" : "h6"}
-                                className="text-blue-500 font-semibold"
-                            >
-                                Problem submitted
-                            </Typography>
-                            <Typography
-                                variant="body1"
-                                className="text-gray-600 p-1 sm:p-2 text-sm sm:text-base"
-                            >
-                                Your problem is submitted. Waiting for the supervisor's approval
-                            </Typography>
-
-                            {/* View Details Button */}
-                            <Button
-                                variant="outlined"
-                                fullWidth
-                                onClick={handleLogViewDetails}
-                                aria-expanded={isLogExpanded}
-                                className="flex items-center justify-between p-3 sm:p-8 bg-gray-50 rounded-lg hover:bg-gray-100 mt-2 sm:mt-4 text-xs sm:text-sm"
-                            >
-                                <span className="text-gray-600">View details</span>
-                                {isLogExpanded ? (
-                                    <ChevronUp
-                                        className={`h-4 w-4 sm:h-5 sm:w-5 text-gray-500 p-1 ml-auto transition-transform duration-200 ${isLogExpanded ? "rotate-180" : ""
-                                            }`}
-                                    />
-                                ) : (
-                                    <ChevronDown
-                                        className={`h-4 w-4 sm:h-5 sm:w-5 text-gray-500 p-1 ml-auto transition-transform duration-200 ${isLogExpanded ? "rotate-180" : ""
-                                            }`}
-                                    />
-                                )}
-                            </Button>
-                        </div>
-
-                        {/* Full Form (Conditionally Rendered) */}
-                        {isLogExpanded && (
-                            <div className="space-y-4 sm:space-y-6">
-                                {/* Category */}
-                                <div>
-                                    <Typography
-                                        variant={isMobile ? "subtitle1" : "h6"}
-                                        className="text-gray-700 font-medium mb-2 p-1 sm:p-3 text-sm sm:text-base"
-                                    >
-                                        Category
-                                    </Typography>
-                                    <Button
-                                        onClick={() => setLogIsActive(!logIsActive)}
-                                        variant={logIsActive ? "contained" : "outlined"}
-                                        size={isMobile ? "small" : "medium"}
-                                        sx={{
-                                            color: logIsActive ? "white" : "#FF7622",
-                                            backgroundColor: logIsActive ? "#FF7622" : "transparent",
-                                            borderColor: "#FF7622",
-                                            fontSize: isMobile ? "0.75rem" : "0.875rem",
-                                            padding: isMobile ? "4px 10px" : "6px 16px",
-                                            "&:hover": {
-                                                borderColor: "#E56A1E",
-                                                backgroundColor: logIsActive
-                                                    ? "#E56A1E"
-                                                    : "rgba(255, 118, 34, 0.04)",
-                                            },
-                                        }}
-                                    >
-                                        Productivity failure
-                                    </Button>
-                                </div>
-
-                                {/* Problem Title */}
-                                <div>
-                                    <Typography
-                                        variant={isMobile ? "subtitle1" : "h6"}
-                                        className="text-gray-700 font-medium mb-1 sm:mb-2 text-sm sm:text-base"
-                                    >
-                                        Problem Title
-                                    </Typography>
-                                    <Typography
-                                        variant="body1"
-                                        className="text-gray-600 p-2 sm:p-4 text-sm sm:text-base"
-                                    >
-                                        Water leakage
-                                    </Typography>
-                                </div>
-
-                                {/* Description */}
-                                <div>
-                                    <Typography
-                                        variant={isMobile ? "subtitle1" : "h6"}
-                                        className="text-gray-700 font-medium mb-1 sm:mb-2 text-sm sm:text-base"
-                                    >
-                                        Description
-                                    </Typography>
-                                    <Typography
-                                        variant="body1"
-                                        className="text-gray-600 p-1 sm:p-2 text-sm sm:text-base"
-                                    >
-                                        Unintended escape of water from pipes, fixtures, or
-                                        structures, leading to potential damage and waste in AS block.
-                                    </Typography>
-                                </div>
-
-                                {/* Media Upload */}
-                                <div>
-                                    <Typography
-                                        variant={isMobile ? "subtitle1" : "h6"}
-                                        className="text-gray-700 font-medium mb-1 sm:mb-2 text-sm sm:text-base"
-                                    >
-                                        Media Upload
-                                    </Typography>
-                                    <Typography
-                                        variant="body2"
-                                        className="text-gray-500 p-1 sm:p-2 mb-2 sm:mb-3 text-xs sm:text-sm"
-                                    >
-                                        Add your documents here, and you can upload up to 5 files max
-                                    </Typography>
-                                    <input
-                                        type="file"
-                                        onChange={handleLogFileUpload}
-                                        multiple
-                                        accept=".pdf,.doc,.docx"
-                                        style={{ marginTop: 8, width: "100%" }}
-                                    />
-                                </div>
-
-                                {/* Display Uploaded Files */}
-                                <div>
-                                    <Typography
-                                        variant={isMobile ? "subtitle1" : "h6"}
-                                        className="text-gray-700 font-medium mb-1 sm:mb-2 text-sm sm:text-base"
-                                    >
-                                        Uploaded Files
-                                    </Typography>
-                                    {logFiles.map((file, index) => (
-                                        <div key={index} className="flex items-center justify-between p-2 sm:p-3 bg-gray-100 rounded-lg mb-2">
-                                            <span className="text-gray-600 text-xs sm:text-sm">{file.name}</span>
-                                            <button
-                                                className="text-red-500 hover:text-red-700 text-xs sm:text-sm"
-                                                onClick={() => {
-                                                    const newFiles = [...logFiles];
-                                                    newFiles.splice(index, 1);
-                                                    setLogFiles(newFiles);
-                                                }}
-                                            >
-                                                Remove
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Questions */}
-                                <div className="mb-6">
-                                    <Typography
-                                        variant={isMobile ? "subtitle1" : "h6"}
-                                        className="text-gray-700 font-medium mb-3 text-sm sm:text-base"
-                                    >
-                                        Questions
-                                    </Typography>
-                                    {[
-                                        "HAVE YOU TRIED TO SOLVE THE PROBLEM?",
-                                        "WHEN DID THE PROBLEM ARISE?",
-                                        "VENUE OF THE PROBLEM ARISE?",
-                                        "SPECIFICATION OF THE PROBLEM?",
-                                        "PROBLEM ARISE TIME?",
-                                    ].map((question, index) => (
-                                        <div key={index} className="mb-4">
-                                            <p className="text-sm mb-2">
-                                                {index + 1}. {question}
-                                            </p>
-                                            <input
-                                                type="text"
-                                                placeholder="Type your answer"
-                                                className="w-full p-3 bg-gray-100 rounded-md border-none outline-none"
-                                                value={logQuestions[index]}
-                                                onChange={(e) =>
-                                                    handleLogQuestionChange(index, e.target.value)
-                                                }
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Status Section */}
-                                <div className="mt-4 sm:mt-6">
-                                    <Typography
-                                        variant="subtitle2"
-                                        className="text-xs sm:text-sm font-medium mb-1 sm:mb-2"
-                                    >
-                                        Status
-                                    </Typography>
-                                    <div className="flex gap-3 sm:gap-4 p-2 sm:p-4 flex-wrap">
-                                        <label className="flex items-center">
-                                            <input
-                                                type="radio"
-                                                name="status"
-                                                value="Accepted"
-                                                className="mr-1 sm:mr-2"
-                                                checked={logStatus === "Accepted"}
-                                                onChange={(e) => setLogStatus(e.target.value)}
-                                            />
-                                            <span className="text-xs sm:text-sm">Accepted</span>
-                                        </label>
-                                        <label className="flex items-center">
-                                            <input
-                                                type="radio"
-                                                name="status"
-                                                value="Rejected"
-                                                className="mr-1 sm:mr-2"
-                                                checked={logStatus === "Rejected"}
-                                                onChange={(e) => setLogStatus(e.target.value)}
-                                            />
-                                            <span className="text-xs sm:text-sm">Rejected</span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                {/* Remarks Section */}
-                                <div className="mt-4 sm:mt-6">
-                                    <Typography
-                                        variant="subtitle2"
-                                        className="text-xs sm:text-sm font-medium mb-2 sm:mb-4"
-                                    >
-                                        Remarks
-                                    </Typography>
-                                    <textarea
-                                        placeholder="Your text goes here"
-                                        className="w-full p-2 sm:p-3 bg-gray-100 rounded-md border-none outline-none min-h-[80px] sm:min-h-[100px] text-xs sm:text-sm"
-                                        value={logRemarks}
-                                        onChange={(e) => setLogRemarks(e.target.value)}
-                                        aria-label="Remarks"
-                                    />
-                                </div>
-
-                                {/* Buttons Section */}
-                                <DialogActions className="mt-4 sm:mt-6 flex justify-end gap-2 sm:gap-4 p-0 sm:p-2">
-                                    <Button
-                                        onClick={handleLogClose}
-                                        color="primary"
-                                        size={isMobile ? "small" : "medium"}
-                                        sx={{
-                                            fontSize: isMobile ? "0.75rem" : "0.875rem",
-                                        }}
-                                    >
-                                        Back
-                                    </Button>
-                                    <Button
-                                        onClick={handleLogSave}
-                                        variant="contained"
-                                        size={isMobile ? "small" : "medium"}
-                                        sx={{
-                                            backgroundColor: "#FF7622",
-                                            fontSize: isMobile ? "0.75rem" : "0.875rem",
-                                            "&:hover": {
-                                                backgroundColor: "#E56A1E",
-                                            },
-                                        }}
-                                    >
-                                        Save
-                                    </Button>
-                                </DialogActions>
-                            </div>
-                        )}
-                    </div>
-                </DialogContent>
-                <ToastContainer />
-            </Dialog>
-
-            <Rejected open={openRejected} onClose={() => setOpenRejected(false)} />
-            <Accepted open={openAccepted} onClose={() => setOpenAccepted(false)} />
-            <Solver open={openSolver} onClose={() => setOpenSolver(false)} />
-        </div>
+  const handleFilterChange = (status) => {
+    setStatusFilter((prev) =>
+      prev.includes(status)
+        ? prev.filter((s) => s !== status)
+        : [...prev, status]
     );
-=======
-  return <Slide direction="up" ref={ref} {...props} />;
-});
+  };
 
-function Problemsolver() {
-  const [showFilter, setShowFilter] = React.useState(false);
-  const [activeTab, setActiveTab] = React.useState("All");
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const [cardsData, setCardsData] = React.useState([]);
-  const [openLogCreation, setOpenLogCreation] = React.useState(false);
-  const [openRejected, setOpenRejected] = React.useState(false);
-  const [openAccepted, setOpenAccepted] = React.useState(false);
-  const [openSolver, setOpenSolver] = React.useState(false);
-  const defaultImageUrl =
-    "https://bitlinks.bitsathy.ac.in/static/media/user.900505a2e95287f7e05c.jpg";
+  const handleCreate = () => {
+    console.log("Create event");
+    navigate("/survey");
+  };
+
+  const handleClear = () => {
+    setSearchTerm("");
+    setStatusFilter([]);
+  };
+
+  const getStatusStyles = (status) => {
+    switch (status) {
+      case "Inprogress":
+        return "bg-blue-100 text-blue-700";
+      case "Rejected":
+        return "bg-red-100 text-red-700";
+      case "Accepted":
+        return "bg-green-100 text-green-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
+
+  // Handle popstate event for back button behavior
+  useEffect(() => {
+    const handlePopState = (event) => {
+      if (openLogCreation || openRejected || openAccepted || showFilter) {
+        event.preventDefault();
+        closeAllPopups();
+        window.history.pushState(null, document.title, location.pathname);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    if (openLogCreation || openRejected || openAccepted || showFilter) {
+      window.history.pushState(null, document.title, location.pathname);
+    }
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [openLogCreation, openRejected, openAccepted, showFilter, location]);
+
+  // Handle screen resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 900);
+      if (isFilterOpen && filterButtonRef.current) {
+        const rect = filterButtonRef.current.getBoundingClientRect();
+        setFilterPosition({
+          top: rect.bottom + window.scrollY + 8,
+          right: window.innerWidth - rect.right - window.scrollX
+        });
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isFilterOpen]);
+
+  const closeAllPopups = () => {
+    setOpenLogCreation(false);
+    setOpenRejected(false);
+    setOpenAccepted(false);
+    setShowFilter(false);
+    setIsFilterOpen(false);
+  };
+
+  const days = ["S", "M", "T", "W", "T", "F", "S"];
+  const dates = ["21", "22", "23", "24", "25", "26", "27"];
+  const timeSlots = [
+    { time: "8 am" },
+    { time: "9 am" },
+    { time: "10 am" },
+    { time: "11 am" },
+    { time: "12 pm" },
+    { time: "1 pm" },
+    { time: "2 pm" },
+    { time: "3 pm" },
+    { time: "4 pm" },
+  ];
+
+  // Fetch problems from the API
+  useEffect(() => {
+    const fetchProblems = async () => {
+      try {
+        const response = await fetch("http://localhost:4000/api/master_problem");
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const result = await response.json();
+        const data = result.data;
+
+        if (Array.isArray(data)) {
+          setProblems(data);
+        } else {
+          console.error("API response data is not an array:", data);
+          setProblems([]);
+        }
+      } catch (error) {
+        console.error("Error fetching problems:", error);
+        setProblems([]);
+      }
+    };
+
+    fetchProblems();
+  }, []);
+
+  // Map problems to approvals format based on the provided API structure
+  const mappedApprovals = problems.map((problem) => ({
+    id: problem.id,
+    title: problem.problem_title || "No Title",
+    description: problem.Description || "No Description",
+    createdAt: problem.created_at
+      ? new Date(problem.created_at).toLocaleDateString()
+      : "Unknown Date",
+    mediaUpload: problem.Media_Upload || null,
+    status: problem.status || "Inprogress",
+  }));
+
+  const handleDayClick = (index) => {
+    setSelectedDay(index);
+  };
 
   const toggleFilter = () => {
     setShowFilter(!showFilter);
   };
 
   const handleCardClick = (card) => {
-    console.log("Card clicked:", card);
     switch (card.status) {
-      case "Need to verify":
+      case "Inprogress":
         setOpenLogCreation(true);
-        break;
-      case "New":
-        setOpenSolver(true);
         break;
       case "Rejected":
         setOpenRejected(true);
@@ -678,205 +216,322 @@ function Problemsolver() {
         setOpenAccepted(true);
         break;
       default:
-        console.warn("Unknown card status:", card.status);
+        break;
     }
   };
 
-  // Fetch card data from the API
-  React.useEffect(() => {
-    const fetchCardsData = async () => {
-      try {
-        const response = await fetch(
-          "http://localhost:4000/api/master_problem"
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
+  const handleCloseLogCreation = () => {
+    setOpenLogCreation(false);
+  };
 
-        if (Array.isArray(data.data)) {
-          const modifiedData = data.data
-            .filter((item) => item.status === "Accepted")
-            .map((item) => ({
-              ...item,
-              status: "New", // Change status to "New" for display
-            }));
-          setCardsData(modifiedData);
-        } else {
-          console.error("Data.data is not an array:", data.data);
-          setCardsData([]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch cards data:", error);
-        setCardsData([]); // Ensure state is set to empty array on error
-      }
-    };
+  const handleCloseRejected = () => {
+    setOpenRejected(false);
+  };
 
-    fetchCardsData();
-  }, []);
-
-  // Filter cards based on active tab and search query
-  const filteredCards = React.useMemo(() => {
-    return cardsData.filter((card) => {
-      const matchesTab = activeTab === "All" || card.status === activeTab;
-      const matchesSearch =
-        card.problem_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        card.Description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        card.created_by?.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesTab && matchesSearch;
-    });
-  }, [cardsData, activeTab, searchQuery]);
-
-  const handleFilterChange = (tab) => {
-    setActiveTab(tab);
+  const handleCloseAccepted = () => {
+    setOpenAccepted(false);
   };
 
   const handleClearFilters = () => {
-    setActiveTab("All");
+    setStatusFilter([]);
   };
 
+  const handleApplyFilters = () => {
+    toggleFilter();
+  };
+
+  const filteredApprovals = mappedApprovals.filter((approval) => {
+    const matchesSearch = approval.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter.length === 0 || statusFilter.includes(approval.status);
+    return matchesSearch && matchesStatus;
+  });
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col overflow-hidden">
-      {/* Sidebar - Mobile Search */}
-      <div className="p-4 md:hidden">
-        <div className="relative">
-          <Search
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-            size={16}
-          />
-          <input
-            type="text"
-            placeholder="Search for log"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-gray-100 rounded-md py-2 pl-10 pr-4 text-sm w-full focus:outline-none"
-          />
-        </div>
-      </div>
-
-      {/* Fixed Header */}
-      <div className="sticky top-0 bg-gray-50 z-10">
-        <div className="flex justify-between items-center p-4">
-          <h1 className="text-xl font-medium text-gray-600">Welcome Admin.</h1>
-          <Button
-            variant="outlined"
-            startIcon={<Filter size={14} />}
-            onClick={toggleFilter}
-            className="hidden md:flex"
-            sx={{
-              borderColor: "black",
-              color: "black",
-              "&:hover": {
-                borderColor: "black",
-                backgroundColor: "rgba(0, 0, 0, 0.04)",
-              },
-            }}
+    <div className="flex flex-col h-screen bg-white">
+      {/* Toggle Buttons - Visible only on small screens */}
+      {isMobile && (
+        <div className="flex justify-start p-4 space-x-4">
+          <button
+            className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+              selectedTab === "problem"
+                ? "bg-[#FF7622] text-white"
+                : "bg-gray-100 text-gray-600"
+            }`}
+            onClick={() => setSelectedTab("problem")}
           >
-            Filter BY
-          </Button>
+            Problem status
+          </button>
+          <button
+            className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+              selectedTab === "resource"
+                ? "bg-[#FF7622] text-white"
+                : "bg-gray-100 text-gray-600"
+            }`}
+            onClick={() => setSelectedTab("resource")}
+          >
+            Resource status
+          </button>
         </div>
-      </div>
+      )}
 
-      {/* Scrollable Cards Section Only */}
-      <div className="flex-1 p-4 overflow-hidden">
-        <div
-          className="grid grid-cols-1 rounded-2xl p-2 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto scrollbar-hide"
-          style={{ height: "calc(100vh - 150px)" }}
-        >
-          {filteredCards.map((card, index) => (
-            <div key={index}>
-              <Card
-                title={card.problem_title || "No Title"}
-                status={card.status || "Unknown"}
-                description={card.Description || "No Description"}
-                date={card.created_at || "Unknown Date"}
-                author={card.created_by || "Unknown Author"}
-                imageUrl={defaultImageUrl}
-                onClick={() => handleCardClick(card)}
+      {/* Main Content Section */}
+      <div className={`flex ${isMobile ? "flex-col" : "flex-row"} h-full`}>
+        {/* Problem Status Section */}
+        {!isMobile || selectedTab === "problem" ? (
+          <div className="w-full md:w-4/5 flex flex-col h-full">
+            <div className="p-4 md:p-6">
+              <Header username="Kiruthika..." onFilterClick={toggleFilter} />
+            </div>
+            <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-4 md:pb-6 scrollbar-hide">
+              <Calender
+                days={days}
+                dates={dates}
+                timeSlots={timeSlots}
+                events={mappedApprovals}
+                selectedDay={selectedDay}
+                onDayClick={handleDayClick}
               />
             </div>
-          ))}
-        </div>
+          </div>
+        ) : null}
+
+        {/* Resource Status Section */}
+        {!isMobile || selectedTab === "resource" ? (
+          <div className="w-full md:w-2/5 bg-gray-50 flex flex-col h-full">
+            <div className="flex-1 p-4 md:p-6">
+              {/* Header */}
+              <div className="flex flex-col mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <h2 className="text-lg font-semibold">Approvals</h2>
+                    <span className="ml-2 bg-gray-200 text-gray-700 px-2 py-1 rounded-md text-sm">
+                      {mappedApprovals.length}
+                    </span>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="relative">
+                      <button
+                        ref={filterButtonRef}
+                        className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                        onClick={() => setIsFilterOpen(!isFilterOpen)}
+                      >
+                        <Filter className="h-4 w-4" />
+                        Filter
+                      </button>
+                    </div>
+                    <button
+                      className="flex items-center text-orange-500 text-sm font-medium px-3 py-2 border border-orange-200 rounded-md hover:bg-orange-50 transition-colors"
+                      onClick={handleCreate}
+                    >
+                      <PlusCircle className="h-4 w-4 mr-1" />
+                      Create New
+                    </button>
+                  </div>
+                </div>
+
+                {/* Search Bar */}
+                <div className="bg-white mb-4">
+                  <Input
+                    type="text"
+                    placeholder="Search any problem"
+                    icon={<IoSearchOutline className="text-gray-400" />}
+                    value={searchTerm}
+                    onChange={handleSearch}
+                    className="rounded-full pl-10 border-gray-300 focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+              </div>
+
+              {/* Approval List */}
+              <div
+                ref={scrollableRef}
+                className="flex-1 overflow-y-auto p-4 space-y-4"
+                style={{
+                  overflow: "auto",
+                  msOverflowStyle: "none",
+                  scrollbarWidth: "none",
+                  maxHeight: "70vh",
+                }}
+              >
+                <style>
+                  {`#scrollable-container::-webkit-scrollbar { display: none; }`}
+                </style>
+
+                {filteredApprovals.length > 0 ? (
+                  filteredApprovals.map((approval) => (
+                    <div
+                      key={approval.id}
+                      className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors"
+                      onClick={() => handleCardClick(approval)}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-medium">{approval.title}</h3>
+                        <span
+                          className={`text-xs px-3 py-1 rounded-full ${getStatusStyles(
+                            approval.status
+                          )}`}
+                        >
+                          {approval.status === "Inprogress"
+                            ? "In Progress"
+                            : approval.status.charAt(0).toUpperCase() +
+                              approval.status.slice(1)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                        {approval.description}
+                      </p>
+                      <div className="flex justify-between items-center">
+                        <div className="text-xs text-gray-500 flex items-center">
+                          <Clock className="h-3 w-3 mr-1" />
+                          {approval.createdAt}
+                        </div>
+                        {approval.status === "Accepted" && (
+                          <div className="flex items-center text-green-600 text-xs font-medium px-2 py-1 bg-green-50 rounded-full">
+                            +150 points
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No approvals found</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile Bottom Filter Bar */}
+            {isMobile && (
+              <div className="md:hidden flex justify-between items-center p-4 border-t">
+                <div className="flex space-x-4">
+                  {["accepted", "rejected", "inprogress"].map((status) => (
+                    <label key={status} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 mr-2"
+                        checked={statusFilter.includes(status)}
+                        onChange={() => handleFilterChange(status)}
+                      />
+                      <span className="text-sm capitalize">{status}</span>
+                    </label>
+                  ))}
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    className="px-4 py-1 border border-gray-300 rounded-md text-sm"
+                    onClick={handleClearFilters}
+                  >
+                    Clear
+                  </button>
+                  <button
+                    className="px-4 py-1 bg-orange-500 text-white rounded-md text-sm"
+                    onClick={handleApplyFilters}
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : null}
       </div>
 
-      {/* Filter Popup (Material-UI Dialog) */}
-      <Dialog
-        onClose={toggleFilter}
-        open={showFilter}
-        keepMounted
-        aria-describedby="filter-dialog-description"
-      >
-        <DialogTitle>Filter Approvals</DialogTitle>
-        <DialogContent>
-          <List>
-            {[
-              { label: "All", value: "All" },
-              { label: "Need to verify", value: "Need to verify" },
-              { label: "Rejected", value: "Rejected" },
-              { label: "Accepted", value: "Accepted" },
-              { label: "New", value: "New" },
-            ].map((filter) => (
-              <ListItem key={filter.value} disablePadding>
-                <ListItemButton
-                  onClick={() => handleFilterChange(filter.value)}
-                  selected={activeTab === filter.value}
-                >
-                  <Checkbox
-                    edge="start"
-                    checked={activeTab === filter.value}
-                    tabIndex={-1}
-                    disableRipple
-                  />
-                  <ListItemText primary={filter.label} />
-                </ListItemButton>
-              </ListItem>
+      {/* Filter Popup for Inline Filter */}
+      {isFilterOpen && (
+        <div
+          className="fixed shadow-lg rounded-lg bg-white p-6 w-64 z-50"
+          ref={filterPopupRef}
+          style={{
+            top: filterPosition.top,
+            right: filterPosition.right,
+          }}
+        >
+          <h3 className="text-lg font-semibold mb-4">Filter Approvals</h3>
+          <div className="space-y-3">
+            {["accepted", "rejected", "inprogress"].map((status) => (
+              <div key={status} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={status}
+                  className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                  checked={statusFilter.includes(status)}
+                  onChange={() => handleFilterChange(status)}
+                />
+                <label htmlFor={status} className="ml-2 text-sm">
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </label>
+              </div>
             ))}
-          </List>
-        </DialogContent>
-        <DialogActions>
-          <div className="flex gap-4 p-4 w-84">
-            <Button
-              variant="outlined"
-              fullWidth
-              onClick={handleClearFilters}
-              sx={{
-                borderColor: "black",
-                color: "black",
-                "&:hover": {
-                  borderColor: "black",
-                  backgroundColor: "rgba(0, 0, 0, 0.04)",
-                },
-              }}
+          </div>
+          <div className="flex gap-4 mt-6">
+            <button
+              className="flex-1 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition-colors"
+              onClick={handleClear}
             >
               Clear
-            </Button>
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={toggleFilter}
-              sx={{
-                backgroundColor: "#FF7622",
-                color: "white",
-                "&:hover": {
-                  backgroundColor: "#FF5722",
-                },
-              }}
+            </button>
+            <button
+              className="flex-1 py-2 bg-orange-500 text-white rounded-md text-sm hover:bg-orange-600 transition-colors"
+              onClick={() => setIsFilterOpen(false)}
             >
               Apply
-            </Button>
+            </button>
           </div>
-        </DialogActions>
-      </Dialog>
+        </div>
+      )}
 
-      <LogCreation
-        open={openLogCreation}
-        onClose={() => setOpenLogCreation(false)}
-      />
-      <Rejected open={openRejected} onClose={() => setOpenRejected(false)} />
-      <Accepted open={openAccepted} onClose={() => setOpenAccepted(false)} />
-      <Solver open={openSolver} onClose={() => setOpenSolver(false)} />
+      {/* Filter Popup for Desktop */}
+      {showFilter && (
+        <div
+          className="inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+          onClick={toggleFilter}
+        >
+          <div
+            className="bg-white w-full md:w-auto md:min-w-[400px] rounded-lg p-6 z-50"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold mb-4">Filters</h2>
+            <div className="space-y-3">
+              {["accepted", "rejected", "inprogress"].map((status) => (
+                <label key={status} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded"
+                    checked={statusFilter.includes(status)}
+                    onChange={() => handleFilterChange(status)}
+                  />
+                  <span className="text-sm capitalize">{status}</span>
+                </label>
+              ))}
+            </div>
+            <div className="flex gap-4 mt-6">
+              <button
+                className="flex-1 py-2 border border-gray-300 rounded-md text-sm"
+                onClick={handleClearFilters}
+              >
+                Clear
+              </button>
+              <button
+                className="flex-1 py-2 bg-orange-500 text-white rounded-md text-sm"
+                onClick={handleApplyFilters}
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Popups */}
+      <LogCreation open={openLogCreation} onClose={handleCloseLogCreation} />
+      <Rejected open={openRejected} onClose={handleCloseRejected} />
+      <Accepted open={openAccepted} onClose={handleCloseAccepted} />
     </div>
   );
 }
 
-export default Problemsolver;
+export default ProblemRaisorDashboard;
