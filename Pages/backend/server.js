@@ -434,6 +434,25 @@ app.put('/api/master_problem/:id', async (req, res) => {
     res.status(500).json({ error: 'Error updating problem', details: error.message });
   }
 });
+app.get('/api/master_problems/:id', async (req, res) => {
+  const problemId = req.params.id;
+  const query = 'SELECT * FROM master_problem WHERE id = ?'; // Use the correct table name
+
+  try {
+    const connection = await pool.getConnection();
+    const [results] = await connection.query(query, [problemId]);
+    connection.release();
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Problem not found' });
+    }
+
+    return res.status(200).json({ data: results[0] });
+  } catch (err) {
+    console.error('Error fetching problem details:', err);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 // API Route to Insert Data into pr_bank
 app.post("/api/pr-bank", (req, res) => {
