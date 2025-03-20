@@ -5,7 +5,14 @@ import { DateRange } from "react-date-range";
 import { format, differenceInDays } from "date-fns";
 import "react-date-range/dist/styles.css"; // Main CSS
 import "react-date-range/dist/theme/default.css"; // Theme CSS
-import { ArrowLeft, ChevronDown, Check, Calendar, Trophy, User } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronDown,
+  Check,
+  Calendar,
+  Trophy,
+  User,
+} from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify"; // Import toast
 import { createTheme, ThemeProvider } from "@mui/material/styles";
@@ -33,13 +40,13 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { DateRangeCalendar } from "@mui/x-date-pickers-pro/DateRangeCalendar";
 import dayjs from "dayjs";
 
-const Solver = ({ open, onClose }) => {
+const Solver = ({ open, onClose, cardData }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
-
   const [isExpanded, setIsExpanded] = useState(false);
   const [remarks, setRemarks] = useState("");
+  const [problem, setProblem] = useState(null);
   const [activeStates, setActiveStates] = useState({
     category: false,
     small: true, // Default to small selected
@@ -147,6 +154,25 @@ const Solver = ({ open, onClose }) => {
     return "Not selected";
   };
 
+  const defaultQuestions = [
+    "Have you tried to solve the Problem?",
+    "When did the problem arise?",
+    "Venue of the problem arise?",
+    "Specifications of the problem?",
+    "Problem arise time?",
+  ];
+
+  // Extract answers from backend (cardData)
+  const answers = cardData
+    ? [
+        cardData.Questions_1 || "No answer provided",
+        cardData.Questions_2 || "No answer provided",
+        cardData.Questions_3 || "No answer provided",
+        cardData.Questions_4 || "No answer provided",
+        cardData.Questions_5 || "No answer provided",
+      ]
+    : Array(5).fill("No answer provided");
+
   const handleDateRangeChange = (ranges) => {
     setDateRange({
       startDate: ranges.selection.startDate,
@@ -156,13 +182,15 @@ const Solver = ({ open, onClose }) => {
 
   const formatDateRange = () => {
     if (!dateRange.startDate || !dateRange.endDate) return "Select deadline";
-    
+
     const start = format(dateRange.startDate, "MMM dd");
     const end = format(dateRange.endDate, "MMM dd");
     const days = differenceInDays(dateRange.endDate, dateRange.startDate) + 1;
-    
+
     return `${start} - ${end} (${days} days)`;
   };
+
+  if (!cardData) return null;
 
   return (
     <ThemeProvider theme={theme}>
@@ -296,7 +324,7 @@ const Solver = ({ open, onClose }) => {
                           },
                         }}
                       >
-                        {category}
+                        {cardData.Category}
                       </Button>
                     ))}
                   </div>
@@ -314,7 +342,7 @@ const Solver = ({ open, onClose }) => {
                     variant="body1"
                     className="text-gray-600 p-2 sm:p-4 text-sm sm:text-base"
                   >
-                    Water leakage
+                    {cardData.problem_title || "No title available"}
                   </Typography>
                 </div>
 
@@ -330,9 +358,7 @@ const Solver = ({ open, onClose }) => {
                     variant="body1"
                     className="text-gray-600 p-1 sm:p-2 text-sm sm:text-base"
                   >
-                    Unintended escape of water from pipes, fixtures, or
-                    structures, leading to potential damage and waste in AS
-                    block.
+                    {cardData.Description}
                   </Typography>
                 </div>
 
@@ -342,58 +368,40 @@ const Solver = ({ open, onClose }) => {
                     variant={isMobile ? "subtitle1" : "h6"}
                     className="text-gray-700 font-medium mb-1 sm:mb-2 text-sm sm:text-base"
                   >
-                    Media Upload
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    className="text-gray-500 p-1 sm:p-2 mb-2 sm:mb-3 text-xs sm:text-sm"
-                  >
-                    Add your documents here, and you can upload up to 5 files
-                    max
+                    Media Uploaded by PR
                   </Typography>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-2 sm:p-3 bg-gray-100 rounded-lg">
-                    <span className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-0">
-                      phoenix-document.pdf
-                    </span>
-                    <div className="flex items-center">
-                      <span className="text-blue-500 mr-2 text-xs sm:text-sm">
-                        Upload complete
-                      </span>
-                      <div className="bg-green-500 rounded-full p-1">
-                        <Check className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
-                      </div>
-                    </div>
+                    <a
+                      href={cardData.Media_Upload}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-0 underline hover:text-blue-500"
+                    >
+                      {cardData.Media_Upload}
+                    </a>
                   </div>
                 </div>
 
                 {/* Questions */}
                 <div className="mb-6">
-                  <Typography
-                    variant={isMobile ? "subtitle1" : "h6"}
-                    className="text-gray-700 font-medium mb-3 text-sm sm:text-base"
-                  >
-                    Questions
-                  </Typography>
-                  {[
-                    "HAVE YOU TRIED TO SOLVE THE PROBLEM?",
-                    "WHEN DID THE PROBLEM ARISE?",
-                    "VENUE OF THE PROBLEM ARISE?",
-                    "SPECIFICATION OF THE PROBLEM?",
-                    "PROBLEM ARISE TIME?",
-                  ].map((question, index) => (
+                  <h3 className="text-sm font-medium mb-3">Questions</h3>
+                  {defaultQuestions.map((question, index) => (
                     <div key={index} className="mb-4">
-                      <p className="text-sm mb-2">
+                      {/* Question */}
+                      <p className="text-sm font-medium mb-1">
                         {index + 1}. {question}
                       </p>
-                      <input
-                        type="text"
-                        placeholder="Type your answer"
-                        className="w-full p-3 bg-gray-100 rounded-md border-none outline-none"
-                      />
+
+                      {/* Answer */}
+                      <Typography
+                        variant="body2"
+                        className="text-gray-600 p-1 sm:p-2 text-sm sm:text-base"
+                      >
+                        {answers[index]}
+                      </Typography>
                     </div>
                   ))}
                 </div>
-
                 {/* Status Selection */}
                 <div className="mt-4 sm:mt-6">
                   <Typography
@@ -587,7 +595,10 @@ const Solver = ({ open, onClose }) => {
                           <div
                             ref={calendarRef}
                             className="absolute mt-2 z-50 bg-white p-3 shadow-lg rounded-lg border border-gray-200"
-                            style={{ width: isMobile ? "100%" : "auto", minWidth: "300px" }}
+                            style={{
+                              width: isMobile ? "100%" : "auto",
+                              minWidth: "300px",
+                            }}
                           >
                             <DateRange
                               ranges={[
@@ -605,7 +616,7 @@ const Solver = ({ open, onClose }) => {
                               direction="vertical"
                             />
                             <div className="flex justify-end mt-2">
-                              <Button 
+                              <Button
                                 onClick={() => setShowCalendar(false)}
                                 variant="contained"
                                 sx={{

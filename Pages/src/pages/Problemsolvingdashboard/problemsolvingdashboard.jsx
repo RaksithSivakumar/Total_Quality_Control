@@ -1,4 +1,5 @@
- import * as React from "react";
+import React, { useState, useEffect } from "react";
+
 import { Search, Filter } from "lucide-react";
 import Card from "../../components/problem/Card";
 import Button from "@mui/material/Button";
@@ -16,6 +17,10 @@ import LogCreation from "./LogCreation";
 import Rejected from "./Rejected";
 import Accepted from "./Accepted";
 import Solver from "./Solver";
+import CryptoJS from "crypto-js";
+
+const secretKey = "qwertyuiopasdfghjklzxcvbnm";
+
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -30,30 +35,135 @@ function Problemsolver() {
   const [openRejected, setOpenRejected] = React.useState(false);
   const [openAccepted, setOpenAccepted] = React.useState(false);
   const [openSolver, setOpenSolver] = React.useState(false);
+  const [selectedCard, setSelectedCard] = useState(null); // Store entire card data
   const defaultImageUrl =
     "https://bitlinks.bitsathy.ac.in/static/media/user.900505a2e95287f7e05c.jpg";
+
+    const [userName, setUserName] = useState("");
+    
+      useEffect(() => {
+        const encryptedUser = localStorage.getItem("user");
+        if (encryptedUser) {
+          try {
+            const bytes = CryptoJS.AES.decrypt(encryptedUser, secretKey);
+            const user = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+            setUserName(user?.name || "User"); // Default to "User" if name is not found
+          } catch (error) {
+            console.error("Error decrypting user data:", error);
+          }
+        }
+      }, []);
 
   const toggleFilter = () => {
     setShowFilter(!showFilter);
   };
 
-  const handleCardClick = (card) => {
-    console.log("Card clicked:", card);
-    switch (card.status) {
-      case "Need to verify":
-        setOpenLogCreation(true);
-        break;
-      case "New":
-        setOpenSolver(true);
-        break;
-      case "Rejected":
-        setOpenRejected(true);
-        break;
-      case "Accepted":
-        setOpenAccepted(true);
-        break;
-      default:
-        console.warn("Unknown card status:", card.status);
+  const handleCardClick = (item) => {
+    console.log("Card clicked:", item);
+
+    setSelectedCard(item); // Store the entire card data
+
+    if (item.status === "Need to verify") {
+      console.log("Opening LogCreation popup");
+      setOpenLogCreation(true);
+    } else if (item.status === "New") {
+      console.log("Opening Solver popup");
+      setOpenSolver(true);
+    } else if (item.status === "Rejected") {
+      console.log("Opening Rejected popup");
+      setOpenRejected(true);
+    } else if (item.status === "Accepted") {
+      console.log("Opening Accepted popup");
+      setOpenAccepted(true);
+    }
+};
+
+// Debugging: Track selectedCard updates
+useEffect(() => {
+    console.log("Updated selectedCard:", selectedCard);
+}, [selectedCard]);
+
+
+const handleSave = async () => {
+    try {
+      // Store the current status and remarks into temporary state variables
+      setTempStatus(status);
+      setTempRemarks(remarks);
+
+      // Prepare data to send to the server
+      const data = {
+        Category: problem ? problem.Category : "Default Category",
+        problem_title: problemTitle,
+        status: status || null, // Ensure it's null-safe
+        remarks: remarks || "", // Ensure it's always a string
+      };
+
+      // Fetch existing problems to check if the problem_title exists
+      const response = await fetch("http://localhost:4000/api/master_problem");
+      if (!response.ok) throw new Error("Network response was not ok");
+
+      const responseData = await response.json();
+      const problems = responseData.data;
+
+      // Check if the problem already exists
+      const matchedProblem = problems.find(
+        (item) =>
+          item.problem_title &&
+          item.problem_title.toLowerCase() === problemTitle.toLowerCase()
+      );
+
+      let saveResponse;
+      if (matchedProblem) {
+        // If the problem exists, update it
+        const updatedData = {
+          ...matchedProblem, // Keep existing data
+          status: status, // Update status
+          remarks: remarks, // Update remarks
+        };
+
+        saveResponse = await fetch(
+          `http://localhost:4000/api/master_problem/${matchedProblem.id}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedData),
+          }
+        );
+      } else {
+        // If the problem doesn't exist, create a new one
+        const newProblemData = {
+          Category: problem ? problem.Category : "Default Category",
+          problem_title: problemTitle,
+          Description: "Description for new problem",
+          Media_Upload: "",
+          Questions_1: "Default question 1",
+          Questions_2: "Default question 2",
+          Questions_3: "Default question 3",
+          Questions_4: "Default question 4",
+          Questions_5: "Default question 5",
+          created_at: new Date().toISOString(),
+          created_by: "YourUser", // Replace with actual user
+          status: status || null,
+          remarks: remarks || "",
+        };
+
+        saveResponse = await fetch("http://localhost:4000/api/master_problem", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newProblemData),
+        });
+      }
+
+      const saveData = await saveResponse.json();
+      if (saveResponse.ok) {
+        toast.success(saveData.message);
+        onClose(); // Close modal
+      } else {
+        throw new Error("Error saving data.");
+      }
+    } catch (error) {
+      console.error("Error saving data:", error);
+      toast.error("Failed to save data.");
     }
   };
 
@@ -69,7 +179,12 @@ function Problemsolver() {
         }
         const data = await response.json();
 
+        // Debug: Log the data to inspect its structure
+        console.log("API Response Data:", data);
+
+        // Check if data.data is an array before attempting to map
         if (Array.isArray(data.data)) {
+          // Filter for "Accepted" status and map to change status to "New"
           const modifiedData = data.data
             .filter((item) => item.status === "Accepted")
             .map((item) => ({
@@ -79,11 +194,10 @@ function Problemsolver() {
           setCardsData(modifiedData);
         } else {
           console.error("Data.data is not an array:", data.data);
-          setCardsData([]);
+          setCardsData([]); // Set to empty array to avoid further errors
         }
       } catch (error) {
         console.error("Failed to fetch cards data:", error);
-        setCardsData([]); // Ensure state is set to empty array on error
       }
     };
 
@@ -91,16 +205,14 @@ function Problemsolver() {
   }, []);
 
   // Filter cards based on active tab and search query
-  const filteredCards = React.useMemo(() => {
-    return cardsData.filter((card) => {
-      const matchesTab = activeTab === "All" || card.status === activeTab;
-      const matchesSearch =
-        card.problem_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        card.Description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        card.created_by?.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesTab && matchesSearch;
-    });
-  }, [cardsData, activeTab, searchQuery]);
+  const filteredCards = cardsData.filter((card) => {
+    const matchesTab = activeTab === "All" || card.status === activeTab;
+    const matchesSearch =
+      card.problem_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      card.Description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      card.created_by?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesTab && matchesSearch;
+  });
 
   const handleFilterChange = (tab) => {
     setActiveTab(tab);
@@ -111,7 +223,7 @@ function Problemsolver() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-gray-50">
       {/* Sidebar - Mobile Search */}
       <div className="p-4 md:hidden">
         <div className="relative">
@@ -129,10 +241,12 @@ function Problemsolver() {
         </div>
       </div>
 
-      {/* Fixed Header */}
-      <div className="sticky top-0 bg-gray-50 z-10">
-        <div className="flex justify-between items-center p-4">
-          <h1 className="text-xl font-medium text-gray-600">Welcome Admin.</h1>
+      {/* Main Content */}
+      <div className="flex-1 p-4 h-screen">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-xl font-medium m-4 text-gray-600">
+            Welcome {userName} ...
+          </h1>
           <Button
             variant="outlined"
             startIcon={<Filter size={14} />}
@@ -150,23 +264,18 @@ function Problemsolver() {
             Filter BY
           </Button>
         </div>
-      </div>
 
-      {/* Scrollable Cards Section Only */}
-      <div className="flex-1 p-4 overflow-hidden">
-        <div
-          className="grid grid-cols-1 rounded-2xl p-2 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto scrollbar-hide"
-          style={{ height: "calc(100vh - 150px)" }}
-        >
+        {/* Grid of Cards */}
+        <div className="grid grid-cols-1 rounded-2xl p-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredCards.map((card, index) => (
             <div key={index}>
               <Card
-                title={card.problem_title || "No Title"}
-                status={card.status || "Unknown"}
-                description={card.Description || "No Description"}
-                date={card.created_at || "Unknown Date"}
-                author={card.created_by || "Unknown Author"}
-                imageUrl={defaultImageUrl}
+                title={card.problem_title}
+                status={card.status}
+                description={card.Description}
+                date={card.created_at}
+                author={card.created_by}
+                imageUrl={defaultImageUrl} // Always use the specified image URL
                 onClick={() => handleCardClick(card)}
               />
             </div>
@@ -249,7 +358,12 @@ function Problemsolver() {
       />
       <Rejected open={openRejected} onClose={() => setOpenRejected(false)} />
       <Accepted open={openAccepted} onClose={() => setOpenAccepted(false)} />
-      <Solver open={openSolver} onClose={() => setOpenSolver(false)} />
+      <Solver 
+        open={openSolver} 
+        onClose={() => setOpenSolver(false)}
+        cardData={selectedCard} // Pass selected card as prop
+        />
+
     </div>
   );
 }
