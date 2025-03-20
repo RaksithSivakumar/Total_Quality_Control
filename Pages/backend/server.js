@@ -435,6 +435,66 @@ app.put('/api/master_problem/:id', async (req, res) => {
   }
 });
 
+// API Route to Insert Data into pr_bank
+app.post("/api/pr-bank", (req, res) => {
+  const {
+    category,
+    problem_title,
+    description,
+    media_upload,
+    question1,
+    question2,
+    question3,
+    question4,
+    question5,
+    problem_severity,
+    status,
+    remarks,
+    deadline,
+    rp,
+    assign_to,
+    assign_by,
+    maintainance,
+    created_by,
+    updated_by,
+  } = req.body;
+
+  const sql = `
+    INSERT INTO pr_bank 
+    (category, problem_title, description, media_upload, question1, question2, question3, question4, question5, 
+    problem_severity, status, remarks, deadline, rp, assign_to, assign_by, maintainance, created_at, created_by, updated_at, updated_by)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, NOW(), ?)`;
+
+  const values = [
+    category,
+    problem_title,
+    description,
+    media_upload,
+    question1,
+    question2,
+    question3,
+    question4,
+    question5,
+    problem_severity,
+    status,
+    remarks,
+    deadline,
+    rp,
+    assign_to,
+    assign_by,
+    maintainance,
+    created_by,
+    updated_by,
+  ];
+
+  db.query(sql, values, (err, result) => {
+    if (err) {
+      console.error("Error inserting data:", err);
+      return res.status(500).json({ error: "Database insertion failed" });
+    }
+    res.status(201).json({ message: "Data inserted successfully", id: result.insertId });
+  });
+});
 
 // Start the server
 const PORT = 4000;

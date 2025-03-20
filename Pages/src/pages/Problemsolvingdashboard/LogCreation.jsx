@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, ChevronDown, ChevronUp, Check, Trophy } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -18,11 +18,13 @@ import {
 import { Close as CloseIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
-const LogCreation = ({ open, onClose }) => {
+const LogCreation = ({ open, onClose, storedProblemTitle }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const navigate = useNavigate();
+  const [problem, setProblem] = useState(null);
+  const [problemTitle, setProblemTitle] = useState(storedProblemTitle);
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [status, setStatus] = useState("");
@@ -30,6 +32,50 @@ const LogCreation = ({ open, onClose }) => {
   const [isActive, setIsActive] = useState(false);
   const [questions, setQuestions] = useState(["", "", "", "", ""]);
   const [files, setFiles] = useState([]);
+
+
+  useEffect(() => {
+      if (open) {
+        fetch("http://localhost:4000/api/master_problem")
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((response) => {
+            console.log("API Response:", response);
+            const problems = response.data;
+            console.log("Problems:", problems);
+            if (!storedProblemTitle) {
+              console.warn("storedProblemTitle is undefined or null");
+              return;
+            }
+            const matchedProblem = problems.find(
+              (item) =>
+                item["problem_title"] &&
+                item["problem_title"].toLowerCase() ===
+                  storedProblemTitle.toLowerCase()
+            );
+            if (matchedProblem) {
+              setProblem(matchedProblem);
+              setProblemTitle(matchedProblem.problem_title); // Set problemTitle from fetched data
+              setStatus(matchedProblem.status || ""); // Set status from fetched data
+              setRemarks(matchedProblem.Remarks || ""); // Set remarks from fetched data
+            } else {
+              console.warn(
+                "No matching problem found for title:",
+                storedProblemTitle
+              );
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching problem details:", error);
+          });
+      }
+    }, [open, storedProblemTitle]);
+
+
 
   const handleViewDetails = () => {
     setIsExpanded(!isExpanded);
@@ -195,7 +241,7 @@ const LogCreation = ({ open, onClose }) => {
                     },
                   }}
                 >
-                  Productivity failure
+                  {problemTitle}
                 </Button>
               </div>
 
