@@ -39,6 +39,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { DateRangeCalendar } from "@mui/x-date-pickers-pro/DateRangeCalendar";
 import dayjs from "dayjs";
+import axios from 'axios';
 
 const Solver = ({ open, onClose, cardData }) => {
   const theme = useTheme();

@@ -436,63 +436,114 @@ app.put('/api/master_problem/:id', async (req, res) => {
 });
 
 // API Route to Insert Data into pr_bank
-app.post("/api/pr-bank", (req, res) => {
+app.put("/update-new-fields/:id", (req, res) => {
+  const { id } = req.params;
   const {
-    category,
-    problem_title,
-    description,
-    media_upload,
-    question1,
-    question2,
-    question3,
-    question4,
-    question5,
-    problem_severity,
-    status,
-    remarks,
-    deadline,
-    rp,
-    assign_to,
-    assign_by,
-    maintainance,
-    created_by,
     updated_by,
+    pr_remarks,
+    pr_status,
+    maintainence_id,
+    severity,
+    rewards,
+    deadline,
+    assigned_to,
+    assigned_by,
+    assigned_at,
   } = req.body;
 
-  const sql = `
-    INSERT INTO pr_bank 
-    (category, problem_title, description, media_upload, question1, question2, question3, question4, question5, 
-    problem_severity, status, remarks, deadline, rp, assign_to, assign_by, maintainance, created_at, created_by, updated_at, updated_by)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, NOW(), ?)`;
+  const query = `
+    UPDATE master_problem 
+    SET 
+      updated_at = NOW(),
+      updated_by = COALESCE(?, updated_by),
+      pr_remarks = COALESCE(?, pr_remarks),
+      pr_status = COALESCE(?, pr_status),
+      maintainence_id = COALESCE(?, maintainence_id),
+      severity = COALESCE(?, severity),
+      rewards = COALESCE(?, rewards),
+      deadline = COALESCE(?, deadline),
+      assigned_to = COALESCE(?, assigned_to),
+      assigned_by = COALESCE(?, assigned_by),
+      assigned_at = COALESCE(?, assigned_at)
+    WHERE id = ?
+  `;
 
   const values = [
-    category,
-    problem_title,
-    description,
-    media_upload,
-    question1,
-    question2,
-    question3,
-    question4,
-    question5,
-    problem_severity,
-    status,
-    remarks,
-    deadline,
-    rp,
-    assign_to,
-    assign_by,
-    maintainance,
-    created_by,
     updated_by,
+    pr_remarks,
+    pr_status,
+    maintainence_id,
+    severity,
+    rewards,
+    deadline,
+    assigned_to,
+    assigned_by,
+    assigned_at,
+    id,
   ];
 
-  db.query(sql, values, (err, result) => {
+  db.query(query, values, (err, result) => {
     if (err) {
-      console.error("Error inserting data:", err);
-      return res.status(500).json({ error: "Database insertion failed" });
+      console.error("Error updating record:", err);
+      return res.status(500).json({ message: "Database error", error: err });
     }
-    res.status(201).json({ message: "Data inserted successfully", id: result.insertId });
+    res.status(200).json({ message: "New fields updated successfully", result });
+  });
+});
+
+// PUT request to update the master_problem table
+app.put("/update-problem/:id", (req, res) => {
+  const { id } = req.params;
+  const {
+    updated_by,
+    pr_remarks,
+    pr_status,
+    maintainence_id,
+    severity,
+    rewards,
+    deadline,
+    assigned_to,
+    assigned_by,
+    assigned_at,
+  } = req.body;
+
+  const query = `
+    UPDATE master_problem 
+    SET 
+      updated_at = NOW(),
+      updated_by = ?,
+      pr_remarks = ?,
+      pr_status = ?,
+      maintainence_id = ?,
+      severity = ?,
+      rewards = ?,
+      deadline = ?,
+      assigned_to = ?,
+      assigned_by = ?,
+      assigned_at = ?
+    WHERE id = ?
+  `;
+
+  const values = [
+    updated_by,
+    pr_remarks,
+    pr_status,
+    maintainence_id,
+    severity,
+    rewards,
+    deadline,
+    assigned_to,
+    assigned_by,
+    assigned_at,
+    id,
+  ];
+
+  db.query(query, values, (err, result) => {
+    if (err) {
+      console.error("Error updating record:", err);
+      return res.status(500).json({ message: "Database error", error: err });
+    }
+    res.status(200).json({ message: "Problem updated successfully", result });
   });
 });
 
