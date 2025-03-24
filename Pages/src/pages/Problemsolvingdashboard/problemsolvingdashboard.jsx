@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+
 import { Search, Filter } from "lucide-react";
 import Card from "../../components/problem/Card";
 import Button from "@mui/material/Button";
@@ -19,6 +20,7 @@ import Solver from "./Solver";
 import CryptoJS from "crypto-js";
 
 const secretKey = "qwertyuiopasdfghjklzxcvbnm";
+
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -349,6 +351,7 @@ const handleSave = async () => {
           </div>
         </DialogActions>
       </Dialog>
+
       <LogCreation
         open={openLogCreation}
         onClose={() => setOpenLogCreation(false)}
@@ -360,7 +363,9 @@ const handleSave = async () => {
         onClose={() => setOpenSolver(false)}
         cardData={selectedCard} // Pass selected card as prop
         />
+
     </div>
   );
 }
+
 export default Problemsolver;

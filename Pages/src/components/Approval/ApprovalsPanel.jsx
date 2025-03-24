@@ -6,11 +6,10 @@ import { useNavigate } from "react-router-dom";
 
 const ApprovalsPanel = ({ approvals, onCardClick }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState([]); 
+  const [statusFilter, setStatusFilter] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterButtonRef = useRef(null);
   const navigate = useNavigate();
-
 
   const filteredApprovals = approvals.filter((approval) => {
     const matchesSearch = approval.title
@@ -45,7 +44,7 @@ const ApprovalsPanel = ({ approvals, onCardClick }) => {
 
   // Status badge styling helper
   const getStatusStyles = (status) => {
-    switch(status) {
+    switch (status) {
       case "inprogress":
         return "bg-blue-100 text-blue-700";
       case "rejected":
@@ -75,25 +74,26 @@ const ApprovalsPanel = ({ approvals, onCardClick }) => {
             <Filter className="h-4 w-4" />
             Filter
           </button>
-          <button className="flex items-center text-orange-500 text-sm font-medium px-3 py-2 border border-orange-200 rounded-md hover:bg-orange-50 transition-colors" onClick={handleCreate}>
+          <button
+            className="flex items-center text-orange-500 text-sm font-medium px-3 py-2 border border-orange-200 rounded-md hover:bg-orange-50 transition-colors"
+            onClick={handleCreate}
+          >
             <PlusCircle className="h-4 w-4 mr-1" />
             Create New
           </button>
         </div>
+        {/* Search Bar */}
+        <div className="sticky top-0 bg-white z-70 mb-4">
+          <Input
+            type="text"
+            placeholder="Search any problem"
+            icon={<IoSearchOutline className="text-gray-400" />}
+            value={searchTerm}
+            onChange={handleSearch}
+            className="rounded-full pl-10 border-gray-300 focus:ring-2 focus:ring-orange-500"
+          />
+        </div>
       </div>
-
-      {/* Search Bar */}
-      <div className="sticky top-0 bg-white z-10 mb-4">
-        <Input
-          type="text"
-          placeholder="Search any problem"
-          icon={<IoSearchOutline className="text-gray-400" />}
-          value={searchTerm}
-          onChange={handleSearch}
-          className="rounded-full pl-10 border-gray-300 focus:ring-2 focus:ring-orange-500"
-        />
-      </div>
-
       {/* Filter Popup */}
       {isFilterOpen && (
         <div
@@ -104,9 +104,7 @@ const ApprovalsPanel = ({ approvals, onCardClick }) => {
                 filterButtonRef.current.offsetHeight +
                 8
               : 0,
-            right: filterButtonRef.current
-              ? 20
-              : 0,
+            right: filterButtonRef.current ? 20 : 0,
           }}
         >
           <h3 className="text-lg font-semibold mb-4">Filter Approvals</h3>
@@ -170,22 +168,27 @@ const ApprovalsPanel = ({ approvals, onCardClick }) => {
       <div className="space-y-3 pb-4">
         {filteredApprovals.length > 0 ? (
           filteredApprovals.map((approval) => (
-            <div 
-              key={approval.id} 
+            <div
+              key={approval.id}
               className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors"
               onClick={() => onCardClick(approval)}
             >
               <div className="flex justify-between items-start mb-2">
                 <h3 className="font-medium">{approval.title}</h3>
                 <span
-                  className={`text-xs px-3 py-1 rounded-full ${getStatusStyles(approval.status)}`}
+                  className={`text-xs px-3 py-1 rounded-full ${getStatusStyles(
+                    approval.status
+                  )}`}
                 >
                   {approval.status === "inprogress"
                     ? "In Progress"
-                    : approval.status.charAt(0).toUpperCase() + approval.status.slice(1)}
+                    : approval.status.charAt(0).toUpperCase() +
+                      approval.status.slice(1)}
                 </span>
               </div>
-              <p className="text-sm text-gray-600 mb-2 line-clamp-2">{approval.description}</p>
+              <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                {approval.description}
+              </p>
               <div className="flex justify-between items-center">
                 <div className="text-xs text-gray-500 flex items-center">
                   <Clock className="h-3 w-3 mr-1" />
