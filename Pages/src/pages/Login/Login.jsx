@@ -78,11 +78,11 @@ const LoginPage = () => {
       problemmaintenance: "/Maintain",
       problemsolver: "/ProblemAdmin",
     };
-    return routes[role] || "/login";
+    return routes[role] || "/";
   };
 
   return (
-    <GoogleOAuthProvider clientId="275309862189-naca865pd0dri3lh5h76ng3m2m6vqh4q.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId="906508649487-ckk01v3bum6v3o9imbj4r8pkng6sj6bg.apps.googleusercontent.com">
       <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
         <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 w-full max-w-md">
           <div className="text-center">

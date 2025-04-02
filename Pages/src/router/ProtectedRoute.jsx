@@ -8,7 +8,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
 
   if (!isAuthenticated || !allowedRoles.includes(userRole)) {
     // If not authenticated or role doesn't match, redirect to login
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   // If authenticated and role matches, render the child routes
@@ -16,4 +16,3 @@ const ProtectedRoute = ({ allowedRoles }) => {
 };
 
 export default ProtectedRoute;
-// test 

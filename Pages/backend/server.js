@@ -69,7 +69,7 @@ function checkFileType(file, cb) {
 }
 
 // Google OAuth client
-const client = new OAuth2Client('275309862189-naca865pd0dri3lh5h76ng3m2m6vqh4q.apps.googleusercontent.com');
+const client = new OAuth2Client('906508649487-ckk01v3bum6v3o9imbj4r8pkng6sj6bg.apps.googleusercontent.com');
 
 // Function to insert or update Google user
 async function upsertGoogleUser(payload) {
@@ -136,7 +136,7 @@ app.post('/api/google-login', async (req, res) => {
     // Verify the Google ID token
     const ticket = await client.verifyIdToken({
       idToken: credential,
-      audience: '275309862189-naca865pd0dri3lh5h76ng3m2m6vqh4q.apps.googleusercontent.com',
+      audience: '906508649487-ckk01v3bum6v3o9imbj4r8pkng6sj6bg.apps.googleusercontent.com',
     });
     
     const payload = ticket.getPayload();

@@ -574,7 +574,7 @@ const SupervisorDashboard = () => {
         Welcome {userName} ...
       </h2>
       {/* Tabs */}
-      <div className="flex space-x-6 mb-6 text-lg font-medium bg-gray-100 p-2 rounded-lg">
+      <div className="flex space-x-6 mb-6 text-lg font-medium p-2 rounded-lg">
         <span
           className={`cursor-pointer pb-1 ${
             activeTab === "All"
