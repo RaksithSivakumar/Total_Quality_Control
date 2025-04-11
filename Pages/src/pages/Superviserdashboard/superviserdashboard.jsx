@@ -15,7 +15,10 @@ import {
   useTheme,
 } from "@mui/material";
 import CryptoJS from "crypto-js";
-import { Close as CloseIcon, KeyboardArrowLeftRounded } from "@mui/icons-material";
+import {
+  Close as CloseIcon,
+  KeyboardArrowLeftRounded,
+} from "@mui/icons-material";
 
 const secretKey = "qwertyuiopasdfghjklzxcvbnm";
 
@@ -83,7 +86,6 @@ const LogCreation = ({ open, onClose, storedProblemTitle }) => {
       // Store the current status and remarks into temporary state variables
       setTempStatus(status);
       setTempRemarks(remarks);
-
 
       // Prepare data to send to the server
       const data = {
@@ -567,52 +569,48 @@ const SupervisorDashboard = () => {
   };
 
   return (
-     <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-white p-6">
       <h2 className="text-2xl font-semibold mb-4 text-[#868686]">
         Welcome {userName} ...
       </h2>
-       {/* Tabs */}
-      <div className="flex space-x-8 mb-2 text-base font-medium p-2 rounded-lg">
-        {[
-          { label: "All", status: "All", count: problems.length },
-          {
-            label: "Accepted",
-            status: "Accepted",
-            count: problems.filter((p) => p.status === "Accepted").length,
-          },
-          {
-            label: "Rejected",
-            status: "Rejected",
-            count: problems.filter((p) => p.status === "Rejected").length,
-          },
-        ].map(({ label, status, count }) => (
-          <div
-            key={status}
-            className="flex flex-col items-center cursor-pointer pb-2"
-            onClick={() => setActiveTab(status)}
-          >
-            <div className="flex items-center space-x-2">
-              <span
-                className={`pb-1 ${
-                  activeTab === status
-                    ? "text-orange-500 font-bold"
-                    : "text-gray-500"
-                }`}
-              >
-                {label}
-              </span>
-              <span className="px-2 py-1 text-xs text-gray-700 bg-gray-200 rounded-full">
-                {count}
-              </span>
-            </div>
-            {/* Underline */}
-            <span
-              className={`w-full h-0.5 rounded-full transition-all duration-300 ${
-                activeTab === status ? "bg-orange-500" : "bg-transparent"
-              }`}
-            ></span>
-          </div>
-        ))}
+      {/* Tabs */}
+      <div className="flex space-x-6 mb-6 text-lg font-medium p-2 rounded-lg">
+        <span
+          className={`cursor-pointer pb-1 ${
+            activeTab === "All"
+              ? "text-orange-500 border-b-2 border-orange-500"
+              : "text-gray-500"
+          }`}
+          onClick={() => setActiveTab("All")}
+        >
+          All <span className="text-gray-500 text-sm">({problems.length})</span>
+        </span>
+        <span
+          className={`cursor-pointer pb-1 ${
+            activeTab === "Accepted"
+              ? "text-orange-500 border-b-2 border-orange-500"
+              : "text-gray-500"
+          }`}
+          onClick={() => setActiveTab("Accepted")}
+        >
+          Accepted{" "}
+          <span className="text-gray-500 text-sm">
+            ({problems.filter((p) => p.status === "Accepted").length})
+          </span>
+        </span>
+        <span
+          className={`cursor-pointer pb-1 ${
+            activeTab === "Rejected"
+              ? "text-orange-500 border-b-2 border-orange-500"
+              : "text-gray-500"
+          }`}
+          onClick={() => setActiveTab("Rejected")}
+        >
+          Rejected{" "}
+          <span className="text-gray-500 text-sm">
+            ({problems.filter((p) => p.status === "Rejected").length})
+          </span>
+        </span>
       </div>
 
       {/* Grid Layout */}

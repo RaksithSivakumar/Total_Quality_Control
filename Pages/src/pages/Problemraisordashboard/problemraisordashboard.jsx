@@ -21,7 +21,6 @@ function ProblemRaisorDashboard() {
   const [openAccepted, setOpenAccepted] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
   const [problems, setProblems] = useState([]);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -49,11 +48,6 @@ function ProblemRaisorDashboard() {
     };
   }, [isFilterOpen]);
 
-   const filters = {
-    inprogress: statusFilter.includes("inprogress"),
-    rejected: statusFilter.includes("rejected"),
-    accepted: statusFilter.includes("accepted"),
- 
   // Calculate filter position
   const [filterPosition, setFilterPosition] = useState({ top: 0, right: 0 });
   
@@ -69,7 +63,7 @@ function ProblemRaisorDashboard() {
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
-   };
+  };
 
   const handleFilterChange = (status) => {
     setStatusFilter((prev) =>
@@ -89,16 +83,12 @@ function ProblemRaisorDashboard() {
     setStatusFilter([]);
   };
 
-  // Status badge styling helper
   const getStatusStyles = (status) => {
     switch (status) {
-      case "inprogress":
       case "Inprogress":
         return "bg-blue-100 text-blue-700";
-      case "rejected":
       case "Rejected":
         return "bg-red-100 text-red-700";
-      case "accepted":
       case "Accepted":
         return "bg-green-100 text-green-700";
       default:
@@ -197,12 +187,13 @@ function ProblemRaisorDashboard() {
   // Map problems to approvals format based on the provided API structure
   const mappedApprovals = problems.map((problem) => ({
     id: problem.id,
-     title: problem.problem_title,
-    description: problem.Description,
-    date: new Date(problem.created_at).toLocaleDateString(),
-    mediaUpload: problem.Media_Upload, // Store media uploads
-    status: problem.status?.toLowerCase() || "inprogress", // Use the actual status from the API and normalize case
- 
+    title: problem.problem_title || "No Title",
+    description: problem.Description || "No Description",
+    createdAt: problem.created_at
+      ? new Date(problem.created_at).toLocaleDateString()
+      : "Unknown Date",
+    mediaUpload: problem.Media_Upload || null,
+    status: problem.status || "Inprogress",
   }));
 
   const handleDayClick = (index) => {
@@ -214,15 +205,14 @@ function ProblemRaisorDashboard() {
   };
 
   const handleCardClick = (card) => {
-    const normalizedStatus = card.status.toLowerCase();
-    switch (normalizedStatus) {
-      case "inprogress":
+    switch (card.status) {
+      case "Inprogress":
         setOpenLogCreation(true);
         break;
-      case "rejected":
+      case "Rejected":
         setOpenRejected(true);
         break;
-      case "accepted":
+      case "Accepted":
         setOpenAccepted(true);
         break;
       default:
@@ -247,36 +237,17 @@ function ProblemRaisorDashboard() {
   };
 
   const handleApplyFilters = () => {
-    setIsFilterOpen(false);
     toggleFilter();
   };
 
-  // Updated search filter logic
-const filteredApprovals = mappedApprovals.filter((approval) => {
-  // Convert both the search term and strings to compare to lowercase for case-insensitive matching
-  const searchLower = searchTerm.toLowerCase().trim();
-  
-  // Check if search term is empty - return all results when no search term
-  if (!searchLower) {
-    // Only apply status filter if there are any selected statuses
-    return statusFilter.length === 0 || statusFilter.includes(approval.status.toLowerCase());
-  }
-  
-  // Search in multiple fields - title, description, and date
-  const matchesTitle = approval.title?.toLowerCase().includes(searchLower);
-  const matchesDescription = approval.description?.toLowerCase().includes(searchLower);
-  const matchesDate = approval.date?.toLowerCase().includes(searchLower);
-  
-  // Combined search results across multiple fields
-  const matchesSearch = matchesTitle || matchesDescription || matchesDate;
-  
-  // Apply status filter if there are any selected statuses
-  const matchesStatus = statusFilter.length === 0 || statusFilter.includes(approval.status.toLowerCase());
-  
-  // Return true only if both search and status filters are matched
-  return matchesSearch && matchesStatus;
-});
- 
+  const filteredApprovals = mappedApprovals.filter((approval) => {
+    const matchesSearch = approval.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter.length === 0 || statusFilter.includes(approval.status);
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="flex flex-col h-screen bg-white">
@@ -332,135 +303,63 @@ const filteredApprovals = mappedApprovals.filter((approval) => {
           <div className="w-full md:w-2/5 bg-gray-50 flex flex-col h-full">
             <div className="flex-1 p-4 md:p-6">
               {/* Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center">
-                  <h2 className="text-lg font-semibold">Approvals</h2>
-                  <span className="ml-2 bg-gray-200 text-gray-700 px-2 py-1 rounded-md text-sm">
-                    {mappedApprovals.length}
-                  </span>
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    ref={filterButtonRef}
-                    className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors relative"
-                    onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  >
-                    <Filter className="h-4 w-4" />
-                    Filter
-                  </button>
-                  <button
-                    className="flex items-center text-orange-500 text-sm font-medium px-3 py-2 border border-orange-200 rounded-md hover:bg-orange-50 transition-colors"
-                    onClick={handleCreate}
-                  >
-                    <PlusCircle className="h-4 w-4 mr-1" />
-                    Create New
-                  </button>
-                </div>
-              </div>
-
-              {/* Search Bar */}
-              <div className="sticky top-0 bg-white z-40 mb-4">
-                <Input
-                  type="text"
-                  placeholder="Search any problems"
-                  icon={<IoSearchOutline className="text-gray-400" />}
-                  value={searchTerm}
-                  onChange={handleSearch}
-                  className="rounded-full pl-10 border-gray-300 focus:ring-2 focus:ring-orange-500"
-                />
-              </div>
-              
-              {/* Filter Popup */}
-              {isFilterOpen && (
-                <div
-                  className="absolute bg-white shadow-lg rounded-lg p-6 w-64 z-50"
-                  style={{
-                    top: filterButtonRef.current
-                      ? filterButtonRef.current.offsetTop +
-                        filterButtonRef.current.offsetHeight +
-                        8
-                      : 0,
-                    right: filterButtonRef.current ? 20 : 0,
-                  }}
-                >
-                  <h3 className="text-lg font-semibold mb-4">Filter Approvals</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id="accepted"
-                        className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
-                        checked={statusFilter.includes("accepted")}
-                        onChange={() => handleFilterChange("accepted")}
-                      />
-                      <label htmlFor="accepted" className="ml-2 text-sm">
-                        Accepted
-                      </label>
-                    </div>
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id="rejected"
-                        className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
-                        checked={statusFilter.includes("rejected")}
-                        onChange={() => handleFilterChange("rejected")}
-                      />
-                      <label htmlFor="rejected" className="ml-2 text-sm">
-                        Rejected
-                      </label>
-                    </div>
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id="inprogress"
-                        className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
-                        checked={statusFilter.includes("inprogress")}
-                        onChange={() => handleFilterChange("inprogress")}
-                      />
-                      <label htmlFor="inprogress" className="ml-2 text-sm">
-                        In Progress
-                      </label>
-                    </div>
+              <div className="flex flex-col mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <h2 className="text-lg font-semibold">Approvals</h2>
+                    <span className="ml-2 bg-gray-200 text-gray-700 px-2 py-1 rounded-md text-sm">
+                      {mappedApprovals.length}
+                    </span>
                   </div>
-
-                  <div className="flex gap-4 mt-6">
+                  <div className="flex gap-3">
+                    <div className="relative">
+                      <button
+                        ref={filterButtonRef}
+                        className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                        onClick={() => setIsFilterOpen(!isFilterOpen)}
+                      >
+                        <Filter className="h-4 w-4" />
+                        Filter
+                      </button>
+                    </div>
                     <button
-                      className="flex-1 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition-colors"
-                      onClick={handleClear}
+                      className="flex items-center text-orange-500 text-sm font-medium px-3 py-2 border border-orange-200 rounded-md hover:bg-orange-50 transition-colors"
+                      onClick={handleCreate}
                     >
-                      Clear
-                    </button>
-                    <button
-                      className="flex-1 py-2 bg-orange-500 text-white rounded-md text-sm hover:bg-orange-600 transition-colors"
-                      onClick={() => setIsFilterOpen(false)}
-                    >
-                      Apply
+                      <PlusCircle className="h-4 w-4 mr-1" />
+                      Create New
                     </button>
                   </div>
                 </div>
-              )}
+
+                {/* Search Bar */}
+                <div className="bg-white mb-4">
+                  <Input
+                    type="text"
+                    placeholder="Search any problem"
+                    icon={<IoSearchOutline className="text-gray-400" />}
+                    value={searchTerm}
+                    onChange={handleSearch}
+                    className="rounded-full pl-10 border-gray-300 focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+              </div>
 
               {/* Approval List */}
-              <div 
+              <div
                 ref={scrollableRef}
-                id="scrollable-container"
-
+                className="flex-1 overflow-y-auto p-4 space-y-4"
                 style={{
                   overflow: "auto",
                   msOverflowStyle: "none",
                   scrollbarWidth: "none",
-                  maxHeight: "calc(100vh - 220px)"
+                  maxHeight: "70vh",
                 }}
               >
                 <style>
-                  {`
-                    #scrollable-container::-webkit-scrollbar {
-                      display: none;
-                    }
-                  `}
-
+                  {`#scrollable-container::-webkit-scrollbar { display: none; }`}
                 </style>
-                
+
                 {filteredApprovals.length > 0 ? (
                   filteredApprovals.map((approval) => (
                     <div
@@ -475,7 +374,7 @@ const filteredApprovals = mappedApprovals.filter((approval) => {
                             approval.status
                           )}`}
                         >
-                          {approval.status === "inprogress"
+                          {approval.status === "Inprogress"
                             ? "In Progress"
                             : approval.status.charAt(0).toUpperCase() +
                               approval.status.slice(1)}
@@ -489,21 +388,8 @@ const filteredApprovals = mappedApprovals.filter((approval) => {
                           <Clock className="h-3 w-3 mr-1" />
                           {approval.createdAt}
                         </div>
-                        {/* Show points badge for accepted items */}
-                        {approval.status === "accepted" && (
+                        {approval.status === "Accepted" && (
                           <div className="flex items-center text-green-600 text-xs font-medium px-2 py-1 bg-green-50 rounded-full">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-3 w-3 mr-1"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
                             +150 points
                           </div>
                         )}
@@ -537,13 +423,13 @@ const filteredApprovals = mappedApprovals.filter((approval) => {
                 <div className="flex space-x-2">
                   <button
                     className="px-4 py-1 border border-gray-300 rounded-md text-sm"
-                    onClick={handleClear}
+                    onClick={handleClearFilters}
                   >
                     Clear
                   </button>
                   <button
                     className="px-4 py-1 bg-orange-500 text-white rounded-md text-sm"
-                    onClick={() => setIsFilterOpen(false)}
+                    onClick={handleApplyFilters}
                   >
                     Apply
                   </button>
@@ -554,9 +440,6 @@ const filteredApprovals = mappedApprovals.filter((approval) => {
         ) : null}
       </div>
 
-          {/* Filter Popup for Desktop */}
-         {showFilter && (
- 
       {/* Filter Popup for Inline Filter */}
       {isFilterOpen && (
         <div
@@ -603,7 +486,7 @@ const filteredApprovals = mappedApprovals.filter((approval) => {
 
       {/* Filter Popup for Desktop */}
       {showFilter && (
-         <div
+        <div
           className="inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
           onClick={toggleFilter}
         >

@@ -11,7 +11,7 @@ import ProblemAdmin from "../pages/ProblemAdmin/ProblemAdmin";
   return (
     
     <Routes>
-      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Login />} />
       <Route path="/survey" element={<SurveyCreation />} />
       <Route path="/Problemrd" element={<ProblemRaisorDashboard />} />
       <Route path="/Superviser" element={<SupervisorDashboard />} />

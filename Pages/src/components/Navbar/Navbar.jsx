@@ -95,7 +95,7 @@ const Navbar = ({ image = "/placeholder.svg?height=60&width=60" }) => {
             <div className="flex items-center">
               <ProjectLogo className="mr-2 md:mr-6" />
               <h1 className="font-bold text-lg md:text-2xl p-4 hidden md:block text-[#5E5E5E]">
-                Total Quality Circle
+                Total Quality Control
               </h1>
             </div>
 
