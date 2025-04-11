@@ -12,7 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import Input from "../../components/input/Input";
 import Card from "../../components/problem/Card";
-import LogCreation from "../../components/Popups/LogCreation";
+import LogCreation from "../Problemraisordashboard/InProgress";
 import Rejected from "../../components/Popups/Rejected";
 import Accepted from "../../components/Popups/Accepted";
 import axios from "axios";
