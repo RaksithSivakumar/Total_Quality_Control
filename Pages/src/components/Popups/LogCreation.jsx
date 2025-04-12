@@ -353,6 +353,20 @@ const LogCreation = ({ open, onClose }) => {
 
               {/* Buttons Section */}
               <DialogActions className="mt-4 sm:mt-6 flex justify-end gap-2 sm:gap-4 p-0 sm:p-2">
+              <Button
+                  variant="contained"
+                  onClick={() => setOpenProblemDetails(false)}
+                  sx={{
+                    backgroundColor: "#FF7622",
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "#FF5722",
+                    },
+                  }}
+                >
+                  Accepted
+                </Button>
+
                 <Button
                   onClick={handleClose}
                   color="primary"

@@ -1,21 +1,12 @@
-"use client";
-
-import { useState, useEffect, useRef } from "react";
-import { DateRange } from "react-date-range";
-import { format, differenceInDays } from "date-fns";
-import "react-date-range/dist/styles.css"; // Main CSS
-import "react-date-range/dist/theme/default.css"; // Theme CSS
-import {
-  ArrowLeft,
-  ChevronDown,
-  Check,
-  Calendar,
-  Trophy,
-  User,
-} from "lucide-react";
-import "react-toastify/dist/ReactToastify.css";
-import { toast } from "react-toastify"; // Import toast
-import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { useState, useEffect, useRef } from "react"
+import { DateRange } from "react-date-range"
+import { format, differenceInDays } from "date-fns"
+import "react-date-range/dist/styles.css" // Main CSS
+import "react-date-range/dist/theme/default.css" // Theme CSS
+import { ArrowLeft, ChevronDown, Calendar, Trophy, User } from "lucide-react"
+import "react-toastify/dist/ReactToastify.css"
+import { toast } from "react-toastify" // Import toast
+import { createTheme, ThemeProvider } from "@mui/material/styles"
 import {
   Dialog,
   DialogContent,
@@ -32,27 +23,34 @@ import {
   InputAdornment,
   Menu,
   MenuItem,
-} from "@mui/material";
-import { Close as CloseIcon } from "@mui/icons-material";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
-import { DateRangeCalendar } from "@mui/x-date-pickers-pro/DateRangeCalendar";
-import dayjs from "dayjs";
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material"
+import { Close as CloseIcon } from "@mui/icons-material"
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo"
+import { DateRangeCalendar } from "@mui/x-date-pickers-pro/DateRangeCalendar"
+import dayjs from "dayjs"
 
 const Solver = ({ open, onClose, cardData }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [remarks, setRemarks] = useState("");
-  const [problem, setProblem] = useState(null);
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"))
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [remarks, setRemarks] = useState("")
+  const [problem, setProblem] = useState(null)
   const [activeStates, setActiveStates] = useState({
     category: false,
     small: true, // Default to small selected
     medium: false,
     large: false,
-  });
+  })
 
   const customTheme = createTheme({
     components: {
@@ -75,84 +73,121 @@ const Solver = ({ open, onClose, cardData }) => {
         },
       },
     },
-  });
+  })
 
   const [dateRange, setDateRange] = useState({
     startDate: new Date(),
     endDate: new Date(),
-  });
-  const [showCalendar, setShowCalendar] = useState(false);
-  const calendarRef = useRef(null);
+  })
+  const [showCalendar, setShowCalendar] = useState(false)
+  const calendarRef = useRef(null)
 
-  const [points, setPoints] = useState(500);
-  const [dateDialogOpen, setDateDialogOpen] = useState(false);
-  const [status, setStatus] = useState("");
-  const [assignToAnchorEl, setAssignToAnchorEl] = useState(null);
-  const [assignedTo, setAssignedTo] = useState("");
+  const [points, setPoints] = useState(500)
+  const [dateDialogOpen, setDateDialogOpen] = useState(false)
+  const [status, setStatus] = useState("")
+  const [assignToAnchorEl, setAssignToAnchorEl] = useState(null)
+  const [assignedTo, setAssignedTo] = useState("")
+  const [openMemberDialog, setOpenMemberDialog] = useState(false)
+  const [departmentMembers, setDepartmentMembers] = useState([])
 
-  const toggleCalendar = () => setShowCalendar(!showCalendar);
+  // Sample department data
+  const departmentData = {
+    NMC: [
+      { id: 1, name: "John Doe", position: "Manager" },
+      { id: 2, name: "Jane Smith", position: "Coordinator" },
+    ],
+    COE: [
+      { id: 1, name: "Mike Johnson", position: "Head" },
+      { id: 2, name: "Sarah Williams", position: "Assistant" },
+    ],
+    SSG: [
+      { id: 1, name: "David Brown", position: "Leader" },
+      { id: 2, name: "Emily Davis", position: "Member" },
+    ],
+    PLACEMENT: [
+      { id: 1, name: "Robert Wilson", position: "Director" },
+      { id: 2, name: "Lisa Taylor", position: "Officer" },
+    ],
+  }
+
+  const toggleCalendar = () => setShowCalendar(!showCalendar)
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (calendarRef.current && !calendarRef.current.contains(event.target)) {
-        setShowCalendar(false);
+        setShowCalendar(false)
       }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   const handlePointsChange = (event) => {
-    setPoints(event.target.value === "" ? 0 : Number(event.target.value));
-  };
+    setPoints(event.target.value === "" ? 0 : Number(event.target.value))
+  }
 
   const handleSliderChange = (event, newValue) => {
-    setPoints(newValue);
-  };
+    setPoints(newValue)
+  }
 
   const handleAssignToClick = (event) => {
-    setAssignToAnchorEl(event.currentTarget);
-  };
+    setAssignToAnchorEl(event.currentTarget)
+  }
 
   const handleAssignToClose = () => {
-    setAssignToAnchorEl(null);
-  };
+    setAssignToAnchorEl(null)
+  }
 
-  const handleAssignToSelect = (assignee) => {
-    setAssignedTo(assignee);
-    handleAssignToClose();
-  };
+  const handleAssignToSelect = (department) => {
+    if (["NMC", "COE", "SSG", "PLACEMENT"].includes(department)) {
+      setAssignedTo(department)
+      setDepartmentMembers(departmentData[department] || [])
+      setOpenMemberDialog(true)
+    } else {
+      setAssignedTo(department)
+    }
+    handleAssignToClose()
+  }
+
+  const handleMemberDialogClose = () => {
+    setOpenMemberDialog(false)
+  }
+
+  const handleMemberSelect = (member) => {
+    setAssignedTo(`${assignedTo} - ${member.name}`)
+    handleMemberDialogClose()
+  }
 
   const handleSave = () => {
     if (!activeStates.category && isExpanded) {
-      toast.error("Please select a category.");
-      return;
+      toast.error("Please select a category.")
+      return
     }
 
     if (!activeStates.small && !activeStates.medium && !activeStates.large) {
-      toast.error("Please select a problem rating.");
-      return;
+      toast.error("Please select a problem rating.")
+      return
     }
 
     if (points <= 0) {
-      toast.error("Please set points greater than 0.");
-      return;
+      toast.error("Please set points greater than 0.")
+      return
     }
 
     if (!assignedTo) {
-      toast.error("Please assign the problem to someone.");
-      return;
+      toast.error("Please assign the problem to someone.")
+      return
     }
 
-    toast.success("Problem details saved successfully!");
-  };
+    toast.success("Problem details saved successfully!")
+  }
 
   const getProblemRating = () => {
-    if (activeStates.small) return "Small";
-    if (activeStates.medium) return "Medium";
-    if (activeStates.large) return "Large";
-    return "Not selected";
-  };
+    if (activeStates.small) return "Small"
+    if (activeStates.medium) return "Medium"
+    if (activeStates.large) return "Large"
+    return "Not selected"
+  }
 
   const defaultQuestions = [
     "Have you tried to solve the Problem?",
@@ -160,7 +195,7 @@ const Solver = ({ open, onClose, cardData }) => {
     "Venue of the problem arise?",
     "Specifications of the problem?",
     "Problem arise time?",
-  ];
+  ]
 
   // Extract answers from backend (cardData)
   const answers = cardData
@@ -171,26 +206,26 @@ const Solver = ({ open, onClose, cardData }) => {
         cardData.Questions_4 || "No answer provided",
         cardData.Questions_5 || "No answer provided",
       ]
-    : Array(5).fill("No answer provided");
+    : Array(5).fill("No answer provided")
 
   const handleDateRangeChange = (ranges) => {
     setDateRange({
       startDate: ranges.selection.startDate,
       endDate: ranges.selection.endDate,
-    });
-  };
+    })
+  }
 
   const formatDateRange = () => {
-    if (!dateRange.startDate || !dateRange.endDate) return "Select deadline";
+    if (!dateRange.startDate || !dateRange.endDate) return "Select deadline"
 
-    const start = format(dateRange.startDate, "MMM dd");
-    const end = format(dateRange.endDate, "MMM dd");
-    const days = differenceInDays(dateRange.endDate, dateRange.startDate) + 1;
+    const start = format(dateRange.startDate, "MMM dd")
+    const end = format(dateRange.endDate, "MMM dd")
+    const days = differenceInDays(dateRange.endDate, dateRange.startDate) + 1
 
-    return `${start} - ${end} (${days} days)`;
-  };
+    return `${start} - ${end} (${days} days)`
+  }
 
-  if (!cardData) return null;
+  if (!cardData) return null
 
   return (
     <ThemeProvider theme={theme}>
@@ -211,12 +246,7 @@ const Solver = ({ open, onClose, cardData }) => {
       >
         <DialogContent className="bg-white p-3 sm:p-6 overflow-y-auto scrollbar-hide">
           <div className="overflow-y-auto scrollbar-hide">
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              mb={2}
-            >
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
               <DialogTitle className="p-0 sm:p-2">
                 <div className="flex items-center">
                   <IconButton
@@ -237,27 +267,17 @@ const Solver = ({ open, onClose, cardData }) => {
                   </Typography>
                 </div>
               </DialogTitle>
-              <IconButton
-                aria-label="close"
-                onClick={onClose}
-                size={isMobile ? "small" : "medium"}
-              >
+              <IconButton aria-label="close" onClick={onClose} size={isMobile ? "small" : "medium"}>
                 <CloseIcon fontSize={isMobile ? "small" : "medium"} />
               </IconButton>
             </Box>
 
             {/* Status */}
             <div className="space-y-2 sm:space-y-4 mb-4 sm:mb-6">
-              <Typography
-                variant={isMobile ? "subtitle1" : "h6"}
-                className="text-blue-500 font-semibold"
-              >
+              <Typography variant={isMobile ? "subtitle1" : "h6"} className="text-blue-500 font-semibold">
                 Problem submitted
               </Typography>
-              <Typography
-                variant="body1"
-                className="text-gray-600 p-1 sm:p-2 text-sm sm:text-base"
-              >
+              <Typography variant="body1" className="text-gray-600 p-1 sm:p-2 text-sm sm:text-base">
                 Your problem is submitted. Waiting for the supervisor's approval
               </Typography>
 
@@ -304,23 +324,17 @@ const Solver = ({ open, onClose, cardData }) => {
                             category: !prev.category,
                           }))
                         }
-                        variant={
-                          activeStates.category ? "contained" : "outlined"
-                        }
+                        variant={activeStates.category ? "contained" : "outlined"}
                         size={isMobile ? "small" : "medium"}
                         sx={{
                           color: activeStates.category ? "white" : "#FF7622",
-                          backgroundColor: activeStates.category
-                            ? "#FF7622"
-                            : "transparent",
+                          backgroundColor: activeStates.category ? "#FF7622" : "transparent",
                           borderColor: "#FF7622",
                           fontSize: isMobile ? "0.75rem" : "0.875rem",
                           padding: isMobile ? "4px 10px" : "6px 16px",
                           "&:hover": {
                             borderColor: "#E56A1E",
-                            backgroundColor: activeStates.category
-                              ? "#E56A1E"
-                              : "rgba(255, 118, 34, 0.04)",
+                            backgroundColor: activeStates.category ? "#E56A1E" : "rgba(255, 118, 34, 0.04)",
                           },
                         }}
                       >
@@ -338,10 +352,7 @@ const Solver = ({ open, onClose, cardData }) => {
                   >
                     Problem Title
                   </Typography>
-                  <Typography
-                    variant="body1"
-                    className="text-gray-600 p-2 sm:p-4 text-sm sm:text-base"
-                  >
+                  <Typography variant="body1" className="text-gray-600 p-2 sm:p-4 text-sm sm:text-base">
                     {cardData.problem_title || "No title available"}
                   </Typography>
                 </div>
@@ -354,10 +365,7 @@ const Solver = ({ open, onClose, cardData }) => {
                   >
                     Description
                   </Typography>
-                  <Typography
-                    variant="body1"
-                    className="text-gray-600 p-1 sm:p-2 text-sm sm:text-base"
-                  >
+                  <Typography variant="body1" className="text-gray-600 p-1 sm:p-2 text-sm sm:text-base">
                     {cardData.Description}
                   </Typography>
                 </div>
@@ -393,10 +401,7 @@ const Solver = ({ open, onClose, cardData }) => {
                       </p>
 
                       {/* Answer */}
-                      <Typography
-                        variant="body2"
-                        className="text-gray-600 p-1 sm:p-2 text-sm sm:text-base"
-                      >
+                      <Typography variant="body2" className="text-gray-600 p-1 sm:p-2 text-sm sm:text-base">
                         {answers[index]}
                       </Typography>
                     </div>
@@ -404,10 +409,7 @@ const Solver = ({ open, onClose, cardData }) => {
                 </div>
                 {/* Status Selection */}
                 <div className="mt-4 sm:mt-6">
-                  <Typography
-                    variant="subtitle2"
-                    className="text-xs sm:text-sm font-medium mb-1 sm:mb-2"
-                  >
+                  <Typography variant="subtitle2" className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">
                     Status
                   </Typography>
                   <div className="flex gap-3 sm:gap-4 p-2 sm:p-4 flex-wrap">
@@ -461,24 +463,18 @@ const Solver = ({ open, onClose, cardData }) => {
                                   large: false,
                                 }))
                               }
-                              variant={
-                                activeStates.small ? "contained" : "outlined"
-                              }
+                              variant={activeStates.small ? "contained" : "outlined"}
                               size={isMobile ? "small" : "medium"}
                               sx={{
                                 flex: 1,
                                 color: activeStates.small ? "white" : "#FF7622",
-                                backgroundColor: activeStates.small
-                                  ? "#FF7622"
-                                  : "transparent",
+                                backgroundColor: activeStates.small ? "#FF7622" : "transparent",
                                 borderColor: "#FF7622",
                                 fontSize: isMobile ? "0.75rem" : "0.875rem",
                                 padding: isMobile ? "4px 10px" : "6px 16px",
                                 "&:hover": {
                                   borderColor: "#E56A1E",
-                                  backgroundColor: activeStates.small
-                                    ? "#E56A1E"
-                                    : "rgba(255, 118, 34, 0.04)",
+                                  backgroundColor: activeStates.small ? "#E56A1E" : "rgba(255, 118, 34, 0.04)",
                                 },
                               }}
                             >
@@ -494,26 +490,18 @@ const Solver = ({ open, onClose, cardData }) => {
                                   large: false,
                                 }))
                               }
-                              variant={
-                                activeStates.medium ? "contained" : "outlined"
-                              }
+                              variant={activeStates.medium ? "contained" : "outlined"}
                               size={isMobile ? "small" : "medium"}
                               sx={{
                                 flex: 1,
-                                color: activeStates.medium
-                                  ? "white"
-                                  : "#FF7622",
-                                backgroundColor: activeStates.medium
-                                  ? "#FF7622"
-                                  : "transparent",
+                                color: activeStates.medium ? "white" : "#FF7622",
+                                backgroundColor: activeStates.medium ? "#FF7622" : "transparent",
                                 borderColor: "#FF7622",
                                 fontSize: isMobile ? "0.75rem" : "0.875rem",
                                 padding: isMobile ? "4px 10px" : "6px 16px",
                                 "&:hover": {
                                   borderColor: "#E56A1E",
-                                  backgroundColor: activeStates.medium
-                                    ? "#E56A1E"
-                                    : "rgba(255, 118, 34, 0.04)",
+                                  backgroundColor: activeStates.medium ? "#E56A1E" : "rgba(255, 118, 34, 0.04)",
                                 },
                               }}
                             >
@@ -529,24 +517,18 @@ const Solver = ({ open, onClose, cardData }) => {
                                   large: true,
                                 }))
                               }
-                              variant={
-                                activeStates.large ? "contained" : "outlined"
-                              }
+                              variant={activeStates.large ? "contained" : "outlined"}
                               size={isMobile ? "small" : "medium"}
                               sx={{
                                 flex: 1,
                                 color: activeStates.large ? "white" : "#FF7622",
-                                backgroundColor: activeStates.large
-                                  ? "#FF7622"
-                                  : "transparent",
+                                backgroundColor: activeStates.large ? "#FF7622" : "transparent",
                                 borderColor: "#FF7622",
                                 fontSize: isMobile ? "0.75rem" : "0.875rem",
                                 padding: isMobile ? "4px 10px" : "6px 16px",
                                 "&:hover": {
                                   borderColor: "#E56A1E",
-                                  backgroundColor: activeStates.large
-                                    ? "#E56A1E"
-                                    : "rgba(255, 118, 34, 0.04)",
+                                  backgroundColor: activeStates.large ? "#E56A1E" : "rgba(255, 118, 34, 0.04)",
                                 },
                               }}
                             >
@@ -556,10 +538,7 @@ const Solver = ({ open, onClose, cardData }) => {
 
                           {/* Current selection display */}
                           <div className="w-full border border-gray-200 rounded-lg p-3 sm:p-4">
-                            <Typography
-                              variant="body1"
-                              className="text-center text-gray-600"
-                            >
+                            <Typography variant="body1" className="text-center text-gray-600">
                               {getProblemRating()}
                             </Typography>
                           </div>
@@ -568,10 +547,7 @@ const Solver = ({ open, onClose, cardData }) => {
 
                       {/* Deadline with DateRangeCalendar */}
                       <div className="relative">
-                        <Typography
-                          variant="h6"
-                          className="text-gray-800 font-semibold mb-2 text-sm sm:text-base"
-                        >
+                        <Typography variant="h6" className="text-gray-800 font-semibold mb-2 text-sm sm:text-base">
                           Select Deadline for the Problem
                         </Typography>
 
@@ -579,11 +555,7 @@ const Solver = ({ open, onClose, cardData }) => {
                           className="w-full border border-gray-300 rounded-lg p-3 sm:p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition-colors"
                           onClick={toggleCalendar}
                         >
-                          <Typography
-                            variant="body1"
-                            className="text-gray-700"
-                            sx={{ color: "#4B5563" }}
-                          >
+                          <Typography variant="body1" className="text-gray-700" sx={{ color: "#4B5563" }}>
                             {formatDateRange()}
                           </Typography>
                           <div className="text-[#FF7622]">
@@ -649,11 +621,7 @@ const Solver = ({ open, onClose, cardData }) => {
                               type="number"
                               variant="standard"
                               InputProps={{
-                                endAdornment: (
-                                  <InputAdornment position="end">
-                                    points
-                                  </InputAdornment>
-                                ),
+                                endAdornment: <InputAdornment position="end">points</InputAdornment>,
                                 disableUnderline: true,
                                 inputProps: { min: 0 },
                               }}
@@ -703,11 +671,8 @@ const Solver = ({ open, onClose, cardData }) => {
                 )}
 
                 {/* Assign To Section */}
-                <div className="mt-4 sm:mt-6">
-                  <Typography
-                    variant="subtitle2"
-                    className="text-xs sm:text-sm font-medium mb-2 sm:mb-4"
-                  >
+                <div className="mt-4 sm:mt-6 ">
+                  <Typography variant="subtitle2" className="text-sm sm:text-sm font-medium mb-2 sm:mb-4 p-4">
                     Assign To
                   </Typography>
                   <Button
@@ -725,33 +690,62 @@ const Solver = ({ open, onClose, cardData }) => {
                   >
                     {assignedTo || "Assign To"}
                   </Button>
-                  <Menu
-                    anchorEl={assignToAnchorEl}
-                    open={Boolean(assignToAnchorEl)}
-                    onClose={handleAssignToClose}
-                  >
-                    {[
-                      "John Doe",
-                      "Jane Smith",
-                      "Alice Johnson",
-                      "Bob Brown",
-                    ].map((assignee) => (
-                      <MenuItem
-                        key={assignee}
-                        onClick={() => handleAssignToSelect(assignee)}
-                      >
-                        {assignee}
+                  <Menu anchorEl={assignToAnchorEl} open={Boolean(assignToAnchorEl)} onClose={handleAssignToClose}>
+                    {["NMC", "COE", "SSG", "PLACEMENT"].map((department) => (
+                      <MenuItem key={department} onClick={() => handleAssignToSelect(department)}>
+                        {department}
                       </MenuItem>
                     ))}
                   </Menu>
+
+                  {/* Member Selection Dialog */}
+                  <Dialog open={openMemberDialog} onClose={handleMemberDialogClose} maxWidth="md" fullWidth>
+                    <DialogTitle>Select Member from {assignedTo}</DialogTitle>
+                    <DialogContent>
+                      <TableContainer component={Paper}>
+                        <Table>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>S.No</TableCell>
+                              <TableCell>Name</TableCell>
+                              <TableCell>Position</TableCell>
+                              <TableCell>Action</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {departmentMembers.map((member, index) => (
+                              <TableRow key={member.id}>
+                                <TableCell>{index + 1}</TableCell>
+                                <TableCell>{member.name}</TableCell>
+                                <TableCell>{member.position}</TableCell>
+                                <TableCell>
+                                  <Button
+                                    variant="outlined"
+                                    size="small"
+                                    onClick={() => handleMemberSelect(member)}
+                                    sx={{
+                                      color: "#FF7622",
+                                      borderColor: "#FF7622",
+                                      "&:hover": {
+                                        borderColor: "#E56A1E",
+                                      },
+                                    }}
+                                  >
+                                    Select
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </DialogContent>
+                  </Dialog>
                 </div>
 
                 {/* Remarks Section */}
                 <div className="mt-4 sm:mt-6">
-                  <Typography
-                    variant="subtitle2"
-                    className="text-xs sm:text-sm font-medium mb-2 sm:mb-4"
-                  >
+                  <Typography variant="subtitle2" className="text-xs sm:text-sm font-medium mb-2 sm:mb-4">
                     Remarks
                   </Typography>
                   <textarea
@@ -762,6 +756,20 @@ const Solver = ({ open, onClose, cardData }) => {
                     aria-label="Remarks"
                   />
                 </div>
+                <Button
+                    onClick={handleSave}
+                    variant="contained"
+                    size={isMobile ? "small" : "medium"}
+                    sx={{
+                      backgroundColor: "#FF7622",
+                      fontSize: isMobile ? "0.75rem" : "0.875rem",
+                      "&:hover": {
+                        backgroundColor: "#E56A1E",
+                      },
+                    }}
+                  >
+                    Accepted
+                  </Button>
 
                 {/* Buttons Section */}
                 <DialogActions className="mt-4 sm:mt-6 flex justify-end gap-2 sm:gap-4 p-0 sm:p-2">
@@ -820,7 +828,7 @@ const Solver = ({ open, onClose, cardData }) => {
                     setDateRange({
                       startDate: newValue[0].toDate(),
                       endDate: newValue[1].toDate(),
-                    });
+                    })
                   }
                 }}
                 calendars={1}
@@ -847,7 +855,7 @@ const Solver = ({ open, onClose, cardData }) => {
         </DialogActions>
       </Dialog>
     </ThemeProvider>
-  );
-};
+  )
+}
 
-export default Solver;
+export default Solver
